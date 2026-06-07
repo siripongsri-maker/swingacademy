@@ -334,8 +334,7 @@ function EmptyState({ text, cta, to }: { text: string; cta: string; to: string }
     <div className="rounded-lg border border-dashed border-warm-200 bg-white p-8 text-center">
       <p className="text-sm text-warm-500">{text}</p>
       <Link
-        // @ts-expect-error simple string nav for stub
-        to={to}
+        to={to as "/courses"}
         className="mt-3 inline-flex items-center gap-2 rounded-pill bg-magenta-500 px-4 py-2 text-sm font-semibold text-white hover:bg-magenta-700"
       >
         {cta}
