@@ -21,6 +21,7 @@ import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import seed from "@/data/seed-data.json";
 
+
 type Lesson = { id: string; type: "video" | "reading" | "quiz"; mins: number; title: Localized };
 type CourseFull = {
   id: string;
