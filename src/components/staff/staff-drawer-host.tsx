@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   FileText,
@@ -10,12 +10,19 @@ import {
   AlertTriangle,
   Package,
   ExternalLink,
+  Award,
+  GraduationCap,
+  Clock,
+  Users as UsersIcon,
+  Eye,
   Pencil,
   ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useStaff } from "@/lib/staff-context";
 import seed from "@/data/seed-data.json";
+import { StaffCertificateModal } from "./staff-certificate-modal";
+import { FunderExportModal } from "./funder-export-modal";
 
 type Asset = {
   id: string;
@@ -60,6 +67,14 @@ export function StaffDrawerHost() {
 
   if (!drawer) return null;
 
+  // Certificate and Export render as centered modals, not side drawers
+  if (drawer.kind === "certificate") {
+    return <StaffCertificateModal certificateId={drawer.id} onClose={close} />;
+  }
+  if (drawer.kind === "export") {
+    return <FunderExportModal onClose={close} />;
+  }
+
   return (
     <div
       className="fixed inset-0 z-40 bg-navy-900/40 backdrop-blur-sm"
@@ -75,8 +90,6 @@ export function StaffDrawerHost() {
           <p className="text-xs font-bold uppercase tracking-wider text-warm-500">
             {drawer.kind === "asset" && "Knowledge asset"}
             {drawer.kind === "product" && "Product"}
-            {drawer.kind === "certificate" && "Certificate"}
-            {drawer.kind === "export" && "Export"}
           </p>
           <button
             onClick={close}
@@ -87,22 +100,8 @@ export function StaffDrawerHost() {
           </button>
         </div>
 
-        {drawer.kind === "asset" ? (
-          <AssetDrawer id={drawer.id} onClose={close} />
-        ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-6">
-            <Placeholder
-              label={
-                drawer.kind === "product"
-                  ? `Product ${drawer.id}`
-                  : drawer.kind === "certificate"
-                  ? `Certificate ${drawer.id}`
-                  : "Export center"
-              }
-              note="Coming next."
-            />
-          </div>
-        )}
+        {drawer.kind === "asset" && <AssetDrawer id={drawer.id} onClose={close} />}
+        {drawer.kind === "product" && <ProductDrawer id={drawer.id} />}
       </aside>
     </div>
   );
