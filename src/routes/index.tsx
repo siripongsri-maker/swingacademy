@@ -217,7 +217,6 @@ function HomePage() {
               <Link
                 key={cat.id}
                 to="/courses"
-                search={{ category: cat.id }}
                 className="group rounded-md border border-warm-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 style={{ transitionTimingFunction: "cubic-bezier(0.2,0.8,0.2,1)" }}
               >
