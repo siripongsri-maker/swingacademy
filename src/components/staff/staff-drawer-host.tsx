@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   X,
   FileText,
@@ -55,6 +55,7 @@ const TODAY = new Date("2026-06-07");
 
 export function StaffDrawerHost() {
   const { drawer, close } = useStaff();
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!drawer) return;
@@ -62,7 +63,15 @@ export function StaffDrawerHost() {
       if (e.key === "Escape") close();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Lock scroll and focus the close affordance
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const t = setTimeout(() => closeBtnRef.current?.focus(), 30);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+      clearTimeout(t);
+    };
   }, [drawer, close]);
 
   if (!drawer) return null;
@@ -79,11 +88,14 @@ export function StaffDrawerHost() {
     <div
       className="fixed inset-0 z-40 bg-navy-900/40 backdrop-blur-sm"
       onClick={close}
-      role="dialog"
-      aria-modal="true"
+      role="presentation"
     >
       <aside
-        className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label={drawer.kind === "asset" ? "Knowledge asset details" : "Product details"}
+        tabIndex={-1}
+        className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-warm-200 px-6 py-4">
@@ -92,11 +104,12 @@ export function StaffDrawerHost() {
             {drawer.kind === "product" && "Product"}
           </p>
           <button
+            ref={closeBtnRef}
             onClick={close}
-            aria-label="Close"
+            aria-label="Close panel"
             className="rounded-pill p-1.5 text-warm-500 hover:bg-warm-100 hover:text-navy-500"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
 
