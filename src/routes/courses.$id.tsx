@@ -77,7 +77,7 @@ const lessonIcons = {
 } as const;
 
 function CourseDetail() {
-  const { course } = Route.useLoaderData();
+  const { course } = Route.useLoaderData() as { course: CourseFull };
   const { t, lang } = useLanguage();
   const { signedIn, enrolled, progress, signIn, enroll, learner } = useAccount();
 
