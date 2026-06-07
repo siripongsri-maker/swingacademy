@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Search, ChevronRight } from "lucide-react";
+import { Bell, Search, ChevronRight, Menu } from "lucide-react";
 
 const crumbMap: Record<string, string> = {
   "/staff": "Staff",
@@ -11,7 +11,7 @@ const crumbMap: Record<string, string> = {
   "/staff/admin": "Admin",
 };
 
-export function StaffTopbar() {
+export function StaffTopbar({ onMobileMenuOpen }: { onMobileMenuOpen?: () => void }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const segments = pathname.split("/").filter(Boolean);
 
@@ -23,7 +23,14 @@ export function StaffTopbar() {
   }
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b border-warm-200 bg-white px-6">
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-warm-200 bg-white px-4 sm:px-6">
+      <button
+        onClick={onMobileMenuOpen}
+        aria-label="Open navigation"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-warm-500 transition-colors hover:bg-warm-100 hover:text-navy-500 lg:hidden"
+      >
+        <Menu className="h-5 w-5" aria-hidden />
+      </button>
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1;
