@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Heart, Scale, Sparkles, Sun, ArrowRight } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
+import { PublicLayout } from "@/components/public-layout";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 
