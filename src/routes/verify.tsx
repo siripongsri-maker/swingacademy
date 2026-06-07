@@ -6,10 +6,19 @@ import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import { CertificatePreviewModal } from "@/components/certificate-preview-modal";
 import seed from "@/data/seed-data.json";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/verify")({
+  head: () =>
+    pageHead({
+      title: "Verify a Certificate — SWING Academy",
+      description:
+        "Check a SWING Academy certificate code to confirm it's genuine. See valid, expired, or unknown results and preview the issued certificate.",
+      path: "/verify",
+    }),
   component: VerifyPage,
 });
+
 
 type CertRecord = {
   code: string;
