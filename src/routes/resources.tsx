@@ -5,10 +5,19 @@ import { PublicLayout } from "@/components/public-layout";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import seed from "@/data/seed-data.json";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/resources")({
+  head: () =>
+    pageHead({
+      title: "Resource Library — SWING Academy",
+      description:
+        "PDFs, videos, infographics, and helpful links on sexual health, rights, and wellbeing — filter by type and save favourites to your account.",
+      path: "/resources",
+    }),
   component: ResourcesPage,
 });
+
 
 type ResourceType = "pdf" | "video" | "infographic" | "link";
 

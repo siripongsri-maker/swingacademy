@@ -21,6 +21,7 @@ import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import seed from "@/data/seed-data.json";
 
+
 type Lesson = { id: string; type: "video" | "reading" | "quiz"; mins: number; title: Localized };
 type CourseFull = {
   id: string;
@@ -54,7 +55,62 @@ export const Route = createFileRoute("/courses/$id")({
     if (!course) throw notFound();
     return { course };
   },
+  head: ({ params, loaderData }) => {
+    const course = loaderData?.course;
+    const title = course
+      ? `${course.title.en} — SWING Academy`
+      : "Course — SWING Academy";
+    const description = course
+      ? `${course.summary.en}`.slice(0, 200)
+      : "A free bilingual course from SWING Academy.";
+    const url = `https://swingacademy.lovable.app/courses/${params.id}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "article" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: course
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Course",
+                name: course.title.en,
+                description: course.summary.en,
+                inLanguage: ["th", "en"],
+                educationalLevel: course.level,
+                provider: {
+                  "@type": "Organization",
+                  name: "SWING Foundation",
+                  sameAs: "https://swingacademy.lovable.app",
+                },
+                offers: {
+                  "@type": "Offer",
+                  price: "0",
+                  priceCurrency: "THB",
+                  category: "Free",
+                },
+                hasCourseInstance: {
+                  "@type": "CourseInstance",
+                  courseMode: "Online",
+                  inLanguage: ["th", "en"],
+                },
+              }),
+            },
+          ]
+        : undefined,
+    };
+  },
   component: CourseDetail,
+
   notFoundComponent: () => (
     <PublicLayout>
       <div className="mx-auto max-w-3xl px-6 py-24 text-center">

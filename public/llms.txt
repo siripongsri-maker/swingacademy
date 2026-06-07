@@ -1,0 +1,15 @@
+# SWING Academy
+
+> SWING Academy is a free, bilingual (Thai/English) learning platform from the SWING Foundation, offering courses and resources on sexual health, rights, life skills, and wellbeing for sex workers and allied communities in Thailand.
+
+## Pages
+
+- [Home](/): Overview of SWING Academy, featured paths and courses.
+- [Courses](/courses): Browse all courses by category and level.
+- [Learning Paths](/paths): Four guided paths bundling ordered courses.
+- [Resource Library](/resources): PDFs, videos, infographics, and links.
+- [Verify a Certificate](/verify): Check a SWING Academy certificate code.
+
+## Optional
+
+- [Your Dashboard](/dashboard): Personal learner dashboard (sign-in required).

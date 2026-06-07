@@ -79,22 +79,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SWING Academy  เรียนรู้ ดูแลตัวเอง เคารพในสิทธิ์" },
+      { title: "SWING Academy — เรียนรู้ ดูแลตัวเอง เคารพในสิทธิ์" },
       {
         name: "description",
         content:
-          "Free, bilingual learning for sexual health, rights, and life skills from the SWING Foundation.",
+          "SWING Academy is a free, bilingual (TH/EN) learning platform for sexual health, rights, and life skills from the SWING Foundation.",
       },
-      { property: "og:title", content: "SWING Academy  เรียนรู้ ดูแลตัวเอง เคารพในสิทธิ์" },
+      { property: "og:site_name", content: "SWING Academy" },
+      { property: "og:title", content: "SWING Academy — เรียนรู้ ดูแลตัวเอง เคารพในสิทธิ์" },
       {
         property: "og:description",
-        content: "Warm, stigma-free learning for our communities.",
+        content:
+          "SWING Academy is a free, bilingual (TH/EN) learning platform for sexual health, rights, and life skills from the SWING Foundation.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:title", content: "SWING Academy  เรียนรู้ ดูแลตัวเอง เคารพในสิทธิ์" },
-      { name: "description", content: "SWING Reach is a bilingual learning platform and internal knowledge system." },
-      { property: "og:description", content: "SWING Reach is a bilingual learning platform and internal knowledge system." },
-      { name: "twitter:description", content: "SWING Reach is a bilingual learning platform and internal knowledge system." },
+      { name: "twitter:title", content: "SWING Academy — เรียนรู้ ดูแลตัวเอง เคารพในสิทธิ์" },
+      {
+        name: "twitter:description",
+        content:
+          "SWING Academy is a free, bilingual (TH/EN) learning platform for sexual health, rights, and life skills from the SWING Foundation.",
+      },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KT2ExYhzQvVnbWOZrapb2296DWu1/social-images/social-1780851246611-ChatGPT_Image_Jun_7,_2026,_11_53_57_PM.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KT2ExYhzQvVnbWOZrapb2296DWu1/social-images/social-1780851246611-ChatGPT_Image_Jun_7,_2026,_11_53_57_PM.webp" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -108,7 +112,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "SWING Foundation",
+          alternateName: "SWING Academy",
+          url: "https://swingacademy.lovable.app",
+          description:
+            "SWING Foundation provides free, bilingual learning on sexual health, rights, and life skills for sex workers and allied communities in Thailand.",
+        }),
+      },
+    ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

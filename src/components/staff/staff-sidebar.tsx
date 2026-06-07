@@ -97,7 +97,7 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
                       className={`flex flex-1 flex-col leading-tight ${collapsed ? "lg:hidden" : ""}`}
                     >
                       <span>{item.label}</span>
-                      <span lang="th" className="text-[11px] font-normal text-white/40">
+                      <span lang="th" className="text-[11px] font-normal text-white/70">
                         {item.labelTh}
                       </span>
                     </span>
