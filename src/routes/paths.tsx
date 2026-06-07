@@ -5,6 +5,7 @@ import { PublicLayout } from "@/components/public-layout";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import seed from "@/data/seed-data.json";
+import { pageHead } from "@/lib/seo";
 
 type PathSearch = { focus?: string };
 
@@ -12,7 +13,15 @@ export const Route = createFileRoute("/paths")({
   validateSearch: (raw: Record<string, unknown>): PathSearch => ({
     focus: typeof raw.focus === "string" ? raw.focus : undefined,
   }),
+  head: () =>
+    pageHead({
+      title: "Learning Paths — SWING Academy",
+      description:
+        "Browse four guided learning paths from SWING Academy: each bundles ordered courses on sexual health, rights, and life skills with progress tracking.",
+      path: "/paths",
+    }),
   component: PathsPage,
+
 });
 
 const iconMap = { users: Users, heart: Heart, scale: Scale, sparkles: Sparkles };
