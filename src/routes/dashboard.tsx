@@ -8,10 +8,19 @@ import { SignInModal } from "@/components/sign-in-modal";
 import { CourseCard, type Course } from "@/components/course-card";
 import { CertificatePreviewModal } from "@/components/certificate-preview-modal";
 import seed from "@/data/seed-data.json";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/dashboard")({
+  head: () =>
+    pageHead({
+      title: "Your Dashboard — SWING Academy",
+      description:
+        "Pick up where you left off: continue learning, view your certificates, browse saved resources, and discover recommended SWING Academy courses.",
+      path: "/dashboard",
+    }),
   component: DashboardPage,
 });
+
 
 type Resource = {
   id: string;
