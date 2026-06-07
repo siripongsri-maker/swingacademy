@@ -1,0 +1,2403 @@
+{
+  "publicPortal": {
+    "categories": [
+      {
+        "id": "health",
+        "icon": "heart",
+        "color": "#CC0099",
+        "name": {
+          "th": "สุขภาพทางเพศ",
+          "en": "Sexual health"
+        },
+        "blurb": {
+          "th": "PrEP, U=U, การตรวจ และการดูแลตัวเอง",
+          "en": "PrEP, U=U, testing & self-care"
+        }
+      },
+      {
+        "id": "rights",
+        "icon": "scale",
+        "color": "#7A6FC4",
+        "name": {
+          "th": "สิทธิและกฎหมาย",
+          "en": "Rights & law"
+        },
+        "blurb": {
+          "th": "รู้สิทธิ์ของเราในที่ทำงานและในชีวิต",
+          "en": "Know your rights at work and in life"
+        }
+      },
+      {
+        "id": "skills",
+        "icon": "sparkles",
+        "color": "#C9A227",
+        "name": {
+          "th": "ทักษะชีวิต",
+          "en": "Life skills"
+        },
+        "blurb": {
+          "th": "ภาษาอังกฤษ ดิจิทัล และทักษะการทำงาน",
+          "en": "English, digital & work skills"
+        }
+      },
+      {
+        "id": "wellbeing",
+        "icon": "sun",
+        "color": "#1F8A5B",
+        "name": {
+          "th": "ดูแลใจ",
+          "en": "Wellbeing"
+        },
+        "blurb": {
+          "th": "สุขภาพใจ ความปลอดภัย และการพักผ่อน",
+          "en": "Mental health, safety & rest"
+        }
+      }
+    ],
+    "facilitators": [
+      {
+        "id": "pe_kong",
+        "initial": "ก",
+        "name": {
+          "th": "ก้อง",
+          "en": "Kong"
+        },
+        "role": {
+          "th": "พี่เลี้ยงชุมชนอาวุโส",
+          "en": "Senior peer educator"
+        },
+        "site": "Silom"
+      },
+      {
+        "id": "pe_nat",
+        "initial": "น",
+        "name": {
+          "th": "นัท",
+          "en": "Nat"
+        },
+        "role": {
+          "th": "พยาบาลชุมชน",
+          "en": "Community nurse"
+        },
+        "site": "Silom"
+      },
+      {
+        "id": "pe_fai",
+        "initial": "ฝ",
+        "name": {
+          "th": "ฝ้าย",
+          "en": "Fai"
+        },
+        "role": {
+          "th": "นักสื่อสารชุมชน",
+          "en": "Community communicator"
+        },
+        "site": "Bangkok"
+      },
+      {
+        "id": "pe_ploy",
+        "initial": "พ",
+        "name": {
+          "th": "พลอย",
+          "en": "Ploy"
+        },
+        "role": {
+          "th": "ผู้ประสานงานสิทธิ",
+          "en": "Rights coordinator"
+        },
+        "site": "Bangkok"
+      },
+      {
+        "id": "pe_arm",
+        "initial": "อ",
+        "name": {
+          "th": "อาร์ม",
+          "en": "Arm"
+        },
+        "role": {
+          "th": "พี่เลี้ยงชุมชน Pattaya",
+          "en": "Peer educator, Pattaya"
+        },
+        "site": "Pattaya"
+      }
+    ],
+    "reassurances": {
+      "free": {
+        "th": "ฟรีทุกคอร์ส",
+        "en": "Always free"
+      },
+      "noid": {
+        "th": "ไม่ต้องใช้บัตรประชาชน",
+        "en": "No ID required"
+      },
+      "private": {
+        "th": "เป็นความลับ ปลอดภัย",
+        "en": "Private & confidential"
+      },
+      "nojudge": {
+        "th": "ไม่มีการตัดสิน",
+        "en": "No judgment"
+      },
+      "anytime": {
+        "th": "เรียนเมื่อไรก็ได้ ตามจังหวะของคุณ",
+        "en": "Learn anytime, at your own pace"
+      },
+      "mobile": {
+        "th": "เรียนบนมือถือได้",
+        "en": "Works on your phone"
+      }
+    },
+    "glossary": {
+      "prep": {
+        "th": "PrEP — ยากินก่อนเสี่ยง ป้องกัน HIV เมื่อกินสม่ำเสมอ",
+        "en": "PrEP — a daily pill that prevents HIV when taken consistently"
+      },
+      "pep": {
+        "th": "PEP — ยากินหลังเสี่ยง ต้องเริ่มภายใน 72 ชั่วโมง",
+        "en": "PEP — a pill taken after possible exposure, started within 72 hours"
+      },
+      "uu": {
+        "th": "U=U — ตรวจไม่เจอ = ไม่ส่งต่อ เมื่อกดไวรัสได้สำเร็จ",
+        "en": "U=U — Undetectable = Untransmittable when viral load is suppressed"
+      },
+      "art": {
+        "th": "ART — ยาต้านไวรัสที่กินต่อเนื่องเพื่อคุมเชื้อ HIV",
+        "en": "ART — antiretroviral medicine taken regularly to control HIV"
+      },
+      "hivst": {
+        "th": "HIVST — ชุดตรวจ HIV ด้วยตัวเองที่บ้าน",
+        "en": "HIVST — an HIV self-test you can use at home"
+      },
+      "rrttpr": {
+        "th": "RRTTPR — แนวทางพาคนเข้าถึง ตรวจ รักษา และอยู่ในระบบ",
+        "en": "RRTTPR — a model to Reach, Recruit, Test, Treat, Prevent & Retain"
+      }
+    },
+    "courses": [
+      {
+        "id": "c_prep",
+        "category": "health",
+        "level": "beginner",
+        "durationMins": 75,
+        "funderId": "f_epic",
+        "facilitatorId": "pe_nat",
+        "hasCertificate": true,
+        "learners": 1840,
+        "rating": 4.9,
+        "title": {
+          "th": "รู้จัก PrEP ฉบับเข้าใจง่าย",
+          "en": "Understanding PrEP, made simple"
+        },
+        "tagline": {
+          "th": "ยาที่ช่วยป้องกัน HIV ก่อนเสี่ยง",
+          "en": "The pill that helps prevent HIV"
+        },
+        "summary": {
+          "th": "เข้าใจว่า PrEP คืออะไร ใครเหมาะ กินอย่างไร และหาได้ที่ไหนฟรี โดยไม่ต้องกังวล",
+          "en": "Learn what PrEP is, who it is for, how to take it, and where to get it free — without worry."
+        },
+        "reassure": [
+          "free",
+          "private",
+          "nojudge"
+        ],
+        "glossaryKeys": [
+          "prep",
+          "pep"
+        ],
+        "outcomes": [
+          {
+            "th": "อธิบายได้ว่า PrEP ทำงานอย่างไร",
+            "en": "Explain how PrEP works"
+          },
+          {
+            "th": "รู้ว่าตัวเองเหมาะกับ PrEP หรือไม่",
+            "en": "Know if PrEP is right for you"
+          },
+          {
+            "th": "รู้ขั้นตอนการเริ่มและการติดตาม",
+            "en": "Know how to start and follow up"
+          },
+          {
+            "th": "หาบริการ PrEP ฟรีใกล้บ้านได้",
+            "en": "Find free PrEP services near you"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 8,
+            "title": {
+              "th": "PrEP คืออะไร",
+              "en": "What is PrEP?"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "reading",
+            "mins": 10,
+            "title": {
+              "th": "ใครเหมาะกับ PrEP",
+              "en": "Who is PrEP for"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "เริ่ม PrEP ทีละขั้น",
+              "en": "Starting PrEP step by step"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 10,
+            "title": {
+              "th": "ผลข้างเคียงและการดูแล",
+              "en": "Side effects & care"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "video",
+            "mins": 9,
+            "title": {
+              "th": "หาบริการฟรีใกล้บ้าน",
+              "en": "Finding free services"
+            }
+          },
+          {
+            "id": "l6",
+            "type": "quiz",
+            "mins": 8,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 100
+      },
+      {
+        "id": "c_uu",
+        "category": "health",
+        "level": "beginner",
+        "durationMins": 45,
+        "funderId": "f_epic",
+        "facilitatorId": "pe_fai",
+        "hasCertificate": true,
+        "learners": 2210,
+        "rating": 4.9,
+        "title": {
+          "th": "U=U เข้าใจง่าย",
+          "en": "U=U made simple"
+        },
+        "tagline": {
+          "th": "ตรวจไม่เจอ เท่ากับ ไม่ส่งต่อ",
+          "en": "Undetectable equals Untransmittable"
+        },
+        "summary": {
+          "th": "U=U เปลี่ยนชีวิตคนที่อยู่กับ HIV เรียนรู้ว่ามันหมายถึงอะไร",
+          "en": "U=U changes life for people living with HIV. Learn what it means and why it is good news for everyone."
+        },
+        "reassure": [
+          "free",
+          "nojudge",
+          "anytime"
+        ],
+        "glossaryKeys": [
+          "uu",
+          "art"
+        ],
+        "outcomes": [
+          {
+            "th": "อธิบายความหมายของ U=U ได้",
+            "en": "Explain what U=U means"
+          },
+          {
+            "th": "เข้าใจการกดไวรัสและการตรวจ",
+            "en": "Understand viral suppression & testing"
+          },
+          {
+            "th": "สื่อสาร U=U กับคนรอบตัวอย่างมั่นใจ",
+            "en": "Talk about U=U with confidence"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 7,
+            "title": {
+              "th": "U=U คืออะไร",
+              "en": "What is U=U?"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "reading",
+            "mins": 8,
+            "title": {
+              "th": "หลักฐานทางวิทยาศาสตร์",
+              "en": "The science behind it"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "video",
+            "mins": 10,
+            "title": {
+              "th": "ชีวิตจริงกับ U=U",
+              "en": "U=U in real life"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 8,
+            "title": {
+              "th": "สื่อสารกับคนรอบตัว",
+              "en": "Talking to others"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "quiz",
+            "mins": 7,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 100
+      },
+      {
+        "id": "c_hivst",
+        "category": "health",
+        "level": "beginner",
+        "durationMins": 40,
+        "funderId": "f_nhso",
+        "facilitatorId": "pe_arm",
+        "hasCertificate": true,
+        "learners": 1320,
+        "rating": 4.8,
+        "title": {
+          "th": "ตรวจ HIV ด้วยตัวเอง",
+          "en": "HIV self-testing"
+        },
+        "tagline": {
+          "th": "ตรวจเองที่บ้าน ง่าย เป็นส่วนตัว",
+          "en": "Test yourself at home — easy and private"
+        },
+        "summary": {
+          "th": "เรียนรู้วิธีใช้ชุดตรวจ HIV ด้วยตัวเองอย่างถูกต้อง อ่านผล และรู้ว่าจะทำอะไรต่อ",
+          "en": "Learn to use an HIV self-test correctly, read the result, and know your next step."
+        },
+        "reassure": [
+          "free",
+          "private",
+          "noid"
+        ],
+        "glossaryKeys": [
+          "hivst",
+          "prep"
+        ],
+        "outcomes": [
+          {
+            "th": "ใช้ชุดตรวจด้วยตัวเองได้อย่างมั่นใจ",
+            "en": "Use a self-test kit confidently"
+          },
+          {
+            "th": "อ่านและเข้าใจผลตรวจ",
+            "en": "Read and understand the result"
+          },
+          {
+            "th": "รู้ขั้นตอนต่อไปหลังตรวจ",
+            "en": "Know what to do next"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 6,
+            "title": {
+              "th": "ก่อนเริ่มตรวจ",
+              "en": "Before you test"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "video",
+            "mins": 9,
+            "title": {
+              "th": "ตรวจทีละขั้น",
+              "en": "Testing step by step"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "reading",
+            "mins": 8,
+            "title": {
+              "th": "อ่านผลตรวจ",
+              "en": "Reading your result"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 9,
+            "title": {
+              "th": "ขั้นตอนต่อไป",
+              "en": "Your next steps"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "quiz",
+            "mins": 8,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 45
+      },
+      {
+        "id": "c_sdart",
+        "category": "health",
+        "level": "intermediate",
+        "durationMins": 90,
+        "funderId": "f_nhso",
+        "facilitatorId": "pe_nat",
+        "hasCertificate": true,
+        "learners": 640,
+        "rating": 4.7,
+        "title": {
+          "th": "เริ่มยาต้านวันเดียว (Same-Day ART)",
+          "en": "Starting treatment the same day (Same-Day ART)"
+        },
+        "tagline": {
+          "th": "เริ่มการรักษาได้เร็ว ใช้ชีวิตได้ปกติ",
+          "en": "Start treatment fast, live well"
+        },
+        "summary": {
+          "th": "สำหรับคนที่เพิ่งทราบผลและทีมที่ดูแล เข้าใจการเริ่ม ART ในวันเดียวอย่างปลอดภัย",
+          "en": "For people newly diagnosed and the teams supporting them: how Same-Day ART works."
+        },
+        "reassure": [
+          "free",
+          "private",
+          "nojudge"
+        ],
+        "glossaryKeys": [
+          "art",
+          "uu"
+        ],
+        "outcomes": [
+          {
+            "th": "เข้าใจหลักการ Same-Day ART",
+            "en": "Understand Same-Day ART"
+          },
+          {
+            "th": "รู้ว่าจะคาดหวังอะไรในวันแรก",
+            "en": "Know what to expect on day one"
+          },
+          {
+            "th": "วางแผนการติดตามและการอยู่ในระบบ",
+            "en": "Plan follow-up and staying in care"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 10,
+            "title": {
+              "th": "Same-Day ART คืออะไร",
+              "en": "What is Same-Day ART?"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "reading",
+            "mins": 12,
+            "title": {
+              "th": "วันแรกของการรักษา",
+              "en": "Your first day"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "การกินยาและการดูแล",
+              "en": "Taking medicine & self-care"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 10,
+            "title": {
+              "th": "การติดตามและ U=U",
+              "en": "Follow-up and U=U"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "quiz",
+            "mins": 8,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 0
+      },
+      {
+        "id": "c_rrttpr",
+        "category": "skills",
+        "level": "intermediate",
+        "durationMins": 120,
+        "funderId": "f_epic",
+        "facilitatorId": "pe_kong",
+        "hasCertificate": true,
+        "learners": 510,
+        "rating": 4.9,
+        "title": {
+          "th": "เป็นพี่เลี้ยงชุมชน (RRTTPR 101)",
+          "en": "Become a peer educator (RRTTPR 101)"
+        },
+        "tagline": {
+          "th": "ดูแลชุมชนของเรา ด้วยกัน",
+          "en": "Support our community, together"
+        },
+        "summary": {
+          "th": "คอร์สพื้นฐานสำหรับคนที่อยากเป็นพี่เลี้ยงชุมชน เรียนรู้การเข้าถึง การสร้างความไว้ใจ",
+          "en": "A foundation course for aspiring peer educators: outreach, building trust, and connecting people to services."
+        },
+        "reassure": [
+          "free",
+          "anytime",
+          "nojudge"
+        ],
+        "glossaryKeys": [
+          "rrttpr",
+          "hivst"
+        ],
+        "outcomes": [
+          {
+            "th": "เข้าใจบทบาทพี่เลี้ยงชุมชน",
+            "en": "Understand the peer educator role"
+          },
+          {
+            "th": "เข้าถึงและสร้างความไว้ใจกับชุมชน",
+            "en": "Reach and build trust with community"
+          },
+          {
+            "th": "ส่งต่อคนสู่บริการที่เหมาะสม",
+            "en": "Connect people to the right services"
+          },
+          {
+            "th": "ดูแลตัวเองขณะทำงานชุมชน",
+            "en": "Care for yourself while doing the work"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "ภาพรวม RRTTPR",
+              "en": "The RRTTPR cascade"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "video",
+            "mins": 14,
+            "title": {
+              "th": "การเข้าถึงและความไว้ใจ",
+              "en": "Outreach & trust"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "reading",
+            "mins": 12,
+            "title": {
+              "th": "ชวนตรวจอย่างเคารพ",
+              "en": "Inviting testing with respect"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "การส่งต่อบริการ",
+              "en": "Referrals & linkage"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "reading",
+            "mins": 10,
+            "title": {
+              "th": "ดูแลใจคนทำงาน",
+              "en": "Caring for the helper"
+            }
+          },
+          {
+            "id": "l6",
+            "type": "quiz",
+            "mins": 10,
+            "title": {
+              "th": "ประเมินความพร้อม",
+              "en": "Readiness check"
+            }
+          }
+        ],
+        "seedProgress": 100
+      },
+      {
+        "id": "c_rights",
+        "category": "rights",
+        "level": "beginner",
+        "durationMins": 60,
+        "funderId": "f_don",
+        "facilitatorId": "pe_ploy",
+        "hasCertificate": true,
+        "learners": 980,
+        "rating": 4.8,
+        "title": {
+          "th": "รู้สิทธิ์เมื่อทำงาน",
+          "en": "Know your rights at work"
+        },
+        "tagline": {
+          "th": "พนักงานบริการคือแรงงาน และมีสิทธิ์",
+          "en": "Service workers are workers — and have rights"
+        },
+        "summary": {
+          "th": "รู้สิทธิ์พื้นฐานของคุณ สิ่งที่ทำได้เมื่อถูกปฏิบัติไม่เป็นธรรม และช่องทางขอความช่วยเหลือ",
+          "en": "Know your basic rights, what to do when treated unfairly, and where to get help."
+        },
+        "reassure": [
+          "free",
+          "private",
+          "nojudge"
+        ],
+        "glossaryKeys": [],
+        "outcomes": [
+          {
+            "th": "รู้สิทธิ์พื้นฐานในการทำงาน",
+            "en": "Know your basic rights at work"
+          },
+          {
+            "th": "รู้ว่าควรทำอย่างไรเมื่อถูกจับกุม",
+            "en": "Know what to do if detained"
+          },
+          {
+            "th": "เข้าถึงช่องทางช่วยเหลือทางกฎหมาย",
+            "en": "Reach legal support channels"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 10,
+            "title": {
+              "th": "สิทธิ์ของเราในวันนี้",
+              "en": "Your rights today"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "reading",
+            "mins": 12,
+            "title": {
+              "th": "เมื่อถูกปฏิบัติไม่เป็นธรรม",
+              "en": "When treated unfairly"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "สิ่งที่ทำได้เมื่อถูกจับกุม",
+              "en": "If you are detained"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 10,
+            "title": {
+              "th": "ขอความช่วยเหลือที่ไหน",
+              "en": "Where to get help"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "quiz",
+            "mins": 8,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 0
+      },
+      {
+        "id": "c_english",
+        "category": "skills",
+        "level": "beginner",
+        "durationMins": 150,
+        "funderId": "f_don",
+        "facilitatorId": "pe_fai",
+        "hasCertificate": true,
+        "learners": 1490,
+        "rating": 4.7,
+        "title": {
+          "th": "ภาษาอังกฤษเพื่อการทำงาน",
+          "en": "English for everyday work"
+        },
+        "tagline": {
+          "th": "ประโยคที่ใช้ได้จริง ทุกวัน",
+          "en": "Real phrases you can use every day"
+        },
+        "summary": {
+          "th": "ภาษาอังกฤษพื้นฐานที่ใช้ได้จริงในชีวิตและการทำงาน เรียนสบาย ๆ ทีละบท",
+          "en": "Practical everyday English for life and work — relaxed, one lesson at a time."
+        },
+        "reassure": [
+          "free",
+          "anytime",
+          "mobile"
+        ],
+        "glossaryKeys": [],
+        "outcomes": [
+          {
+            "th": "ทักทายและแนะนำตัวเป็นภาษาอังกฤษ",
+            "en": "Greet and introduce yourself"
+          },
+          {
+            "th": "ใช้ประโยคที่จำเป็นในการทำงาน",
+            "en": "Use key phrases at work"
+          },
+          {
+            "th": "สื่อสารเรื่องสุขภาพและความปลอดภัย",
+            "en": "Communicate about health & safety"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "ทักทายและแนะนำตัว",
+              "en": "Greetings & introductions"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "reading",
+            "mins": 14,
+            "title": {
+              "th": "ตัวเลข เวลา และราคา",
+              "en": "Numbers, time & price"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "video",
+            "mins": 14,
+            "title": {
+              "th": "ประโยคในที่ทำงาน",
+              "en": "Phrases at work"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 14,
+            "title": {
+              "th": "พูดเรื่องสุขภาพ",
+              "en": "Talking about health"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "video",
+            "mins": 12,
+            "title": {
+              "th": "ตั้งขอบเขตอย่างสุภาพ",
+              "en": "Setting boundaries politely"
+            }
+          },
+          {
+            "id": "l6",
+            "type": "quiz",
+            "mins": 10,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 0
+      },
+      {
+        "id": "c_wellbeing",
+        "category": "wellbeing",
+        "level": "beginner",
+        "durationMins": 55,
+        "funderId": "f_int",
+        "facilitatorId": "pe_kong",
+        "hasCertificate": true,
+        "learners": 1110,
+        "rating": 4.9,
+        "title": {
+          "th": "ดูแลใจในงานบริการ",
+          "en": "Caring for your wellbeing"
+        },
+        "tagline": {
+          "th": "ใจของเราก็สำคัญ",
+          "en": "Your mind matters too"
+        },
+        "summary": {
+          "th": "เครื่องมือง่าย ๆ สำหรับดูแลใจ จัดการความเครียด ตั้งขอบเขต และรู้ว่าจะขอความช่วยเหลือเมื่อไร",
+          "en": "Simple tools to care for your mind, manage stress, set boundaries, and know when to reach out."
+        },
+        "reassure": [
+          "free",
+          "private",
+          "anytime"
+        ],
+        "glossaryKeys": [],
+        "outcomes": [
+          {
+            "th": "รู้สัญญาณความเครียดของตัวเอง",
+            "en": "Recognise your own stress signals"
+          },
+          {
+            "th": "ใช้เทคนิคผ่อนคลายง่าย ๆ",
+            "en": "Use simple grounding techniques"
+          },
+          {
+            "th": "ตั้งขอบเขตและขอความช่วยเหลือ",
+            "en": "Set boundaries and ask for help"
+          }
+        ],
+        "lessons": [
+          {
+            "id": "l1",
+            "type": "video",
+            "mins": 9,
+            "title": {
+              "th": "ใจเราเป็นอย่างไรวันนี้",
+              "en": "How is your mind today"
+            }
+          },
+          {
+            "id": "l2",
+            "type": "reading",
+            "mins": 10,
+            "title": {
+              "th": "สัญญาณความเครียด",
+              "en": "Signs of stress"
+            }
+          },
+          {
+            "id": "l3",
+            "type": "video",
+            "mins": 10,
+            "title": {
+              "th": "เทคนิคผ่อนคลาย 5 นาที",
+              "en": "5-minute grounding"
+            }
+          },
+          {
+            "id": "l4",
+            "type": "reading",
+            "mins": 9,
+            "title": {
+              "th": "ตั้งขอบเขตในการทำงาน",
+              "en": "Boundaries at work"
+            }
+          },
+          {
+            "id": "l5",
+            "type": "reading",
+            "mins": 9,
+            "title": {
+              "th": "ขอความช่วยเหลือเมื่อไร",
+              "en": "When to reach out"
+            }
+          },
+          {
+            "id": "l6",
+            "type": "quiz",
+            "mins": 8,
+            "title": {
+              "th": "ทบทวนความเข้าใจ",
+              "en": "Check your understanding"
+            }
+          }
+        ],
+        "seedProgress": 20
+      }
+    ],
+    "paths": [
+      {
+        "id": "p_peer",
+        "accent": "#CC0099",
+        "icon": "users",
+        "name": {
+          "th": "เส้นทางพี่เลี้ยงชุมชน",
+          "en": "Peer educator path"
+        },
+        "blurb": {
+          "th": "จากผู้เรียน สู่คนที่ดูแลชุมชนได้อย่างมั่นใจ",
+          "en": "From learner to confident community supporter"
+        },
+        "courseIds": [
+          "c_rrttpr",
+          "c_hivst",
+          "c_prep",
+          "c_uu"
+        ]
+      },
+      {
+        "id": "p_health",
+        "accent": "#7A6FC4",
+        "icon": "heart",
+        "name": {
+          "th": "สุขภาพทางเพศ ฉบับเข้าใจง่าย",
+          "en": "Sexual health made simple"
+        },
+        "blurb": {
+          "th": "เข้าใจการป้องกัน การตรวจ และการรักษา ครบในที่เดียว",
+          "en": "Prevention, testing and treatment — all in one place"
+        },
+        "courseIds": [
+          "c_prep",
+          "c_uu",
+          "c_hivst",
+          "c_sdart"
+        ]
+      },
+      {
+        "id": "p_rights",
+        "accent": "#1E6FC4",
+        "icon": "scale",
+        "name": {
+          "th": "รู้สิทธิ์ของเรา",
+          "en": "Know your rights"
+        },
+        "blurb": {
+          "th": "สิทธิ์ในที่ทำงาน และช่องทางขอความช่วยเหลือ",
+          "en": "Your rights at work and how to get help"
+        },
+        "courseIds": [
+          "c_rights",
+          "c_wellbeing"
+        ]
+      },
+      {
+        "id": "p_grow",
+        "accent": "#C9A227",
+        "icon": "sparkles",
+        "name": {
+          "th": "เติบโตและดูแลตัวเอง",
+          "en": "Grow & care for yourself"
+        },
+        "blurb": {
+          "th": "ทักษะใหม่ ๆ และการดูแลใจ ไปพร้อมกัน",
+          "en": "New skills and self-care, hand in hand"
+        },
+        "courseIds": [
+          "c_english",
+          "c_wellbeing"
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "r_prep_guide",
+        "type": "pdf",
+        "category": "health",
+        "meta": "PDF · 1.2 MB",
+        "title": {
+          "th": "คู่มือ PrEP ฉบับพกพา",
+          "en": "PrEP pocket guide"
+        },
+        "blurb": {
+          "th": "สรุปทุกอย่างเรื่อง PrEP ในไฟล์เดียว พิมพ์ได้",
+          "en": "Everything about PrEP in one printable file"
+        }
+      },
+      {
+        "id": "r_uu_kit",
+        "type": "infographic",
+        "category": "health",
+        "meta": {
+          "th": "อินโฟกราฟิก · 6 ภาพ",
+          "en": "Infographic · 6 images"
+        },
+        "title": {
+          "th": "ชุดภาพ U=U",
+          "en": "U=U message kit"
+        },
+        "blurb": {
+          "th": "ภาพพร้อมแชร์เพื่อบอกต่อแนวคิด U=U",
+          "en": "Share-ready images explaining U=U"
+        }
+      },
+      {
+        "id": "r_clinic_map",
+        "type": "link",
+        "category": "health",
+        "meta": {
+          "th": "แผนที่ออนไลน์",
+          "en": "Online map"
+        },
+        "title": {
+          "th": "แผนที่คลินิกและรถตรวจเคลื่อนที่",
+          "en": "Clinic & mobile-clinic map"
+        },
+        "blurb": {
+          "th": "หาบริการฟรีใกล้คุณ ทั้งกรุงเทพ พัทยา ภูเก็ต",
+          "en": "Find free services near you in Bangkok, Pattaya, Phuket"
+        }
+      },
+      {
+        "id": "r_rights_card",
+        "type": "pdf",
+        "category": "rights",
+        "meta": "PDF · 800 KB",
+        "title": {
+          "th": "การ์ดสิทธิ์ฉบับพกพา",
+          "en": "Know-your-rights pocket card"
+        },
+        "blurb": {
+          "th": "สิ่งที่ทำได้เมื่อถูกจับกุม เก็บไว้ในมือถือได้",
+          "en": "What to do if detained — keep it on your phone"
+        }
+      },
+      {
+        "id": "r_giant_swing",
+        "type": "video",
+        "category": "rights",
+        "meta": {
+          "th": "สารคดี · 2565",
+          "en": "Documentary · 2022"
+        },
+        "title": {
+          "th": "สารคดี GIANT SWING",
+          "en": "GIANT SWING documentary"
+        },
+        "blurb": {
+          "th": "ชีวิตพนักงานบริการในช่วงโควิด ร่วมผลิตกับ AHF Thailand",
+          "en": "Service workers' lives through COVID, with AHF Thailand"
+        }
+      },
+      {
+        "id": "r_condom",
+        "type": "video",
+        "category": "health",
+        "meta": {
+          "th": "วิดีโอ · 4 นาที",
+          "en": "Video · 4 min"
+        },
+        "title": {
+          "th": "ใช้ถุงยางและเจลให้ถูกวิธี",
+          "en": "Condoms & lube, the right way"
+        },
+        "blurb": {
+          "th": "คลิปสั้น เข้าใจง่าย ไม่เขิน",
+          "en": "A short, friendly, no-blush how-to"
+        }
+      },
+      {
+        "id": "r_selfcare",
+        "type": "pdf",
+        "category": "wellbeing",
+        "meta": "PDF · 2.0 MB",
+        "title": {
+          "th": "ซีนดูแลใจ",
+          "en": "Self-care zine"
+        },
+        "blurb": {
+          "th": "สมุดเล่มเล็กสำหรับวันที่เหนื่อยใจ",
+          "en": "A little booklet for the hard days"
+        }
+      },
+      {
+        "id": "r_english_sheet",
+        "type": "pdf",
+        "category": "skills",
+        "meta": "PDF · 600 KB",
+        "title": {
+          "th": "คำศัพท์อังกฤษเพื่อการทำงาน",
+          "en": "English for work — vocab sheet"
+        },
+        "blurb": {
+          "th": "รวมคำและประโยคที่ใช้บ่อย",
+          "en": "Common words and phrases in one sheet"
+        }
+      }
+    ],
+    "testimonials": [
+      {
+        "id": "t1",
+        "initial": "ม",
+        "accent": "#CC0099",
+        "name": {
+          "th": "มิว",
+          "en": "Mew"
+        },
+        "role": {
+          "th": "สมาชิกชุมชน กรุงเทพ",
+          "en": "Community member, Bangkok"
+        },
+        "quote": {
+          "th": "\"เรียนตอนกลางคืนหลังเลิกงานได้ ไม่มีใครรู้ และไม่มีใครตัดสิน คอร์ส PrEP ทำให้ฉันกล้าไปขอรับบริการ\"",
+          "en": "\"I could study at night after work, privately, with no judgment. The PrEP course gave me courage to go get services.\""
+        }
+      },
+      {
+        "id": "t2",
+        "initial": "ต",
+        "accent": "#7A6FC4",
+        "name": {
+          "th": "ต้น",
+          "en": "Ton"
+        },
+        "role": {
+          "th": "พี่เลี้ยงชุมชน พัทยา",
+          "en": "Peer educator, Pattaya"
+        },
+        "quote": {
+          "th": "\"ใบรับรองพี่เลี้ยงชุมชนช่วยให้ทีมเชื่อมั่นในตัวเรา ตอนนี้ฉันชวนเพื่อน ๆ มาตรวจได้อย่างมั่นใจ\"",
+          "en": "\"The peer educator certificate helped my team trust me. Now I invite friends to test with confidence.\""
+        }
+      },
+      {
+        "id": "t3",
+        "initial": "จ",
+        "accent": "#1F8A5B",
+        "name": {
+          "th": "จอย",
+          "en": "Joy"
+        },
+        "role": {
+          "th": "สมาชิกชุมชน ภูเก็ต",
+          "en": "Community member, Phuket"
+        },
+        "quote": {
+          "th": "\"ชอบที่ทุกอย่างเป็นภาษาไทยก่อน และมีคำอธิบายศัพท์ยาก ๆ ให้ ทำให้เข้าใจเรื่องสุขภาพได้จริง ๆ\"",
+          "en": "\"I love that everything is in Thai first, with hard words explained. I finally understand my own health.\""
+        }
+      }
+    ],
+    "partners": [
+      {
+        "id": "pa_epic",
+        "short": "EpiC / PEPFAR",
+        "color": "#CC0099",
+        "role": {
+          "th": "สนับสนุนงานป้องกันและดูแล HIV",
+          "en": "Supports HIV prevention & care"
+        }
+      },
+      {
+        "id": "pa_nhso",
+        "short": "สปสช. (NHSO)",
+        "color": "#1E6FC4",
+        "role": {
+          "th": "หลักประกันสุขภาพถ้วนหน้า",
+          "en": "Universal health coverage"
+        }
+      },
+      {
+        "id": "pa_ahf",
+        "short": "AHF Thailand",
+        "color": "#7A6FC4",
+        "role": {
+          "th": "ร่วมผลิตสารคดีและงานรณรงค์",
+          "en": "Co-produces films & campaigns"
+        }
+      },
+      {
+        "id": "pa_fhi",
+        "short": "FHI 360",
+        "color": "#1F8A5B",
+        "role": {
+          "th": "สนับสนุนด้านวิชาการและข้อมูล",
+          "en": "Technical & data support"
+        }
+      },
+      {
+        "id": "pa_dms",
+        "short": "กรมวิทยาศาสตร์การแพทย์",
+        "color": "#C9A227",
+        "role": {
+          "th": "รับรองคลินิก SWING",
+          "en": "Certifies the SWING Clinic"
+        }
+      }
+    ],
+    "learner": {
+      "id": "me",
+      "initial": "ม",
+      "joined": "2025-08-14",
+      "site": {
+        "th": "กรุงเทพ",
+        "en": "Bangkok"
+      },
+      "name": {
+        "th": "มิว",
+        "en": "Mew"
+      },
+      "role": {
+        "th": "สมาชิกชุมชน",
+        "en": "Community member"
+      }
+    },
+    "publicCertificates": [
+      {
+        "code": "SWG-PREP-2026-0112",
+        "courseId": "c_prep",
+        "holder": {
+          "th": "มิว",
+          "en": "Mew"
+        },
+        "issued": "2026-02-18",
+        "expires": "2028-02-18",
+        "status": "valid"
+      },
+      {
+        "code": "SWG-UU-2026-0233",
+        "courseId": "c_uu",
+        "holder": {
+          "th": "มิว",
+          "en": "Mew"
+        },
+        "issued": "2026-03-05",
+        "expires": "2028-03-05",
+        "status": "valid"
+      },
+      {
+        "code": "SWG-RRT-2025-0341",
+        "courseId": "c_rrttpr",
+        "holder": {
+          "th": "มิว",
+          "en": "Mew"
+        },
+        "issued": "2025-11-20",
+        "expires": "2027-11-20",
+        "status": "valid"
+      },
+      {
+        "code": "SWG-RRT-2024-0102",
+        "courseId": "c_rrttpr",
+        "holder": {
+          "th": "ต้น",
+          "en": "Ton"
+        },
+        "issued": "2024-05-10",
+        "expires": "2026-05-10",
+        "status": "expired"
+      },
+      {
+        "code": "SWG-RIGHTS-2026-077",
+        "courseId": "c_rights",
+        "holder": {
+          "th": "จอย",
+          "en": "Joy"
+        },
+        "issued": "2026-04-12",
+        "expires": "2028-04-12",
+        "status": "valid"
+      }
+    ],
+    "seedEnrolled": [
+      "c_prep",
+      "c_uu",
+      "c_rrttpr",
+      "c_hivst",
+      "c_wellbeing"
+    ],
+    "seedSaved": [
+      "r_prep_guide",
+      "r_clinic_map",
+      "r_selfcare"
+    ],
+    "levelLabel": {
+      "beginner": {
+        "th": "เริ่มต้น",
+        "en": "Beginner"
+      },
+      "intermediate": {
+        "th": "ระดับกลาง",
+        "en": "Intermediate"
+      },
+      "advanced": {
+        "th": "ขั้นสูง",
+        "en": "Advanced"
+      }
+    },
+    "lessonType": {
+      "video": {
+        "icon": "video",
+        "label": {
+          "th": "วิดีโอ",
+          "en": "Video"
+        }
+      },
+      "reading": {
+        "icon": "bookOpen",
+        "label": {
+          "th": "อ่าน",
+          "en": "Reading"
+        }
+      },
+      "quiz": {
+        "icon": "check",
+        "label": {
+          "th": "แบบทดสอบ",
+          "en": "Quiz"
+        }
+      }
+    },
+    "resourceType": {
+      "pdf": {
+        "icon": "fileText",
+        "label": {
+          "th": "คู่มือ",
+          "en": "Guide"
+        }
+      },
+      "infographic": {
+        "icon": "barChart",
+        "label": {
+          "th": "อินโฟกราฟิก",
+          "en": "Infographic"
+        }
+      },
+      "video": {
+        "icon": "video",
+        "label": {
+          "th": "วิดีโอ",
+          "en": "Video"
+        }
+      },
+      "link": {
+        "icon": "link",
+        "label": {
+          "th": "ลิงก์",
+          "en": "Link"
+        }
+      }
+    }
+  },
+  "staffConsole": {
+    "typeLabels": {
+      "curriculum": "หลักสูตร",
+      "sop": "คู่มือ / SOP",
+      "toolkit": "ทูลคิต",
+      "brief": "บรีฟ",
+      "media": "ชุดสื่อสาร",
+      "note": "บันทึกความรู้",
+      "dataset": "ชุดข้อมูล",
+      "policy": "ข้อเสนอเชิงนโยบาย",
+      "infographic": "อินโฟกราฟิก",
+      "video": "วิดีโอ",
+      "course": "คอร์ส"
+    },
+    "domainLabels": {
+      "hiv_prevention": "ป้องกัน HIV",
+      "prep_pep": "PrEP / PEP",
+      "art": "ART",
+      "hiv_testing": "ตรวจ HIV",
+      "peer_led": "พี่เลี้ยงชุมชน",
+      "rights_legal": "สิทธิและกฎหมาย",
+      "communications": "สื่อสาร",
+      "mne": "M&E",
+      "organizational": "องค์กร"
+    },
+    "statusLabels": {
+      "draft": "ร่าง",
+      "in_review": "กำลังตรวจ",
+      "published": "เผยแพร่",
+      "archived": "เก็บเข้าคลัง"
+    },
+    "sourceLabels": {
+      "produced": "ผลิตเอง",
+      "received": "รับมา"
+    },
+    "funders": [
+      {
+        "id": "f_epic",
+        "name": "EpiC / PEPFAR",
+        "shortName": "EpiC",
+        "type": "donor",
+        "color": "#CC0099",
+        "purpose": "ป้องกันและดูแล HIV ในกลุ่มประชากรหลัก"
+      },
+      {
+        "id": "f_nhso",
+        "name": "NHSO (สปสช.)",
+        "shortName": "NHSO",
+        "type": "government",
+        "color": "#1E6FC4",
+        "purpose": "บริการสุขภาพถ้วนหน้า"
+      },
+      {
+        "id": "f_don",
+        "name": "Donation",
+        "shortName": "Donation",
+        "type": "donation",
+        "color": "#C9A227",
+        "purpose": "เงินบริจาคทั่วไป"
+      },
+      {
+        "id": "f_int",
+        "name": "ภายใน",
+        "shortName": "ภายใน",
+        "type": "internal",
+        "color": "#7A6FC4",
+        "purpose": "งบและความรู้ภายในองค์กร"
+      }
+    ],
+    "projects": [
+      {
+        "id": "pj_epic26",
+        "name": "EpiC Year 6 Workplan",
+        "funderId": "f_epic",
+        "periodStart": "2025-10-01",
+        "periodEnd": "2026-09-30"
+      },
+      {
+        "id": "pj_nhso26",
+        "name": "NHSO Community Clinic 2569",
+        "funderId": "f_nhso",
+        "periodStart": "2025-10-01",
+        "periodEnd": "2026-09-30"
+      },
+      {
+        "id": "pj_rights",
+        "name": "Rights & Decrim Advocacy",
+        "funderId": "f_don",
+        "periodStart": "2025-01-01",
+        "periodEnd": "2026-12-31"
+      }
+    ],
+    "people": [
+      {
+        "id": "p_kong",
+        "name": "ก้อง",
+        "role": "พี่เลี้ยงอาวุโส",
+        "avatarInitial": "ก",
+        "site": "Silom",
+        "email": "kong@swing.org",
+        "canTeach": [
+          "s_rrttpr",
+          "s_hivst"
+        ]
+      },
+      {
+        "id": "p_fai",
+        "name": "ฝ้าย",
+        "role": "นักสื่อสาร",
+        "avatarInitial": "ฝ",
+        "site": "Bangkok HQ",
+        "email": "fai@swing.org",
+        "canTeach": [
+          "s_content"
+        ]
+      },
+      {
+        "id": "p_nat",
+        "name": "นัท",
+        "role": "พยาบาลชุมชน",
+        "avatarInitial": "น",
+        "site": "Silom",
+        "email": "nat@swing.org",
+        "canTeach": [
+          "s_sdart",
+          "s_prep",
+          "s_art"
+        ]
+      },
+      {
+        "id": "p_maprang",
+        "name": "มะปราง",
+        "role": "นักข้อมูล M&E",
+        "avatarInitial": "ม",
+        "site": "Bangkok HQ",
+        "email": "maprang@swing.org",
+        "canTeach": [
+          "s_dhis2"
+        ]
+      },
+      {
+        "id": "p_arm",
+        "name": "อาร์ม",
+        "role": "พี่เลี้ยงชุมชน Pattaya",
+        "avatarInitial": "อ",
+        "site": "Pattaya",
+        "email": "arm@swing.org",
+        "canTeach": [
+          "s_hivst"
+        ]
+      },
+      {
+        "id": "p_ploy",
+        "name": "พลอย",
+        "role": "ผู้ประสานสิทธิ",
+        "avatarInitial": "พ",
+        "site": "Bangkok HQ",
+        "email": "ploy@swing.org",
+        "canTeach": []
+      }
+    ],
+    "skills": [
+      {
+        "id": "s_rrttpr",
+        "name": "RRTTPR",
+        "domain": "peer_led"
+      },
+      {
+        "id": "s_hivst",
+        "name": "HIVST",
+        "domain": "hiv_testing"
+      },
+      {
+        "id": "s_sdart",
+        "name": "SDART",
+        "domain": "art"
+      },
+      {
+        "id": "s_prep",
+        "name": "PrEP",
+        "domain": "prep_pep"
+      },
+      {
+        "id": "s_art",
+        "name": "ART",
+        "domain": "art"
+      },
+      {
+        "id": "s_content",
+        "name": "Content และ U=U messaging",
+        "domain": "communications"
+      },
+      {
+        "id": "s_dhis2",
+        "name": "DHIS2",
+        "domain": "mne"
+      },
+      {
+        "id": "s_rights",
+        "name": "สิทธิและกฎหมาย",
+        "domain": "rights_legal"
+      }
+    ],
+    "personSkills": [
+      {
+        "personId": "p_kong",
+        "skillId": "s_rrttpr",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_kong",
+        "skillId": "s_hivst",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_kong",
+        "skillId": "s_prep",
+        "level": "practitioner"
+      },
+      {
+        "personId": "p_fai",
+        "skillId": "s_content",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_fai",
+        "skillId": "s_rights",
+        "level": "aware"
+      },
+      {
+        "personId": "p_nat",
+        "skillId": "s_sdart",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_nat",
+        "skillId": "s_prep",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_nat",
+        "skillId": "s_art",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_nat",
+        "skillId": "s_hivst",
+        "level": "practitioner"
+      },
+      {
+        "personId": "p_maprang",
+        "skillId": "s_dhis2",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_maprang",
+        "skillId": "s_rrttpr",
+        "level": "aware"
+      },
+      {
+        "personId": "p_arm",
+        "skillId": "s_hivst",
+        "level": "trainer"
+      },
+      {
+        "personId": "p_arm",
+        "skillId": "s_rrttpr",
+        "level": "practitioner"
+      },
+      {
+        "personId": "p_ploy",
+        "skillId": "s_rights",
+        "level": "practitioner"
+      }
+    ],
+    "knowledgeAssets": [
+      {
+        "id": "k1",
+        "title": "หลักสูตรอบรมพี่เลี้ยงชุมชน RRTTPR",
+        "type": "curriculum",
+        "domain": "peer_led",
+        "source": "produced",
+        "ownerId": "p_kong",
+        "funderId": "f_epic",
+        "projectId": "pj_epic26",
+        "language": "th",
+        "status": "published",
+        "version": "v2.0",
+        "lastReviewed": "2026-02-10",
+        "nextReview": "2026-08-10",
+        "summary": "หลักสูตรเต็มรูปแบบสำหรับอบรมพี่เลี้ยงชุมชนตามแนวทาง RRTTPR",
+        "tags": [
+          "RRTTPR",
+          "พี่เลี้ยง",
+          "cascade"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2024-06-01",
+        "updatedAt": "2026-05-28"
+      },
+      {
+        "id": "k2",
+        "title": "แนวปฏิบัติ SDART (Same-Day ART) ชุมชน",
+        "type": "sop",
+        "domain": "art",
+        "source": "produced",
+        "ownerId": "p_nat",
+        "funderId": "f_nhso",
+        "projectId": "pj_nhso26",
+        "language": "th",
+        "status": "published",
+        "version": "v1.2",
+        "lastReviewed": "2026-03-01",
+        "nextReview": "2026-09-01",
+        "summary": "ขั้นตอนการเริ่ม ART วันเดียวสำหรับคลินิกชุมชน",
+        "tags": [
+          "SDART",
+          "ART",
+          "คลินิก"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2025-09-15",
+        "updatedAt": "2026-05-30"
+      },
+      {
+        "id": "k3",
+        "title": "คู่มือ PrEP สำหรับชุมชน",
+        "type": "toolkit",
+        "domain": "prep_pep",
+        "source": "produced",
+        "ownerId": "p_nat",
+        "funderId": "f_epic",
+        "projectId": "pj_epic26",
+        "language": "th",
+        "status": "published",
+        "version": "v1.0",
+        "lastReviewed": "2026-01-20",
+        "nextReview": "2026-07-20",
+        "summary": "ทูลคิตเริ่มต้น PrEP สำหรับพนักงานบริการ",
+        "tags": [
+          "PrEP",
+          "ป้องกัน",
+          "toolkit"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2025-11-02",
+        "updatedAt": "2026-04-18"
+      },
+      {
+        "id": "k4",
+        "title": "หลักสูตรอบรมตำรวจ สิทธิพนักงานบริการ",
+        "type": "curriculum",
+        "domain": "rights_legal",
+        "source": "produced",
+        "ownerId": "p_fai",
+        "funderId": "f_don",
+        "projectId": "pj_rights",
+        "language": "th",
+        "status": "draft",
+        "version": "v0.4",
+        "lastReviewed": null,
+        "nextReview": null,
+        "summary": "หลักสูตรสร้างความเข้าใจสิทธิพนักงานบริการสำหรับเจ้าหน้าที่ตำรวจ",
+        "tags": [
+          "สิทธิ",
+          "ตำรวจ",
+          "advocacy"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2026-03-12",
+        "updatedAt": "2026-05-22"
+      },
+      {
+        "id": "k5",
+        "title": "ชุดข้อความ U=U สำหรับสื่อสารชุมชน",
+        "type": "media",
+        "domain": "communications",
+        "source": "produced",
+        "ownerId": "p_fai",
+        "funderId": "f_epic",
+        "projectId": "pj_epic26",
+        "language": "th",
+        "status": "published",
+        "version": "v1.1",
+        "lastReviewed": "2026-04-05",
+        "nextReview": "2026-10-05",
+        "summary": "ชุดข้อความและภาพสำหรับสื่อสารแนวคิด U=U",
+        "tags": [
+          "U=U",
+          "สื่อสาร",
+          "campaign"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2025-12-08",
+        "updatedAt": "2026-05-10"
+      },
+      {
+        "id": "k6",
+        "title": "สรุปบทเรียนเวที AIDS Conference",
+        "type": "note",
+        "domain": "mne",
+        "source": "received",
+        "ownerId": "p_maprang",
+        "funderId": "f_int",
+        "language": "th",
+        "status": "draft",
+        "version": "v0.1",
+        "lastReviewed": null,
+        "nextReview": null,
+        "summary": "บันทึกประเด็นสำคัญจากเวที AIDS Conference",
+        "tags": [
+          "conference",
+          "บทเรียน"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2026-05-15",
+        "updatedAt": "2026-05-16"
+      },
+      {
+        "id": "k7",
+        "title": "สรุปอบรม Data for M&E (DHIS2)",
+        "type": "note",
+        "domain": "mne",
+        "source": "received",
+        "ownerId": "p_maprang",
+        "funderId": "f_int",
+        "language": "th",
+        "status": "in_review",
+        "version": "v0.2",
+        "lastReviewed": null,
+        "nextReview": null,
+        "summary": "สรุปขั้นตอนการใช้ DHIS2 สำหรับงาน M&E",
+        "tags": [
+          "DHIS2",
+          "M&E",
+          "data"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2026-04-28",
+        "updatedAt": "2026-05-29"
+      },
+      {
+        "id": "k8",
+        "title": "อินโฟกราฟิก เส้นทางบริการคลินิกชุมชน",
+        "type": "infographic",
+        "domain": "organizational",
+        "source": "produced",
+        "ownerId": "p_fai",
+        "funderId": "f_nhso",
+        "projectId": "pj_nhso26",
+        "language": "th_en",
+        "status": "published",
+        "version": "v1.0",
+        "lastReviewed": "2026-02-25",
+        "nextReview": "2026-05-25",
+        "summary": "อินโฟกราฟิกอธิบายเส้นทางผู้รับบริการ สองภาษา",
+        "tags": [
+          "infographic",
+          "บริการ"
+        ],
+        "fileUrl": "#",
+        "createdAt": "2026-01-30",
+        "updatedAt": "2026-02-25"
+      }
+    ],
+    "products": [
+      {
+        "id": "pr1",
+        "title": "คอร์ส RRTTPR Cascade 101",
+        "productType": "course",
+        "audiences": [
+          "พี่เลี้ยง",
+          "ภาคี"
+        ],
+        "funderId": "f_epic",
+        "status": "published",
+        "sourceAssetIds": [
+          "k1"
+        ],
+        "hasCertificate": true,
+        "publishedDate": "2025-08-01",
+        "summary": "คอร์สพื้นฐานความเข้าใจ cascade RRTTPR สำหรับพี่เลี้ยงชุมชนและภาคี",
+        "course": {
+          "modules": [
+            {
+              "id": "m1",
+              "title": "ภาพรวม cascade RRTTPR",
+              "durationMins": 25
+            },
+            {
+              "id": "m2",
+              "title": "การเข้าถึงและสร้างความไว้ใจ",
+              "durationMins": 30
+            },
+            {
+              "id": "m3",
+              "title": "ตรวจและส่งต่อ",
+              "durationMins": 35
+            },
+            {
+              "id": "m4",
+              "title": "คงอยู่ในระบบ",
+              "durationMins": 30
+            }
+          ],
+          "competencyIds": [
+            "s_rrttpr"
+          ],
+          "passThreshold": 80
+        }
+      },
+      {
+        "id": "pr2",
+        "title": "คอร์ส SDART Same-Day ART",
+        "productType": "course",
+        "audiences": [
+          "คลินิก",
+          "ภาคี"
+        ],
+        "funderId": "f_nhso",
+        "status": "published",
+        "sourceAssetIds": [
+          "k2"
+        ],
+        "hasCertificate": true,
+        "publishedDate": "2026-01-15",
+        "summary": "คอร์สสำหรับทีมคลินิกในการเริ่ม ART วันเดียวอย่างปลอดภัย",
+        "course": {
+          "modules": [
+            {
+              "id": "m1",
+              "title": "หลักการ Same-Day ART",
+              "durationMins": 30
+            },
+            {
+              "id": "m2",
+              "title": "การประเมินหน้างาน",
+              "durationMins": 30
+            },
+            {
+              "id": "m3",
+              "title": "การส่งต่อและติดตาม",
+              "durationMins": 25
+            }
+          ],
+          "competencyIds": [
+            "s_sdart"
+          ],
+          "passThreshold": 80
+        }
+      },
+      {
+        "id": "pr3",
+        "title": "PrEP Community Toolkit",
+        "productType": "toolkit",
+        "audiences": [
+          "ชุมชน"
+        ],
+        "funderId": "f_epic",
+        "status": "published",
+        "sourceAssetIds": [
+          "k3"
+        ],
+        "hasCertificate": false,
+        "publishedDate": "2026-02-01",
+        "summary": "ชุดเครื่องมือพร้อมใช้สำหรับงาน PrEP ในชุมชน"
+      },
+      {
+        "id": "pr4",
+        "title": "CLHS Model Brief (EN)",
+        "productType": "brief",
+        "audiences": [
+          "ผู้ให้ทุน",
+          "ภาคีภูมิภาค"
+        ],
+        "funderId": "f_epic",
+        "status": "published",
+        "sourceAssetIds": [
+          "k1"
+        ],
+        "hasCertificate": false,
+        "publishedDate": "2026-03-20",
+        "summary": "บรีฟภาษาอังกฤษอธิบายโมเดล Community-Led Health Services"
+      },
+      {
+        "id": "pr5",
+        "title": "คอร์ส สิทธิและกฎหมายพนักงานบริการ",
+        "productType": "course",
+        "audiences": [
+          "ทีม",
+          "ภาคี"
+        ],
+        "funderId": "f_don",
+        "status": "draft",
+        "sourceAssetIds": [
+          "k4"
+        ],
+        "hasCertificate": true,
+        "summary": "คอร์สสร้างความเข้าใจสิทธิและกฎหมายสำหรับทีมและภาคี",
+        "course": {
+          "modules": [
+            {
+              "id": "m1",
+              "title": "กรอบกฎหมายปัจจุบัน",
+              "durationMins": 30
+            },
+            {
+              "id": "m2",
+              "title": "สิทธิเมื่อถูกจับกุม",
+              "durationMins": 25
+            }
+          ],
+          "competencyIds": [
+            "s_rights"
+          ],
+          "passThreshold": 70
+        }
+      },
+      {
+        "id": "pr6",
+        "title": "ชุดสื่อ U=U Community",
+        "productType": "infographic",
+        "audiences": [
+          "ชุมชน"
+        ],
+        "funderId": "f_epic",
+        "status": "published",
+        "sourceAssetIds": [
+          "k5"
+        ],
+        "hasCertificate": false,
+        "publishedDate": "2026-04-10",
+        "summary": "ชุดสื่ออินโฟกราฟิกสำหรับเผยแพร่แนวคิด U=U ในชุมชน"
+      }
+    ],
+    "learningRecords": [
+      {
+        "id": "lr1",
+        "personId": "p_arm",
+        "productId": "pr1",
+        "status": "completed",
+        "progressPct": 100,
+        "completedDate": "2025-09-12",
+        "score": 88,
+        "retroactive": false
+      },
+      {
+        "id": "lr2",
+        "personId": "p_kong",
+        "productId": "pr1",
+        "status": "completed",
+        "progressPct": 100,
+        "completedDate": "2024-11-01",
+        "score": 95,
+        "retroactive": true
+      },
+      {
+        "id": "lr3",
+        "personId": "p_nat",
+        "productId": "pr2",
+        "status": "completed",
+        "progressPct": 100,
+        "completedDate": "2026-02-02",
+        "score": 92,
+        "retroactive": false
+      },
+      {
+        "id": "lr4",
+        "personId": "p_arm",
+        "productId": "pr2",
+        "status": "in_progress",
+        "progressPct": 60,
+        "retroactive": false
+      },
+      {
+        "id": "lr5",
+        "personId": "p_maprang",
+        "productId": "pr1",
+        "status": "in_progress",
+        "progressPct": 35,
+        "retroactive": false
+      },
+      {
+        "id": "lr6",
+        "personId": "p_ploy",
+        "productId": "pr5",
+        "status": "enrolled",
+        "progressPct": 0,
+        "retroactive": false
+      },
+      {
+        "id": "lr7",
+        "personId": "p_fai",
+        "productId": "pr1",
+        "status": "completed",
+        "progressPct": 100,
+        "completedDate": "2025-10-20",
+        "score": 84,
+        "retroactive": false
+      }
+    ],
+    "certificates": [
+      {
+        "id": "c1",
+        "productId": "pr1",
+        "personId": "p_arm",
+        "issuedDate": "2025-09-12",
+        "expiresDate": "2027-09-12",
+        "verifyCode": "SWG-RRT-2025-0341",
+        "status": "valid"
+      },
+      {
+        "id": "c2",
+        "productId": "pr1",
+        "personId": "p_kong",
+        "issuedDate": "2024-11-01",
+        "expiresDate": "2026-11-01",
+        "verifyCode": "SWG-RRT-2024-0102",
+        "status": "valid"
+      },
+      {
+        "id": "c3",
+        "productId": "pr2",
+        "personId": "p_nat",
+        "issuedDate": "2026-02-02",
+        "expiresDate": "2028-02-02",
+        "verifyCode": "SWG-SDA-2026-0017",
+        "status": "valid"
+      },
+      {
+        "id": "c4",
+        "productId": "pr1",
+        "personId": "p_fai",
+        "issuedDate": "2025-10-20",
+        "expiresDate": "2027-10-20",
+        "verifyCode": "SWG-RRT-2025-0388",
+        "status": "valid"
+      }
+    ],
+    "ktJourneys": [
+      {
+        "id": "kt1",
+        "personId": "p_nat",
+        "learned": "อบรม Same-Day ART (SDART)",
+        "source": "เวทีวิชาการ HIVNAT",
+        "capturedAssetId": "k2",
+        "stages": [
+          {
+            "key": "acquire",
+            "label": "ได้รับความรู้",
+            "description": "เข้าอบรม SDART",
+            "status": "done",
+            "completedDate": "2025-11-20",
+            "evidenceUrl": "#"
+          },
+          {
+            "key": "capture",
+            "label": "ถอดความรู้",
+            "description": "สรุปและบันทึกเข้าคลัง KM",
+            "status": "done",
+            "completedDate": "2025-12-05",
+            "evidenceUrl": "#"
+          },
+          {
+            "key": "package",
+            "label": "จัดทำให้ใช้ง่าย",
+            "description": "ทำ SOP และเช็กลิสต์หน้างาน",
+            "status": "done",
+            "completedDate": "2026-01-18",
+            "evidenceUrl": "#"
+          },
+          {
+            "key": "transfer",
+            "label": "ส่งต่อ",
+            "description": "สอนทีมคลินิก 3 สาขา",
+            "status": "doing"
+          },
+          {
+            "key": "apply",
+            "label": "นำไปใช้จริง",
+            "description": "ใช้ในบริการประจำวัน",
+            "status": "waiting"
+          },
+          {
+            "key": "sustain",
+            "label": "ทบทวนและอัพเดท",
+            "description": "รอบทบทวนทุก 6 เดือน",
+            "status": "waiting"
+          }
+        ],
+        "sustainability": {
+          "ownerId": "p_nat",
+          "backupOwner": "ทีมคลินิก Silom",
+          "version": "v1.2",
+          "lastReviewed": "2026-03-01",
+          "nextReview": "2026-09-01",
+          "reviewCycleMonths": 6
+        },
+        "producedFormatIds": [
+          "k2",
+          "pr2"
+        ]
+      },
+      {
+        "id": "kt2",
+        "personId": "p_fai",
+        "learned": "เวที Digital Storytelling for Health",
+        "source": "ประชุมภาคีระดับภูมิภาค",
+        "stages": [
+          {
+            "key": "acquire",
+            "label": "ได้รับความรู้",
+            "description": "เข้าร่วมเวที",
+            "status": "done",
+            "completedDate": "2026-03-10"
+          },
+          {
+            "key": "capture",
+            "label": "ถอดความรู้",
+            "description": "สรุป 5 ประเด็นเข้าคลัง",
+            "status": "done",
+            "completedDate": "2026-03-22"
+          },
+          {
+            "key": "package",
+            "label": "จัดทำให้ใช้ง่าย",
+            "description": "ทำเทมเพลตคอนเทนต์",
+            "status": "doing"
+          },
+          {
+            "key": "transfer",
+            "label": "ส่งต่อ",
+            "description": "Lunch & Learn ให้ทีมสื่อสาร",
+            "status": "waiting"
+          },
+          {
+            "key": "apply",
+            "label": "นำไปใช้จริง",
+            "description": "ใช้กับแคมเปญถัดไป",
+            "status": "waiting"
+          },
+          {
+            "key": "sustain",
+            "label": "ทบทวนและอัพเดท",
+            "description": "ทบทวนรายไตรมาส",
+            "status": "waiting"
+          }
+        ],
+        "sustainability": {
+          "ownerId": "p_fai",
+          "backupOwner": "",
+          "version": "v0.3",
+          "lastReviewed": null,
+          "nextReview": null,
+          "reviewCycleMonths": 3
+        },
+        "producedFormatIds": [
+          "k5"
+        ]
+      },
+      {
+        "id": "kt3",
+        "personId": "p_maprang",
+        "learned": "อบรม DHIS2 สำหรับ M&E",
+        "source": "อบรมโดย FHI 360",
+        "capturedAssetId": "k7",
+        "stages": [
+          {
+            "key": "acquire",
+            "label": "ได้รับความรู้",
+            "description": "อบรม DHIS2",
+            "status": "done",
+            "completedDate": "2026-04-12"
+          },
+          {
+            "key": "capture",
+            "label": "ถอดความรู้",
+            "description": "บันทึกขั้นตอนเข้าคลัง",
+            "status": "done",
+            "completedDate": "2026-04-28"
+          },
+          {
+            "key": "package",
+            "label": "จัดทำให้ใช้ง่าย",
+            "description": "ทำคู่มือทีละขั้น",
+            "status": "done",
+            "completedDate": "2026-05-08"
+          },
+          {
+            "key": "transfer",
+            "label": "ส่งต่อ",
+            "description": "เทรนทีมข้อมูลทุกสาขา",
+            "status": "done",
+            "completedDate": "2026-05-20"
+          },
+          {
+            "key": "apply",
+            "label": "นำไปใช้จริง",
+            "description": "ใช้รายงานผลรายเดือน",
+            "status": "doing"
+          },
+          {
+            "key": "sustain",
+            "label": "ทบทวนและอัพเดท",
+            "description": "อัพเดทตามเวอร์ชันระบบ",
+            "status": "waiting"
+          }
+        ],
+        "sustainability": {
+          "ownerId": "p_maprang",
+          "backupOwner": "ทีม M&E",
+          "version": "v2.0",
+          "lastReviewed": "2026-05-01",
+          "nextReview": "2026-11-01",
+          "reviewCycleMonths": 6
+        },
+        "producedFormatIds": [
+          "k7"
+        ]
+      },
+      {
+        "id": "kt4",
+        "personId": "p_kong",
+        "learned": "เทคนิคการเข้าถึงเชิงรุก (Reach) รุ่นใหม่",
+        "source": "ศึกษาดูงานเครือข่าย Pattaya",
+        "capturedAssetId": "k1",
+        "stages": [
+          {
+            "key": "acquire",
+            "label": "ได้รับความรู้",
+            "description": "ศึกษาดูงานพื้นที่ Pattaya",
+            "status": "done",
+            "completedDate": "2025-10-01"
+          },
+          {
+            "key": "capture",
+            "label": "ถอดความรู้",
+            "description": "ถอดเป็นบันทึกความรู้",
+            "status": "done",
+            "completedDate": "2025-10-15"
+          },
+          {
+            "key": "package",
+            "label": "จัดทำให้ใช้ง่าย",
+            "description": "รวมเข้าหลักสูตร RRTTPR v2",
+            "status": "done",
+            "completedDate": "2025-12-01"
+          },
+          {
+            "key": "transfer",
+            "label": "ส่งต่อ",
+            "description": "อบรมพี่เลี้ยง 2 รุ่น",
+            "status": "done",
+            "completedDate": "2026-02-10"
+          },
+          {
+            "key": "apply",
+            "label": "นำไปใช้จริง",
+            "description": "ใช้ในงานเข้าถึงประจำ",
+            "status": "done",
+            "completedDate": "2026-03-15"
+          },
+          {
+            "key": "sustain",
+            "label": "ทบทวนและอัพเดท",
+            "description": "รอบทบทวนทุก 6 เดือน",
+            "status": "doing"
+          }
+        ],
+        "sustainability": {
+          "ownerId": "p_kong",
+          "backupOwner": "ทีมพี่เลี้ยง Silom",
+          "version": "v2.0",
+          "lastReviewed": "2026-02-10",
+          "nextReview": "2026-08-10",
+          "reviewCycleMonths": 6
+        },
+        "producedFormatIds": [
+          "k1",
+          "pr1"
+        ]
+      }
+    ]
+  }
+}
