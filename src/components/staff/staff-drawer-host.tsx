@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   FileText,
@@ -10,12 +10,19 @@ import {
   AlertTriangle,
   Package,
   ExternalLink,
+  Award,
+  GraduationCap,
+  Clock,
+  Users as UsersIcon,
+  Eye,
   Pencil,
   ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useStaff } from "@/lib/staff-context";
 import seed from "@/data/seed-data.json";
+import { StaffCertificateModal } from "./staff-certificate-modal";
+import { FunderExportModal } from "./funder-export-modal";
 
 type Asset = {
   id: string;
@@ -60,6 +67,14 @@ export function StaffDrawerHost() {
 
   if (!drawer) return null;
 
+  // Certificate and Export render as centered modals, not side drawers
+  if (drawer.kind === "certificate") {
+    return <StaffCertificateModal certificateId={drawer.id} onClose={close} />;
+  }
+  if (drawer.kind === "export") {
+    return <FunderExportModal onClose={close} />;
+  }
+
   return (
     <div
       className="fixed inset-0 z-40 bg-navy-900/40 backdrop-blur-sm"
@@ -75,8 +90,6 @@ export function StaffDrawerHost() {
           <p className="text-xs font-bold uppercase tracking-wider text-warm-500">
             {drawer.kind === "asset" && "Knowledge asset"}
             {drawer.kind === "product" && "Product"}
-            {drawer.kind === "certificate" && "Certificate"}
-            {drawer.kind === "export" && "Export"}
           </p>
           <button
             onClick={close}
@@ -87,22 +100,8 @@ export function StaffDrawerHost() {
           </button>
         </div>
 
-        {drawer.kind === "asset" ? (
-          <AssetDrawer id={drawer.id} onClose={close} />
-        ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-6">
-            <Placeholder
-              label={
-                drawer.kind === "product"
-                  ? `Product ${drawer.id}`
-                  : drawer.kind === "certificate"
-                  ? `Certificate ${drawer.id}`
-                  : "Export center"
-              }
-              note="Coming next."
-            />
-          </div>
-        )}
+        {drawer.kind === "asset" && <AssetDrawer id={drawer.id} onClose={close} />}
+        {drawer.kind === "product" && <ProductDrawer id={drawer.id} />}
       </aside>
     </div>
   );
@@ -348,3 +347,223 @@ function fmt(iso: string) {
     return iso;
   }
 }
+
+// ====================================================================
+// Product Drawer
+// ====================================================================
+
+function ProductDrawer({ id }: { id: string }) {
+  const sc = seed.staffConsole;
+  const navigate = useNavigate();
+  const { openAsset, openCertificate, close } = useStaff();
+  const product = sc.products.find((p) => p.id === id);
+  const [published, setPublished] = useState(product?.status === "published");
+
+  if (!product) {
+    return (
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <Placeholder label="Product not found" note="" />
+      </div>
+    );
+  }
+
+  const funder = sc.funders.find((f) => f.id === product.funderId);
+  const records = sc.learningRecords.filter((r) => r.productId === product.id);
+  const cert = sc.certificates.find((c) => c.productId === product.id);
+  const sourceAssets = (product.sourceAssetIds ?? [])
+    .map((aid) => sc.knowledgeAssets.find((a) => a.id === aid))
+    .filter((a): a is NonNullable<typeof a> => Boolean(a));
+  const modules = product.course?.modules ?? [];
+  const totalMins = modules.reduce((sum, m) => sum + (m.durationMins ?? 0), 0);
+
+  const openSourceAsset = (assetId: string) => {
+    openAsset(assetId);
+  };
+
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="space-y-6">
+          <div>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center rounded-pill bg-lavender-100 px-2.5 py-0.5 text-xs font-semibold text-lavender-900 capitalize">
+                {product.productType}
+              </span>
+              {product.hasCertificate && (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-gold/15 px-2.5 py-0.5 text-xs font-semibold text-gold">
+                  <Award className="h-3 w-3" /> Certificate
+                </span>
+              )}
+              <span
+                className={`inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold ${published ? "bg-success/15 text-success" : "bg-warm-200 text-warm-700"}`}
+              >
+                {published ? "Published" : "Draft"}
+              </span>
+            </div>
+            <h2 className="text-2xl font-semibold leading-tight text-navy-500">{product.title}</h2>
+            <p className="mt-2 text-sm text-warm-500">{product.summary}</p>
+          </div>
+
+          <dl className="grid grid-cols-2 gap-4 rounded-md border border-warm-200 bg-warm-50 p-4 text-sm">
+            <Meta
+              icon={<Tag className="h-3.5 w-3.5" />}
+              label="Funder"
+              value={funder?.shortName ?? "—"}
+              color={funder?.color}
+            />
+            <Meta
+              icon={<Calendar className="h-3.5 w-3.5" />}
+              label="Published"
+              value={product.publishedDate ? fmt(product.publishedDate) : "—"}
+            />
+            <Meta
+              icon={<UsersIcon className="h-3.5 w-3.5" />}
+              label="Audiences"
+              value={product.audiences.join(", ") || "—"}
+            />
+            <Meta
+              icon={<FileText className="h-3.5 w-3.5" />}
+              label="Type"
+              value={product.productType}
+            />
+          </dl>
+
+          {product.course && (
+            <section>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-warm-500">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  Modules ({modules.length})
+                </p>
+                <p className="text-[11px] text-warm-500">
+                  Pass {product.course.passThreshold}% · {totalMins} mins total
+                </p>
+              </div>
+              <ol className="overflow-hidden rounded-md border border-warm-200">
+                {modules.map((m, i) => (
+                  <li
+                    key={m.id}
+                    className="flex items-center gap-3 border-b border-warm-200 px-3 py-2.5 last:border-b-0"
+                  >
+                    <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-lavender-100 text-[11px] font-semibold text-lavender-900">
+                      {i + 1}
+                    </span>
+                    <p className="flex-1 truncate text-sm font-medium text-navy-500">
+                      {m.title}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-xs text-warm-500">
+                      <Clock className="h-3 w-3" />
+                      {m.durationMins}m
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {records.length > 0 && (
+            <section>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-warm-500">
+                Learner progress
+              </p>
+              <ul className="space-y-2">
+                {records.slice(0, 4).map((r) => {
+                  const person = sc.people.find((p) => p.id === r.personId);
+                  return (
+                    <li
+                      key={r.id}
+                      className="flex items-center gap-3 rounded-md border border-warm-200 px-3 py-2"
+                    >
+                      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill bg-lavender-100 text-xs font-semibold text-lavender-900">
+                        {person?.avatarInitial ?? "?"}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-xs font-semibold text-navy-500">
+                            {person?.name ?? "—"}
+                          </p>
+                          <span className="text-[11px] font-semibold text-warm-500">
+                            {r.progressPct}%
+                          </span>
+                        </div>
+                        <div className="mt-1 h-1 overflow-hidden rounded-pill bg-warm-100">
+                          <div
+                            className="h-full bg-magenta-500"
+                            style={{ width: `${r.progressPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {sourceAssets.length > 0 && (
+            <section>
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-warm-500">
+                <Package className="h-3.5 w-3.5" />
+                Source knowledge assets
+              </p>
+              <ul className="divide-y divide-warm-200 overflow-hidden rounded-md border border-warm-200">
+                {sourceAssets.map((a) => (
+                  <li key={a.id}>
+                    <button
+                      onClick={() => {
+                        close();
+                        navigate({ to: "/staff/knowledge" });
+                        setTimeout(() => openSourceAsset(a.id), 50);
+                      }}
+                      className="group flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-warm-50"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-navy-500 group-hover:text-magenta-500">
+                          {a.title}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-warm-500">
+                          v{a.version.replace(/^v/, "")}
+                        </p>
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0 text-warm-400 group-hover:text-magenta-500" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {product.hasCertificate && cert && (
+            <section>
+              <button
+                onClick={() => openCertificate(cert.id)}
+                className="inline-flex items-center gap-2 rounded-pill border border-gold/40 bg-gold/10 px-4 py-2 text-sm font-semibold text-gold hover:bg-gold/20"
+              >
+                <Eye className="h-4 w-4" />
+                Preview certificate
+              </button>
+            </section>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-2 border-t border-warm-200 bg-warm-50 px-6 py-4">
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-navy-500">
+          <span className="text-warm-500">Published</span>
+          <span
+            onClick={() => setPublished((v) => !v)}
+            className={`relative inline-block h-5 w-9 rounded-pill transition-colors ${published ? "bg-success" : "bg-warm-300"}`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-pill bg-white shadow transition-all ${published ? "left-4" : "left-0.5"}`}
+            />
+          </span>
+        </label>
+        <button className="inline-flex items-center gap-2 rounded-pill bg-magenta-500 px-4 py-2 text-sm font-semibold text-white hover:bg-magenta-700">
+          Edit product
+        </button>
+      </div>
+    </>
+  );
+}
+
