@@ -88,8 +88,8 @@ export function StaffCertificateModal({ certificateId, onClose }: Props) {
                   </div>
                   <div>
                     <p className="text-white/60">Status</p>
-                    <p className="mt-0.5 inline-flex items-center gap-1 font-semibold capitalize text-success-foreground">
-                      <CheckCircle2 className="h-3 w-3" /> {cert.status}
+                    <p className="mt-0.5 inline-flex items-center gap-1 font-semibold capitalize text-white">
+                      <CheckCircle2 className="h-3 w-3 text-success" /> {cert.status}
                     </p>
                   </div>
                 </div>
