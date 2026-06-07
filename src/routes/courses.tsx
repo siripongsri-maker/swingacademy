@@ -5,6 +5,7 @@ import { PublicLayout } from "@/components/public-layout";
 import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
+import { pageHead } from "@/lib/seo";
 
 type CourseSearch = { category?: string };
 
@@ -12,7 +13,15 @@ export const Route = createFileRoute("/courses")({
   validateSearch: (raw: Record<string, unknown>): CourseSearch => ({
     category: typeof raw.category === "string" ? raw.category : undefined,
   }),
+  head: () =>
+    pageHead({
+      title: "Courses — SWING Academy",
+      description:
+        "Browse all SWING Academy courses on sexual health, rights, life skills, and wellbeing. Filter by category and level — free and bilingual (TH/EN).",
+      path: "/courses",
+    }),
   component: CoursesPage,
+
 });
 
 const LEVELS = ["beginner", "intermediate", "advanced"] as const;
