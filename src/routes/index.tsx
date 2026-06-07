@@ -20,10 +20,19 @@ import { PublicLayout } from "@/components/public-layout";
 import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
+  head: () =>
+    pageHead({
+      title: "SWING Academy — Free bilingual learning on sexual health & rights",
+      description:
+        "Free, bilingual (TH/EN) courses on sexual health, rights, and life skills from the SWING Foundation. Warm, stigma-free learning for our communities.",
+      path: "/",
+    }),
   component: HomePage,
 });
+
 
 const CAT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   heart: Heart,
