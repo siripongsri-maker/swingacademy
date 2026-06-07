@@ -10,16 +10,29 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as PathsRouteImport } from './routes/paths'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
+import { Route as StaffTalentRouteImport } from './routes/staff.talent'
+import { Route as StaffProductsRouteImport } from './routes/staff.products'
+import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
+import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
+import { Route as StaffAdminRouteImport } from './routes/staff.admin'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesRoute = ResourcesRouteImport.update({
@@ -47,6 +60,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffTransferRoute = StaffTransferRouteImport.update({
+  id: '/transfer',
+  path: '/transfer',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffTalentRoute = StaffTalentRouteImport.update({
+  id: '/talent',
+  path: '/talent',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffProductsRoute = StaffProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffKnowledgeRoute = StaffKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffDashboardRoute = StaffDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffAdminRoute = StaffAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => StaffRoute,
+} as any)
 const CoursesIdRoute = CoursesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -59,8 +107,16 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/paths': typeof PathsRoute
   '/resources': typeof ResourcesRoute
+  '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/staff/admin': typeof StaffAdminRoute
+  '/staff/dashboard': typeof StaffDashboardRoute
+  '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/products': typeof StaffProductsRoute
+  '/staff/talent': typeof StaffTalentRoute
+  '/staff/transfer': typeof StaffTransferRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +126,13 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/staff/admin': typeof StaffAdminRoute
+  '/staff/dashboard': typeof StaffDashboardRoute
+  '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/products': typeof StaffProductsRoute
+  '/staff/talent': typeof StaffTalentRoute
+  '/staff/transfer': typeof StaffTransferRoute
+  '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +141,16 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/paths': typeof PathsRoute
   '/resources': typeof ResourcesRoute
+  '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/staff/admin': typeof StaffAdminRoute
+  '/staff/dashboard': typeof StaffDashboardRoute
+  '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/products': typeof StaffProductsRoute
+  '/staff/talent': typeof StaffTalentRoute
+  '/staff/transfer': typeof StaffTransferRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -89,8 +160,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/paths'
     | '/resources'
+    | '/staff'
     | '/verify'
     | '/courses/$id'
+    | '/staff/admin'
+    | '/staff/dashboard'
+    | '/staff/knowledge'
+    | '/staff/products'
+    | '/staff/talent'
+    | '/staff/transfer'
+    | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +179,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/verify'
     | '/courses/$id'
+    | '/staff/admin'
+    | '/staff/dashboard'
+    | '/staff/knowledge'
+    | '/staff/products'
+    | '/staff/talent'
+    | '/staff/transfer'
+    | '/staff'
   id:
     | '__root__'
     | '/'
@@ -107,8 +193,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/paths'
     | '/resources'
+    | '/staff'
     | '/verify'
     | '/courses/$id'
+    | '/staff/admin'
+    | '/staff/dashboard'
+    | '/staff/knowledge'
+    | '/staff/products'
+    | '/staff/talent'
+    | '/staff/transfer'
+    | '/staff/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,6 +211,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   PathsRoute: typeof PathsRoute
   ResourcesRoute: typeof ResourcesRoute
+  StaffRoute: typeof StaffRouteWithChildren
   VerifyRoute: typeof VerifyRoute
 }
 
@@ -127,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify'
       preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resources': {
@@ -164,6 +266,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/': {
+      id: '/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/transfer': {
+      id: '/staff/transfer'
+      path: '/transfer'
+      fullPath: '/staff/transfer'
+      preLoaderRoute: typeof StaffTransferRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/talent': {
+      id: '/staff/talent'
+      path: '/talent'
+      fullPath: '/staff/talent'
+      preLoaderRoute: typeof StaffTalentRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/products': {
+      id: '/staff/products'
+      path: '/products'
+      fullPath: '/staff/products'
+      preLoaderRoute: typeof StaffProductsRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/knowledge': {
+      id: '/staff/knowledge'
+      path: '/knowledge'
+      fullPath: '/staff/knowledge'
+      preLoaderRoute: typeof StaffKnowledgeRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/dashboard': {
+      id: '/staff/dashboard'
+      path: '/dashboard'
+      fullPath: '/staff/dashboard'
+      preLoaderRoute: typeof StaffDashboardRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/admin': {
+      id: '/staff/admin'
+      path: '/admin'
+      fullPath: '/staff/admin'
+      preLoaderRoute: typeof StaffAdminRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/courses/$id': {
       id: '/courses/$id'
       path: '/$id'
@@ -185,12 +336,35 @@ const CoursesRouteChildren: CoursesRouteChildren = {
 const CoursesRouteWithChildren =
   CoursesRoute._addFileChildren(CoursesRouteChildren)
 
+interface StaffRouteChildren {
+  StaffAdminRoute: typeof StaffAdminRoute
+  StaffDashboardRoute: typeof StaffDashboardRoute
+  StaffKnowledgeRoute: typeof StaffKnowledgeRoute
+  StaffProductsRoute: typeof StaffProductsRoute
+  StaffTalentRoute: typeof StaffTalentRoute
+  StaffTransferRoute: typeof StaffTransferRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffAdminRoute: StaffAdminRoute,
+  StaffDashboardRoute: StaffDashboardRoute,
+  StaffKnowledgeRoute: StaffKnowledgeRoute,
+  StaffProductsRoute: StaffProductsRoute,
+  StaffTalentRoute: StaffTalentRoute,
+  StaffTransferRoute: StaffTransferRoute,
+  StaffIndexRoute: StaffIndexRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CoursesRoute: CoursesRouteWithChildren,
   DashboardRoute: DashboardRoute,
   PathsRoute: PathsRoute,
   ResourcesRoute: ResourcesRoute,
+  StaffRoute: StaffRouteWithChildren,
   VerifyRoute: VerifyRoute,
 }
 export const routeTree = rootRouteImport
