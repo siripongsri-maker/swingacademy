@@ -10,16 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as PathsRouteImport } from './routes/paths'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesRoute = ResourcesRouteImport.update({
@@ -47,6 +55,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffDashboardRoute = StaffDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => StaffRoute,
+} as any)
 const CoursesIdRoute = CoursesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -59,8 +77,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/paths': typeof PathsRoute
   '/resources': typeof ResourcesRoute
+  '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/staff/dashboard': typeof StaffDashboardRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +91,8 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/staff/dashboard': typeof StaffDashboardRoute
+  '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +101,11 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/paths': typeof PathsRoute
   '/resources': typeof ResourcesRoute
+  '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/staff/dashboard': typeof StaffDashboardRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -89,8 +115,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/paths'
     | '/resources'
+    | '/staff'
     | '/verify'
     | '/courses/$id'
+    | '/staff/dashboard'
+    | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +129,8 @@ export interface FileRouteTypes {
     | '/resources'
     | '/verify'
     | '/courses/$id'
+    | '/staff/dashboard'
+    | '/staff'
   id:
     | '__root__'
     | '/'
@@ -107,8 +138,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/paths'
     | '/resources'
+    | '/staff'
     | '/verify'
     | '/courses/$id'
+    | '/staff/dashboard'
+    | '/staff/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,6 +151,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   PathsRoute: typeof PathsRoute
   ResourcesRoute: typeof ResourcesRoute
+  StaffRoute: typeof StaffRouteWithChildren
   VerifyRoute: typeof VerifyRoute
 }
 
@@ -127,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify'
       preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resources': {
@@ -164,6 +206,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/': {
+      id: '/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/dashboard': {
+      id: '/staff/dashboard'
+      path: '/dashboard'
+      fullPath: '/staff/dashboard'
+      preLoaderRoute: typeof StaffDashboardRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/courses/$id': {
       id: '/courses/$id'
       path: '/$id'
@@ -185,14 +241,37 @@ const CoursesRouteChildren: CoursesRouteChildren = {
 const CoursesRouteWithChildren =
   CoursesRoute._addFileChildren(CoursesRouteChildren)
 
+interface StaffRouteChildren {
+  StaffDashboardRoute: typeof StaffDashboardRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffDashboardRoute: StaffDashboardRoute,
+  StaffIndexRoute: StaffIndexRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CoursesRoute: CoursesRouteWithChildren,
   DashboardRoute: DashboardRoute,
   PathsRoute: PathsRoute,
   ResourcesRoute: ResourcesRoute,
+  StaffRoute: StaffRouteWithChildren,
   VerifyRoute: VerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
