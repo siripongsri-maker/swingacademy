@@ -42,10 +42,8 @@ function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream">
-      <SiteHeader />
-
-      <main>
+    <PublicLayout>
+      <div>
         {/* Hero */}
         <section className="relative overflow-hidden">
           <div
