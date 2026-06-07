@@ -121,20 +121,9 @@ function HomePage() {
             })}
           </div>
         </section>
-
-        {/* Footer strip */}
-        <footer className="border-t border-warm-200 bg-white">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-8 text-sm text-warm-500 md:flex-row md:items-center md:justify-between">
-            <p lang={lang}>
-              {t({
-                th: "© SWING Foundation — พื้นที่ปลอดภัยและเป็นมิตรสำหรับทุกคน",
-                en: "© SWING Foundation — a safe, welcoming space for everyone",
-              })}
-            </p>
-            <div className="pride-gradient h-1 w-32 rounded-pill" aria-hidden />
-          </div>
-        </footer>
-      </main>
-    </div>
+      </div>
+    </PublicLayout>
+  );
+}
   );
 }
