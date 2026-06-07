@@ -3,7 +3,15 @@ import { X, Heart, Lock } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 
-export function SignInModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function SignInModal({
+  open,
+  onClose,
+  onSignedIn,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSignedIn?: () => void;
+}) {
   const { t, lang } = useLanguage();
   const { signIn, learner } = useAccount();
   const [loading, setLoading] = useState(false);
@@ -15,6 +23,7 @@ export function SignInModal({ open, onClose }: { open: boolean; onClose: () => v
     setTimeout(() => {
       signIn();
       setLoading(false);
+      onSignedIn?.();
       onClose();
     }, 300);
   };
