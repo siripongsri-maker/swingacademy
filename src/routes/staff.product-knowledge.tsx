@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useRef, type ChangeEvent } from "react";
 import {
   Search,
@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Save,
   CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -226,6 +227,14 @@ function ProductKnowledgePage() {
                       <Archive className="h-3.5 w-3.5" /> Archive
                     </button>
                   )}
+                  <Link
+                    to="/staff/knowledge-translation"
+                    search={{ from: a.id }}
+                    className="inline-flex items-center gap-1 rounded-md border border-magenta-500/30 bg-magenta-50 px-2 py-1 text-xs font-semibold text-magenta-700 hover:bg-magenta-100"
+                    title="Create translation draft from this asset"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" /> Translate
+                  </Link>
                   <button
                     onClick={() => setEditing(a)}
                     className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground hover:bg-warm-50"

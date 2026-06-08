@@ -22,6 +22,7 @@ const nav = [
   { to: "/staff/dashboard", label: "Dashboard", labelTh: "ภาพรวม", icon: LayoutDashboard },
   { to: "/staff/knowledge", label: "KM Library", labelTh: "คลังความรู้", icon: Library },
   { to: "/staff/product-knowledge", label: "Product Knowledge", labelTh: "ความรู้ผลิตภัณฑ์", icon: BookMarked },
+  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลความรู้", icon: GitBranch },
   { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", icon: CalendarClock },
   { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
   { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
