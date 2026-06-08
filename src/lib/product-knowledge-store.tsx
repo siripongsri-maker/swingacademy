@@ -323,7 +323,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
         setState({ assets: [], translations: [], collections: [] });
       },
     }),
-    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation],
+    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation, createCollection, updateCollection, removeCollection],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
