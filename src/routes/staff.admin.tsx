@@ -12,6 +12,16 @@ export const Route = createFileRoute("/staff/admin")({
 
 type TabKey = "review" | "taxonomy" | "users" | "records";
 
+type LearningRecord = {
+  id: string;
+  personId: string;
+  productId: string;
+  status: string;
+  progressPct: number;
+  completedDate: string | null;
+  score: number | null;
+};
+
 const TABS: { key: TabKey; label: string }[] = [
   { key: "review", label: "Review queue" },
   { key: "taxonomy", label: "Taxonomy" },
