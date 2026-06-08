@@ -354,7 +354,7 @@ function TranslationEditor({
         },
       });
       const block = `\n\n---\n## ${res.label}\n${res.text}\n`;
-      update("outputMd", (form.outputMd ?? "") + block);
+      setForm((f) => ({ ...f, outputMd: (f.outputMd ?? "") + block }));
       toast.success(`${res.label} เพิ่มลงผลลัพธ์แล้ว`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "AI error");
