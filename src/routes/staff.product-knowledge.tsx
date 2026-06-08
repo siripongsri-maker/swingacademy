@@ -31,6 +31,9 @@ import {
 
 export const Route = createFileRoute("/staff/product-knowledge")({
   component: ProductKnowledgePage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    create: s.create === "1" || s.create === 1 || s.create === true ? 1 : undefined,
+  }),
 });
 
 const STATUS_STYLES: Record<KnowledgeStatus, string> = {
@@ -54,11 +57,20 @@ const ATTACHMENT_ICON: Record<Attachment["kind"], React.ComponentType<{ classNam
 
 function ProductKnowledgePage() {
   const pk = useProductKnowledge();
+  const navigate = useNavigate();
+  const { create } = Route.useSearch();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<KnowledgeStatus | "all">("all");
   const [type, setType] = useState<KnowledgeType | "all">("all");
   const [editing, setEditing] = useState<KnowledgeAsset | null>(null);
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (create === 1) {
+      setCreating(true);
+      navigate({ to: "/staff/product-knowledge", search: {}, replace: true });
+    }
+  }, [create, navigate]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
