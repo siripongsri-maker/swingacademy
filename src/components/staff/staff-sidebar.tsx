@@ -32,6 +32,7 @@ type NavItem = {
 };
 
 const knowledgeFlow: NavItem[] = [
+  { to: "/staff/knowledge-hub", label: "Knowledge Hub", labelTh: "ภาพรวมความรู้", icon: LayoutDashboard },
   { to: "/staff/capture", label: "Live Capture", labelTh: "อัดเสียง / สรุปสด", icon: Mic, requires: "knowledge.capture" },
   { to: "/staff/product-knowledge", label: "Knowledge Product", labelTh: "บันทึก/สร้างความรู้", icon: BookMarked },
   { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library, requires: "km.categorize" },
