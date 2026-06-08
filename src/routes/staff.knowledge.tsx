@@ -59,11 +59,28 @@ const DOMAINS = [
 
 function KnowledgeManagementPage() {
   const km = useProductKnowledge();
+  const { can } = useConsoleRole();
   const [tab, setTab] = useState<"assets" | "collections">("assets");
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | KnowledgeStatus>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [collectionEditing, setCollectionEditing] = useState<string | "new" | null>(null);
+
+  if (!can("km.categorize")) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+        <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Knowledge Management</p>
+        <h1 className="mt-2 text-2xl font-semibold text-navy-500">ต้องเป็น Trainer หรือ Admin</h1>
+        <p className="mt-2 text-sm text-warm-500">
+          หน้านี้สำหรับ Trainer / Admin ที่จะตรวจสอบ จัดหมวด และเชื่อมโยงความรู้
+          ถ้าคุณเป็น Staff สามารถส่ง Knowledge Product ของคุณให้ review ได้จาก{" "}
+          <Link to="/staff/product-knowledge" className="font-semibold text-magenta-600 hover:underline">
+            Knowledge Product
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
