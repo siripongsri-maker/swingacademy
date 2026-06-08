@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search, Plus, MapPin, Users, Tag, X, Upload, Trash2,
-  Globe, Lock, Eye, EyeOff, Languages, FileText, Image as ImageIcon, Loader2, CheckCircle2,
+  Globe, Lock, Eye, EyeOff, Languages, FileText, Image as ImageIcon, Loader2, CheckCircle2, BookOpen,
 } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import {
