@@ -27,7 +27,7 @@ import {
   type TranslationStatus,
   type Attachment,
 } from "@/lib/product-knowledge-store";
-import { translateKnowledge } from "@/lib/knowledge-ai.functions";
+import { translateKnowledge, creativeAssist } from "@/lib/knowledge-ai.functions";
 
 const searchSchema = z.object({
   from: z.string().optional(),
