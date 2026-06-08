@@ -154,13 +154,36 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
           <div className={`px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
             Knowledge Workflow
           </div>
-          <ul className="space-y-0.5 px-2">{knowledgeFlow.map(renderItem)}</ul>
+          <ul className="space-y-0.5 px-2">{visible(knowledgeFlow).map(renderItem)}</ul>
 
           <div className={`mt-4 px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
             Console
           </div>
-          <ul className="space-y-0.5 px-2">{consoleNav.map(renderItem)}</ul>
+          <ul className="space-y-0.5 px-2">{visible(consoleNav).map(renderItem)}</ul>
         </nav>
+
+        <div className={`border-t border-white/10 p-3 ${collapsed ? "lg:hidden" : ""}`}>
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/40">
+            <Shield className="h-3 w-3" /> Role {isDemo && <span className="rounded bg-white/10 px-1 py-0.5 text-[9px] text-white/60">demo</span>}
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {(["staff", "trainer", "admin"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRole(r)}
+                className={`rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                  role === r
+                    ? "bg-magenta-500 text-white shadow-sm"
+                    : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
+                title={ROLE_LABEL[r].th}
+              >
+                {ROLE_LABEL[r].en}
+              </button>
+            ))}
+          </div>
+        </div>
+
 
         <div className="border-t border-white/10 p-2">
           <button
