@@ -254,53 +254,53 @@ function KnowledgeHubPage() {
               >
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLES[a.status]}`}>
-                    {STATUS_LABEL[a.status]}
+                    {STATUS_LABEL_TH[a.status]}
                   </span>
                   <span className="rounded-full bg-warm-100 px-2 py-0.5 text-[11px] font-medium text-warm-700">
-                    {pk.typeLabels[a.type]?.en ?? a.type}
+                    {pk.typeLabels[a.type]?.th ?? pk.typeLabels[a.type]?.en ?? a.type}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-navy-900/5 px-2 py-0.5 text-[11px] font-medium text-navy-900">
                     <VIcon className="h-3 w-3" />
-                    {a.visibility}
+                    {VIS_LABEL_TH[a.visibility]}
                   </span>
                 </div>
 
                 <h3 className="mt-2 line-clamp-2 text-base font-semibold text-foreground">
-                  {a.titleEn || a.titleTh}
+                  {a.titleTh || a.titleEn}
                 </h3>
                 {a.titleTh && a.titleEn && (
-                  <p lang="th" className="line-clamp-1 text-sm text-muted-foreground">
-                    {a.titleTh}
+                  <p className="line-clamp-1 text-sm text-muted-foreground">
+                    {a.titleEn}
                   </p>
                 )}
 
                 <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                   <div className="col-span-2">
-                    <dt className="text-muted-foreground">Domain</dt>
+                    <dt className="text-muted-foreground">หมวด</dt>
                     <dd className="mt-0.5 flex flex-wrap gap-1">
                       {a.categories.length === 0 ? (
                         <span className="text-muted-foreground">—</span>
                       ) : (
                         a.categories.map((c) => (
                           <span key={c} className="rounded-full bg-magenta-50 px-2 py-0.5 text-[11px] text-magenta-700">
-                            {pk.categoryLabels[c]?.en ?? c}
+                            {pk.categoryLabels[c]?.th ?? pk.categoryLabels[c]?.en ?? c}
                           </span>
                         ))
                       )}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">Owner</dt>
+                    <dt className="text-muted-foreground">ผู้บันทึก</dt>
                     <dd className="mt-0.5 truncate font-medium text-foreground">{ownerLabel}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">Updated</dt>
+                    <dt className="text-muted-foreground">อัปเดต</dt>
                     <dd className="mt-0.5 truncate font-medium text-foreground">
-                      {new Date(a.updatedAt).toLocaleDateString()}
+                      {new Date(a.updatedAt).toLocaleDateString("th-TH")}
                     </dd>
                   </div>
                   <div className="col-span-2">
-                    <dt className="text-muted-foreground">Source</dt>
+                    <dt className="text-muted-foreground">ที่มา</dt>
                     <dd className="mt-0.5 truncate text-foreground">
                       {a.sourceUrl ? (
                         <a
@@ -312,7 +312,7 @@ function KnowledgeHubPage() {
                           {a.source || a.sourceUrl} <ExternalLink className="h-3 w-3" />
                         </a>
                       ) : (
-                        <span>{a.source || "Internal"}</span>
+                        <span>{a.source || "ภายในองค์กร"}</span>
                       )}
                     </dd>
                   </div>
