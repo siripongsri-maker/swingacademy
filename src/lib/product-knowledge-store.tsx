@@ -155,6 +155,10 @@ type StoreCtx = StoreState & {
   createCollection: (c: Omit<KnowledgeCollection, "id" | "createdAt" | "updatedAt">) => KnowledgeCollection;
   updateCollection: (id: string, patch: Partial<KnowledgeCollection>) => void;
   removeCollection: (id: string) => void;
+  upsertTalentMapping: (personId: string, assetId: string, role: TalentRole) => TalentMapping;
+  removeTalentMapping: (id: string) => void;
+  addTalentEvidence: (mappingId: string, e: Omit<TalentEvidence, "id">) => void;
+  removeTalentEvidence: (mappingId: string, evidenceId: string) => void;
   slugify: (input: string) => string;
   reset: () => void;
 };
@@ -172,6 +176,7 @@ function loadInitial(): StoreState {
           assets: parsed.assets ?? [],
           translations: parsed.translations ?? [],
           collections: parsed.collections ?? [],
+          talentMappings: parsed.talentMappings ?? [],
         };
       }
     } catch {
