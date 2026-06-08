@@ -27,6 +27,7 @@ import { Route as StaffTalentRouteImport } from './routes/staff.talent'
 import { Route as StaffProductsRouteImport } from './routes/staff.products'
 import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
 import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
+import { Route as StaffKnowledgeHubRouteImport } from './routes/staff.knowledge-hub'
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
 import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
 import { Route as StaffCaptureRouteImport } from './routes/staff.capture'
@@ -125,6 +126,11 @@ const StaffKnowledgeTranslationRoute =
     path: '/knowledge-translation',
     getParentRoute: () => StaffRoute,
   } as any)
+const StaffKnowledgeHubRoute = StaffKnowledgeHubRouteImport.update({
+  id: '/knowledge-hub',
+  path: '/knowledge-hub',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffKnowledgeRoute = StaffKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
+    | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
     | '/staff/product-knowledge'
     | '/staff/products'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
+    | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
     | '/staff/product-knowledge'
     | '/staff/products'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
+    | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
     | '/staff/product-knowledge'
     | '/staff/products'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffKnowledgeTranslationRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/knowledge-hub': {
+      id: '/staff/knowledge-hub'
+      path: '/knowledge-hub'
+      fullPath: '/staff/knowledge-hub'
+      preLoaderRoute: typeof StaffKnowledgeHubRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/knowledge': {
       id: '/staff/knowledge'
       path: '/knowledge'
@@ -517,6 +536,7 @@ interface StaffRouteChildren {
   StaffCaptureRoute: typeof StaffCaptureRoute
   StaffDashboardRoute: typeof StaffDashboardRoute
   StaffKnowledgeRoute: typeof StaffKnowledgeRoute
+  StaffKnowledgeHubRoute: typeof StaffKnowledgeHubRoute
   StaffKnowledgeTranslationRoute: typeof StaffKnowledgeTranslationRoute
   StaffProductKnowledgeRoute: typeof StaffProductKnowledgeRoute
   StaffProductsRoute: typeof StaffProductsRoute
@@ -532,6 +552,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffCaptureRoute: StaffCaptureRoute,
   StaffDashboardRoute: StaffDashboardRoute,
   StaffKnowledgeRoute: StaffKnowledgeRoute,
+  StaffKnowledgeHubRoute: StaffKnowledgeHubRoute,
   StaffKnowledgeTranslationRoute: StaffKnowledgeTranslationRoute,
   StaffProductKnowledgeRoute: StaffProductKnowledgeRoute,
   StaffProductsRoute: StaffProductsRoute,
