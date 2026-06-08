@@ -6,6 +6,7 @@ import {
   GitBranch,
   Package,
   Users,
+  UserCog,
   Settings,
   Download,
   ChevronLeft,
@@ -23,6 +24,7 @@ const nav = [
   { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
   { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
   { to: "/staff/talent", label: "Talent Map", labelTh: "แผนที่คน", icon: Users },
+  { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", icon: UserCog },
   { to: "/staff/admin", label: "Admin", labelTh: "ตั้งค่า", icon: Settings },
 ] as const;
 
