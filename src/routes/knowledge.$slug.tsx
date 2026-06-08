@@ -1,32 +1,49 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, Globe, Calendar, Tag, ShieldCheck } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
-import { useProductKnowledge } from "@/lib/product-knowledge-store";
-import { HIVST_KNOWLEDGE_ASSET, HIVST_SPONSORS, DEFAULT_SPONSORS, type Sponsor } from "@/data/knowledge-products-seed";
+import { DEFAULT_SPONSORS, type Sponsor } from "@/data/knowledge-products-seed";
+import { getPublicKnowledgeBySlug } from "@/lib/knowledge.functions";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/knowledge/$slug")({
   head: ({ params }) =>
     pageHead({
-      title: `${HIVST_KNOWLEDGE_ASSET.titleTh} — SWING Academy`,
-      description: HIVST_KNOWLEDGE_ASSET.summary,
+      title: `Knowledge — ${params.slug} | SWING Academy`,
+      description: "เนื้อหาสาธารณะจาก SWING Academy",
       path: `/knowledge/${params.slug}`,
     }),
   component: KnowledgeDetailPage,
+  errorComponent: ({ error }) => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">
+        โหลดเนื้อหาไม่สำเร็จ: {error.message}
+      </div>
+    </PublicLayout>
+  ),
+  notFoundComponent: () => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">ไม่พบเนื้อหานี้</div>
+    </PublicLayout>
+  ),
 });
 
 function KnowledgeDetailPage() {
   const { slug } = Route.useParams();
-  const { getAssetBySlug } = useProductKnowledge();
-  // Fall back to the static seed so SSR/first-render works even before the
-  // client-side store hydrates from localStorage.
-  const asset = getAssetBySlug(slug) ?? (slug === HIVST_KNOWLEDGE_ASSET.slug ? HIVST_KNOWLEDGE_ASSET : undefined);
+  const fetchOne = useServerFn(getPublicKnowledgeBySlug);
+  const { data } = useSuspenseQuery({
+    queryKey: ["knowledge", "public", slug],
+    queryFn: () => fetchOne({ data: { slug } }),
+    staleTime: 60_000,
+  });
+  const asset = data.item;
   if (!asset) throw notFound();
 
-  const sponsors: Sponsor[] =
-    slug === HIVST_KNOWLEDGE_ASSET.slug ? HIVST_SPONSORS : DEFAULT_SPONSORS;
+  const sponsors: Sponsor[] = asset.sponsors.length > 0 ? asset.sponsors : DEFAULT_SPONSORS;
+
 
   return (
     <PublicLayout>
@@ -77,19 +94,8 @@ function KnowledgeDetailPage() {
           )}
         </header>
 
-        {asset.learningObjectives && asset.learningObjectives.length > 0 && (
-          <section className="mt-8 rounded-lg border border-warm-200 bg-white p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-warm-500">สิ่งที่คุณจะได้เรียนรู้</h2>
-            <ul className="mt-3 space-y-2 text-navy-500">
-              {asset.learningObjectives.map((lo, i) => (
-                <li key={i} className="flex gap-2 text-[15px]">
-                  <span className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-magenta-500" />
-                  <span>{lo}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+
+
 
         <div className="prose prose-slate mt-10 max-w-none prose-headings:text-navy-500 prose-h2:mt-10 prose-h2:text-2xl prose-h3:text-lg prose-a:text-magenta-600 prose-strong:text-navy-500 prose-table:text-sm prose-th:bg-warm-100 prose-th:p-2 prose-td:p-2 prose-blockquote:border-l-magenta-500 prose-blockquote:bg-cream prose-blockquote:not-italic">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{asset.contentMd}</ReactMarkdown>
