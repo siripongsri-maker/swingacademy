@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, useRef, type ChangeEvent } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState, useRef, useEffect, type ChangeEvent } from "react";
 import {
   Search,
   Plus,
