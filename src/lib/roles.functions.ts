@@ -21,7 +21,7 @@ export const grantRole = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>
     z.object({
       userId: z.string().uuid(),
-      role: z.enum(["learner", "staff", "admin"]),
+      role: z.enum(["learner", "staff", "trainer", "admin"]),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
