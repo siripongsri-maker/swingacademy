@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import seed from "@/data/seed-data.json";
+import { LessonUploadCard } from "@/components/lesson-upload-card";
 
 export const Route = createFileRoute("/staff/knowledge")({
   component: KnowledgeLibrary,
