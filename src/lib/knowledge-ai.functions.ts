@@ -106,3 +106,49 @@ ${data.assetContent}`;
     const text = await callLovableModel(system, userPrompt);
     return { outputMd: text.trim() };
   });
+
+export const suggestKnowledgeMeta = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => SuggestInput.parse(i))
+  .handler(async ({ data }) => {
+    const sys = `คุณคือบรรณาธิการความรู้ของ SWING Academy งานสุขภาพและสิทธิ
+หน้าที่: แนะนำ metadata จากเนื้อหาที่ได้รับ
+ตอบเป็น JSON เท่านั้น ไม่มีคำอธิบายอื่น โครงสร้าง:
+{
+  "categories": string[],          // เลือกจาก availableCategories (id)
+  "audiences": string[],           // เลือกจาก availableAudiences (id)
+  "tags": string[],                // 3-7 tag สั้น kebab-case
+  "competencyTags": string[],      // 2-5 ทักษะ/competency ที่เกี่ยวข้อง
+  "learningObjectives": string[]   // 3-5 ข้อ "ผู้เรียนสามารถ..."
+}`;
+
+    const user = `availableCategories: ${JSON.stringify(data.availableCategories)}
+availableAudiences: ${JSON.stringify(data.availableAudiences)}
+
+Title TH: ${data.titleTh ?? ""}
+Title EN: ${data.titleEn ?? ""}
+Summary: ${data.summary ?? ""}
+Key Message: ${data.keyMessage ?? ""}
+Content:
+${data.contentMd ?? ""}`;
+
+    const raw = await callLovableModel(sys, user);
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    try {
+      const parsed = JSON.parse(cleaned) as {
+        categories?: string[];
+        audiences?: string[];
+        tags?: string[];
+        competencyTags?: string[];
+        learningObjectives?: string[];
+      };
+      return {
+        categories: (parsed.categories ?? []).filter((x) => data.availableCategories.includes(x)),
+        audiences: (parsed.audiences ?? []).filter((x) => data.availableAudiences.includes(x)),
+        tags: (parsed.tags ?? []).slice(0, 7),
+        competencyTags: (parsed.competencyTags ?? []).slice(0, 5),
+        learningObjectives: (parsed.learningObjectives ?? []).slice(0, 5),
+      };
+    } catch {
+      throw new Error("AI ส่งข้อมูลกลับมาในรูปแบบที่อ่านไม่ได้ ลองอีกครั้ง");
+    }
+  });
