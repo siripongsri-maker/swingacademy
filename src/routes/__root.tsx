@@ -126,6 +126,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "SWING Foundation",
           alternateName: "SWING Academy",
           url: "https://swingacademy.lovable.app",
+          logo: LOGO_URL,
           description:
             "SWING Foundation provides free, bilingual learning on sexual health, rights, and life skills for sex workers and allied communities in Thailand.",
         }),
