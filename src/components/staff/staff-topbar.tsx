@@ -105,11 +105,11 @@ export function StaffTopbar({ onMobileMenuOpen }: { onMobileMenuOpen?: () => voi
 
         <div className="flex items-center gap-2 border-l border-warm-200 pl-3">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-lavender-300 text-sm font-semibold text-navy-500">
-            ม
+            {account?.initial ?? "?"}
           </span>
           <div className="hidden text-left leading-tight sm:block">
-            <p className="text-xs font-semibold text-navy-500">มะปราง</p>
-            <p className="text-[11px] text-warm-500">M&E Lead</p>
+            <p className="text-xs font-semibold text-navy-500">{account?.name ?? "Not signed in"}</p>
+            <p className="text-[11px] text-warm-500">{account?.email ?? "—"}</p>
           </div>
         </div>
       </div>
