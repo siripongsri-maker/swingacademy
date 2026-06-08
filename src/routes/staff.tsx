@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { StaffLayout } from "@/components/staff/staff-layout";
 import { StaffProvider } from "@/lib/staff-context";
+import { ProductKnowledgeProvider } from "@/lib/product-knowledge-store";
 
 export const Route = createFileRoute("/staff")({
   component: StaffShell,
@@ -9,9 +10,11 @@ export const Route = createFileRoute("/staff")({
 function StaffShell() {
   return (
     <StaffProvider>
-      <StaffLayout>
-        <Outlet />
-      </StaffLayout>
+      <ProductKnowledgeProvider>
+        <StaffLayout>
+          <Outlet />
+        </StaffLayout>
+      </ProductKnowledgeProvider>
     </StaffProvider>
   );
 }

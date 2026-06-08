@@ -25,6 +25,7 @@ import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
 import { Route as StaffTalentRouteImport } from './routes/staff.talent'
 import { Route as StaffProductsRouteImport } from './routes/staff.products'
+import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
 import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
 import { Route as StaffAdminRouteImport } from './routes/staff.admin'
@@ -110,6 +111,11 @@ const StaffProductsRoute = StaffProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffProductKnowledgeRoute = StaffProductKnowledgeRouteImport.update({
+  id: '/product-knowledge',
+  path: '/product-knowledge',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffKnowledgeRoute = StaffKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/staff/admin': typeof StaffAdminRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/staff/admin': typeof StaffAdminRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/staff/admin': typeof StaffAdminRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
+  '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/staff/admin'
     | '/staff/dashboard'
     | '/staff/knowledge'
+    | '/staff/product-knowledge'
     | '/staff/products'
     | '/staff/talent'
     | '/staff/trainings'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/staff/admin'
     | '/staff/dashboard'
     | '/staff/knowledge'
+    | '/staff/product-knowledge'
     | '/staff/products'
     | '/staff/talent'
     | '/staff/trainings'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/staff/admin'
     | '/staff/dashboard'
     | '/staff/knowledge'
+    | '/staff/product-knowledge'
     | '/staff/products'
     | '/staff/talent'
     | '/staff/trainings'
@@ -392,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffProductsRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/product-knowledge': {
+      id: '/staff/product-knowledge'
+      path: '/product-knowledge'
+      fullPath: '/staff/product-knowledge'
+      preLoaderRoute: typeof StaffProductKnowledgeRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/knowledge': {
       id: '/staff/knowledge'
       path: '/knowledge'
@@ -438,6 +457,7 @@ interface StaffRouteChildren {
   StaffAdminRoute: typeof StaffAdminRoute
   StaffDashboardRoute: typeof StaffDashboardRoute
   StaffKnowledgeRoute: typeof StaffKnowledgeRoute
+  StaffProductKnowledgeRoute: typeof StaffProductKnowledgeRoute
   StaffProductsRoute: typeof StaffProductsRoute
   StaffTalentRoute: typeof StaffTalentRoute
   StaffTrainingsRoute: typeof StaffTrainingsRoute
@@ -450,6 +470,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffAdminRoute: StaffAdminRoute,
   StaffDashboardRoute: StaffDashboardRoute,
   StaffKnowledgeRoute: StaffKnowledgeRoute,
+  StaffProductKnowledgeRoute: StaffProductKnowledgeRoute,
   StaffProductsRoute: StaffProductsRoute,
   StaffTalentRoute: StaffTalentRoute,
   StaffTrainingsRoute: StaffTrainingsRoute,

@@ -3,6 +3,7 @@ import { StaffSidebar } from "./staff-sidebar";
 import { StaffTopbar } from "./staff-topbar";
 import { StaffDrawerHost } from "./staff-drawer-host";
 import { useRouterState } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 
 export function StaffLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,6 +32,7 @@ export function StaffLayout({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-x-hidden">{children}</main>
       </div>
       <StaffDrawerHost />
+      <Toaster richColors position="top-right" />
     </div>
   );
 }
