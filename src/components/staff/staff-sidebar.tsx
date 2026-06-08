@@ -2,34 +2,45 @@ import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
+  BookMarked,
   Library,
-  GitBranch,
-  Package,
   Users,
+  GitBranch,
+  CalendarClock,
+  Package,
   UserCog,
   Settings,
   Download,
   ChevronLeft,
   ChevronRight,
   X,
-  CalendarClock,
-  BookMarked,
+  Plus,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
-const nav = [
+type NavItem = {
+  to: string;
+  label: string;
+  labelTh: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const knowledgeFlow: NavItem[] = [
+  { to: "/staff/product-knowledge", label: "Knowledge Product", labelTh: "บันทึก/สร้างความรู้", icon: BookMarked },
+  { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library },
+  { to: "/staff/talent", label: "Talent Mapping", labelTh: "เชื่อมความรู้กับคน", icon: Users },
+  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลงเป็นสื่อ/เนื้อหา", icon: GitBranch },
+];
+
+const consoleNav: NavItem[] = [
   { to: "/staff/dashboard", label: "Dashboard", labelTh: "ภาพรวม", icon: LayoutDashboard },
-  { to: "/staff/knowledge", label: "KM Library", labelTh: "คลังความรู้", icon: Library },
-  { to: "/staff/product-knowledge", label: "Product Knowledge", labelTh: "ความรู้ผลิตภัณฑ์", icon: BookMarked },
-  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลความรู้", icon: GitBranch },
   { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", icon: CalendarClock },
   { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
   { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
-  { to: "/staff/talent", label: "Talent Map", labelTh: "แผนที่คน", icon: Users },
   { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", icon: UserCog },
   { to: "/staff/admin", label: "Admin", labelTh: "ตั้งค่า", icon: Settings },
-] as const;
+];
 
 type Props = {
   mobileOpen?: boolean;
@@ -41,9 +52,37 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
   const { openExport } = useStaff();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
+  const renderItem = (item: NavItem) => {
+    const Icon = item.icon;
+    const active =
+      pathname === item.to ||
+      (item.to !== "/staff/dashboard" && pathname.startsWith(item.to));
+    return (
+      <li key={item.to}>
+        <Link
+          to={item.to}
+          className={`group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            active
+              ? "bg-magenta-500 text-white"
+              : "text-white/70 hover:bg-white/10 hover:text-white"
+          } ${collapsed ? "lg:justify-center" : ""}`}
+          title={collapsed ? item.label : undefined}
+          aria-current={active ? "page" : undefined}
+        >
+          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+          <span className={`flex flex-1 flex-col leading-tight ${collapsed ? "lg:hidden" : ""}`}>
+            <span>{item.label}</span>
+            <span lang="th" className="text-[11px] font-normal text-white/70">
+              {item.labelTh}
+            </span>
+          </span>
+        </Link>
+      </li>
+    );
+  };
+
   return (
     <>
-      {/* Mobile scrim */}
       {mobileOpen && (
         <button
           aria-label="Close menu"
@@ -55,7 +94,7 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
       <aside
         aria-label="Staff navigation"
         className={`fixed inset-y-0 left-0 z-50 flex h-dvh shrink-0 flex-col border-r border-navy-900 bg-navy-900 text-white transition-transform duration-200 lg:sticky lg:top-0 lg:translate-x-0 lg:transition-[width] ${
-          collapsed ? "lg:w-16" : "lg:w-60"
+          collapsed ? "lg:w-16" : "lg:w-64"
         } ${mobileOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full"} lg:!translate-x-0`}
       >
         <div
@@ -64,15 +103,11 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
           }`}
         >
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white p-1 shadow-sm ring-1 ring-white/10">
-            <img
-              src={logoAsset.url}
-              alt="SWING Academy"
-              className="h-full w-full object-contain"
-            />
+            <img src={logoAsset.url} alt="SWING Academy" className="h-full w-full object-contain" />
           </span>
           <div className={`min-w-0 ${collapsed ? "lg:hidden" : ""}`}>
             <p className="truncate text-sm font-semibold leading-tight">SWING Console</p>
-            <p className="truncate text-[11px] text-white/50">Knowledge management</p>
+            <p className="truncate text-[11px] text-white/50">Knowledge platform</p>
           </div>
           {onMobileClose && (
             <button
@@ -85,39 +120,37 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
           )}
         </div>
 
+        {/* Primary CTA — single entry point */}
+        <div className="px-3 pt-3">
+          <Link
+            to="/staff/product-knowledge"
+            search={{ create: 1 }}
+            onClick={onMobileClose}
+            className={`flex w-full items-center gap-2 rounded-md bg-magenta-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-magenta-600 ${
+              collapsed ? "lg:justify-center lg:px-2" : ""
+            }`}
+            title={collapsed ? "Capture Knowledge" : undefined}
+          >
+            <Plus className="h-4 w-4 shrink-0" aria-hidden />
+            <span className={`flex flex-1 flex-col text-left leading-tight ${collapsed ? "lg:hidden" : ""}`}>
+              <span>Capture Knowledge</span>
+              <span lang="th" className="text-[11px] font-normal text-white/80">
+                บันทึกความรู้
+              </span>
+            </span>
+          </Link>
+        </div>
+
         <nav className="flex-1 overflow-y-auto py-3" aria-label="Primary">
-          <ul className="space-y-0.5 px-2">
-            {nav.map((item) => {
-              const Icon = item.icon;
-              const active =
-                pathname === item.to ||
-                (item.to !== "/staff/dashboard" && pathname.startsWith(item.to));
-              return (
-                <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    className={`group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      active
-                        ? "bg-magenta-500 text-white"
-                        : "text-white/70 hover:bg-white/10 hover:text-white"
-                    } ${collapsed ? "lg:justify-center" : ""}`}
-                    title={collapsed ? item.label : undefined}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                    <span
-                      className={`flex flex-1 flex-col leading-tight ${collapsed ? "lg:hidden" : ""}`}
-                    >
-                      <span>{item.label}</span>
-                      <span lang="th" className="text-[11px] font-normal text-white/70">
-                        {item.labelTh}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <div className={`px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
+            Knowledge Workflow
+          </div>
+          <ul className="space-y-0.5 px-2">{knowledgeFlow.map(renderItem)}</ul>
+
+          <div className={`mt-4 px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
+            Console
+          </div>
+          <ul className="space-y-0.5 px-2">{consoleNav.map(renderItem)}</ul>
         </nav>
 
         <div className="border-t border-white/10 p-2">
@@ -138,11 +171,7 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
             }`}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            ) : (
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            )}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             {!collapsed && <span>Collapse</span>}
           </button>
         </div>
