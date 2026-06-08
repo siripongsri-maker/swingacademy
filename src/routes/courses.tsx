@@ -1,18 +1,30 @@
 import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, X, GraduationCap } from "lucide-react";
+import { queryOptions } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Search, X, GraduationCap, BookOpen, Globe } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
+import { listPublicKnowledge, type KnowledgeRow } from "@/lib/knowledge.functions";
 import seed from "@/data/seed-data.json";
 import { pageHead } from "@/lib/seo";
 
-type CourseSearch = { category?: string };
+type CourseSearch = { category?: string; tab?: string };
+
+const knowledgeQueryOptions = () =>
+  queryOptions({
+    queryKey: ["knowledge", "public", "all"],
+    queryFn: () => listPublicKnowledge(),
+    staleTime: 60_000,
+  });
 
 export const Route = createFileRoute("/courses")({
   validateSearch: (raw: Record<string, unknown>): CourseSearch => ({
     category: typeof raw.category === "string" ? raw.category : undefined,
+    tab: typeof raw.tab === "string" ? raw.tab : undefined,
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(knowledgeQueryOptions()),
   head: () =>
     pageHead({
       title: "Courses — SWING Academy",
@@ -21,7 +33,16 @@ export const Route = createFileRoute("/courses")({
       path: "/courses",
     }),
   component: CoursesPage,
-
+  errorComponent: ({ error }) => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">{error.message}</div>
+    </PublicLayout>
+  ),
+  notFoundComponent: () => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">ไม่พบเนื้อหา</div>
+    </PublicLayout>
+  ),
 });
 
 const LEVELS = ["beginner", "intermediate", "advanced"] as const;
