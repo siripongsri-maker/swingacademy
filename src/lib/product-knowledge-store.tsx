@@ -187,7 +187,7 @@ function ensureUniqueSlug(slug: string, assets: KnowledgeAsset[], ignoreId?: str
 }
 
 export function ProductKnowledgeProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [] }));
+  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [], collections: [] }));
 
   useEffect(() => {
     setState(loadInitial());
@@ -247,7 +247,11 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
   }, []);
 
   const removeAsset: StoreCtx["removeAsset"] = useCallback((id) => {
-    setState((s) => ({ ...s, assets: s.assets.filter((a) => a.id !== id) }));
+    setState((s) => ({
+      ...s,
+      assets: s.assets.filter((a) => a.id !== id),
+      collections: s.collections.map((c) => ({ ...c, assetIds: c.assetIds.filter((x) => x !== id) })),
+    }));
   }, []);
 
   const createTranslation: StoreCtx["createTranslation"] = useCallback((t) => {
@@ -270,6 +274,29 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     setState((s) => ({ ...s, translations: s.translations.filter((t) => t.id !== id) }));
   }, []);
 
+  const createCollection: StoreCtx["createCollection"] = useCallback((c) => {
+    const now = new Date().toISOString();
+    let created!: KnowledgeCollection;
+    setState((s) => {
+      created = { ...c, id: uid("col"), createdAt: now, updatedAt: now };
+      return { ...s, collections: [created, ...s.collections] };
+    });
+    return created;
+  }, []);
+
+  const updateCollection: StoreCtx["updateCollection"] = useCallback((id, patch) => {
+    setState((s) => ({
+      ...s,
+      collections: s.collections.map((c) =>
+        c.id === id ? { ...c, ...patch, updatedAt: new Date().toISOString() } : c,
+      ),
+    }));
+  }, []);
+
+  const removeCollection: StoreCtx["removeCollection"] = useCallback((id) => {
+    setState((s) => ({ ...s, collections: s.collections.filter((c) => c.id !== id) }));
+  }, []);
+
   const value = useMemo<StoreCtx>(
     () => ({
       ...state,
@@ -287,10 +314,13 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       updateTranslation,
       removeTranslation,
       getTranslation: (id) => state.translations.find((t) => t.id === id),
+      createCollection,
+      updateCollection,
+      removeCollection,
       slugify,
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setState({ assets: [], translations: [] });
+        setState({ assets: [], translations: [], collections: [] });
       },
     }),
     [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation],
