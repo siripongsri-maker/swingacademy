@@ -113,13 +113,13 @@ function CoursesPage() {
         <div className="flex gap-6 border-b border-warm-200 mt-8">
           <TabButton
             active={!isKnowledge}
-            onClick={() => navigate({ search: (prev) => ({ ...prev, tab: undefined }) })}
+            onClick={() => navigate({ search: (prev: CourseSearch) => ({ ...prev, tab: undefined }) })}
           >
             {t({ th: "คอร์ส", en: "Courses" })}
           </TabButton>
           <TabButton
             active={isKnowledge}
-            onClick={() => navigate({ search: (prev) => ({ ...prev, tab: "knowledge" }) })}
+            onClick={() => navigate({ search: (prev: CourseSearch) => ({ ...prev, tab: "knowledge" }) })}
           >
             {t({ th: "Knowledge", en: "Knowledge" })}
           </TabButton>
