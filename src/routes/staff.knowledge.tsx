@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import seed from "@/data/seed-data.json";
+import { LessonUploadCard } from "@/components/lesson-upload-card";
 
 export const Route = createFileRoute("/staff/knowledge")({
   component: KnowledgeLibrary,
@@ -94,6 +95,8 @@ function KnowledgeLibrary() {
           Curricula, SOPs, toolkits and reports — produced by SWING or received from partners.
         </p>
       </div>
+
+      <LessonUploadCard />
 
       {/* Search + filters */}
       <div className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm">
