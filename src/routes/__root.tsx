@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/language-context";
 import { AccountProvider } from "../lib/account-context";
+import { ProductKnowledgeProvider } from "../lib/product-knowledge-store";
 import logoAsset from "../assets/swing-academy-logo.png.asset.json";
 
 const LOGO_URL = `https://swingacademy.lovable.app${logoAsset.url}`;
@@ -161,8 +162,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AccountProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
+          <ProductKnowledgeProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </ProductKnowledgeProvider>
         </AccountProvider>
       </LanguageProvider>
     </QueryClientProvider>

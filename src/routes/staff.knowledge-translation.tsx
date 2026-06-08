@@ -54,6 +54,7 @@ const ATTACHMENT_ICON: Record<Attachment["kind"], React.ComponentType<{ classNam
   slides: Presentation,
   image: ImageIcon,
   video_url: Video,
+  audio: Video,
 };
 
 function KnowledgeTranslationPage() {

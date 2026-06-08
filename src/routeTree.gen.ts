@@ -30,6 +30,7 @@ import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.kn
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
 import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
 import { Route as StaffAdminRouteImport } from './routes/staff.admin'
+import { Route as KSlugRouteImport } from './routes/k.$slug'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
 
 const VerifyRoute = VerifyRouteImport.update({
@@ -138,6 +139,11 @@ const StaffAdminRoute = StaffAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => StaffRoute,
 } as any)
+const KSlugRoute = KSlugRouteImport.update({
+  id: '/k/$slug',
+  path: '/k/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesIdRoute = CoursesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/k/$slug': typeof KSlugRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/k/$slug': typeof KSlugRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/k/$slug': typeof KSlugRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/trainings'
     | '/verify'
     | '/courses/$id'
+    | '/k/$slug'
     | '/staff/admin'
     | '/staff/dashboard'
     | '/staff/knowledge'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/trainings'
     | '/verify'
     | '/courses/$id'
+    | '/k/$slug'
     | '/staff/admin'
     | '/staff/dashboard'
     | '/staff/knowledge'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/trainings'
     | '/verify'
     | '/courses/$id'
+    | '/k/$slug'
     | '/staff/admin'
     | '/staff/dashboard'
     | '/staff/knowledge'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   StaffRoute: typeof StaffRouteWithChildren
   TrainingsRoute: typeof TrainingsRoute
   VerifyRoute: typeof VerifyRoute
+  KSlugRoute: typeof KSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffAdminRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/k/$slug': {
+      id: '/k/$slug'
+      path: '/k/$slug'
+      fullPath: '/k/$slug'
+      preLoaderRoute: typeof KSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses/$id': {
       id: '/courses/$id'
       path: '/$id'
@@ -514,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffRoute: StaffRouteWithChildren,
   TrainingsRoute: TrainingsRoute,
   VerifyRoute: VerifyRoute,
+  KSlugRoute: KSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

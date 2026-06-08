@@ -14,13 +14,16 @@
     "digital_safety": { "th": "ปลอดภัยดิจิทัล", "en": "Digital Safety" }
   },
   "typeLabels": {
-    "curriculum": { "th": "หลักสูตร", "en": "Curriculum" },
+    "training": { "th": "การอบรม / Workshop", "en": "Training" },
+    "field_note": { "th": "บันทึกภาคสนาม", "en": "Field Note" },
     "sop": { "th": "ขั้นตอนปฏิบัติ (SOP)", "en": "SOP" },
-    "toolkit": { "th": "ชุดเครื่องมือ", "en": "Toolkit" },
-    "campaign": { "th": "แคมเปญ", "en": "Campaign" },
-    "health_product": { "th": "ผลิตภัณฑ์สุขภาพ", "en": "Health Product" },
-    "service_guide": { "th": "คู่มือบริการ", "en": "Service Guide" },
+    "campaign": { "th": "เครื่องมือแคมเปญ", "en": "Campaign Tool" },
     "partner_resource": { "th": "ทรัพยากรพาร์ทเนอร์", "en": "Partner Resource" },
+    "health_product": { "th": "ผลิตภัณฑ์สุขภาพ", "en": "Health Product" },
+    "service_guide": { "th": "ความรู้บริการ", "en": "Service Knowledge" },
+    "community_insight": { "th": "ข้อมูลจากชุมชน", "en": "Community Insight" },
+    "curriculum": { "th": "หลักสูตร", "en": "Curriculum" },
+    "toolkit": { "th": "ชุดเครื่องมือ", "en": "Toolkit" },
     "research_summary": { "th": "สรุปงานวิจัย", "en": "Research Summary" }
   },
   "audiences": [
