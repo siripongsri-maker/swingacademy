@@ -1,5 +1,23 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Bell, Search, ChevronRight, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+type AccountInfo = { name: string; email: string; initial: string; role: string };
+
+function deriveAccount(user: { email?: string | null; user_metadata?: Record<string, unknown> } | null): AccountInfo | null {
+  if (!user) return null;
+  const meta = user.user_metadata ?? {};
+  const name =
+    (typeof meta.full_name === "string" && meta.full_name) ||
+    (typeof meta.name === "string" && meta.name) ||
+    (user.email ? user.email.split("@")[0] : "") ||
+    "Account";
+  const email = user.email ?? "";
+  const initial = (name.trim().charAt(0) || email.charAt(0) || "?").toUpperCase();
+  const role = (typeof meta.role === "string" && meta.role) || "Staff";
+  return { name, email, initial, role };
+}
 
 const crumbMap: Record<string, string> = {
   "/staff": "Staff",
@@ -14,6 +32,21 @@ const crumbMap: Record<string, string> = {
 export function StaffTopbar({ onMobileMenuOpen }: { onMobileMenuOpen?: () => void }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const segments = pathname.split("/").filter(Boolean);
+  const [account, setAccount] = useState<AccountInfo | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) setAccount(deriveAccount(data.user));
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAccount(deriveAccount(session?.user ?? null));
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   const crumbs: { label: string; href: string }[] = [];
   let acc = "";
@@ -72,11 +105,11 @@ export function StaffTopbar({ onMobileMenuOpen }: { onMobileMenuOpen?: () => voi
 
         <div className="flex items-center gap-2 border-l border-warm-200 pl-3">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-lavender-300 text-sm font-semibold text-navy-500">
-            ม
+            {account?.initial ?? "?"}
           </span>
           <div className="hidden text-left leading-tight sm:block">
-            <p className="text-xs font-semibold text-navy-500">มะปราง</p>
-            <p className="text-[11px] text-warm-500">M&E Lead</p>
+            <p className="text-xs font-semibold text-navy-500">{account?.name ?? "Not signed in"}</p>
+            <p className="text-[11px] text-warm-500">{account?.email ?? "—"}</p>
           </div>
         </div>
       </div>
