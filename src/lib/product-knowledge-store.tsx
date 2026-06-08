@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import seed from "@/data/product-knowledge-seed.json";
+import { HIVST_KNOWLEDGE_ASSET } from "@/data/knowledge-products-seed";
 
 export type KnowledgeType =
   | "training"
@@ -164,13 +165,16 @@ type StoreCtx = StoreState & {
 };
 
 const Ctx = createContext<StoreCtx | null>(null);
-const LS_KEY = "swing.product-knowledge.v3";
-const LEGACY_LS_KEYS = ["swing.product-knowledge.v1", "swing.product-knowledge.v2"];
+const LS_KEY = "swing.product-knowledge.v4";
+const LEGACY_LS_KEYS = ["swing.product-knowledge.v1", "swing.product-knowledge.v2", "swing.product-knowledge.v3"];
+
+function seedState(): StoreState {
+  return { assets: [HIVST_KNOWLEDGE_ASSET], translations: [], collections: [], talentMappings: [] };
+}
 
 function loadInitial(): StoreState {
   if (typeof window !== "undefined") {
     try {
-      // Purge any stale cached data from previous versions
       for (const k of LEGACY_LS_KEYS) {
         try { window.localStorage.removeItem(k); } catch { /* ignore */ }
       }
@@ -188,7 +192,7 @@ function loadInitial(): StoreState {
       /* ignore */
     }
   }
-  return { assets: [], translations: [], collections: [], talentMappings: [] };
+  return seedState();
 }
 
 const uid = (prefix: string) =>

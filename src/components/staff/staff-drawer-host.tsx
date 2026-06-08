@@ -142,7 +142,7 @@ function Placeholder({ label, note }: { label: string; note: string }) {
 }
 
 function AssetDrawer({ id, onClose }: { id: string; onClose: () => void }) {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const navigate = useNavigate();
   const asset = (sc.knowledgeAssets as Asset[]).find((a) => a.id === id);
 
@@ -378,7 +378,7 @@ function fmt(iso: string) {
 // ====================================================================
 
 function ProductDrawer({ id }: { id: string }) {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const navigate = useNavigate();
   const { openAsset, openCertificate, close } = useStaff();
   const product = sc.products.find((p) => p.id === id);

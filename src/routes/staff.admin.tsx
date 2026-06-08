@@ -71,7 +71,7 @@ function AdminPage() {
 }
 
 function ReviewQueue() {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const queue = sc.knowledgeAssets.filter(
     (a) => a.status === "draft" || a.status === "in_review",
   );
@@ -148,7 +148,7 @@ function ReviewQueue() {
 }
 
 function TaxonomyEditor() {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Section title="Domains" addLabel="Add domain">
@@ -221,7 +221,7 @@ function Row({ primary, secondary }: { primary: string; secondary: string }) {
 }
 
 function UsersTable() {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const [q, setQ] = useState("");
   const [site, setSite] = useState<string>("all");
   const sites = Array.from(
@@ -429,7 +429,7 @@ function AvatarCell({
 }
 
 function RecordsTable() {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const statusTone: Record<string, string> = {
     completed: "bg-success/15 text-success",
     in_progress: "bg-lavender-100 text-lavender-900",
