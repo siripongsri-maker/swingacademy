@@ -24,6 +24,7 @@ import {
   type QaChecklist,
 } from "@/lib/product-knowledge-store";
 import { suggestKnowledgeMeta } from "@/lib/knowledge-ai.functions";
+import { useConsoleRole } from "@/lib/console-role-context";
 
 export const Route = createFileRoute("/staff/knowledge")({
   component: KnowledgeManagementPage,
