@@ -94,19 +94,8 @@ function KnowledgeDetailPage() {
           )}
         </header>
 
-        {asset.learningObjectives && asset.learningObjectives.length > 0 && (
-          <section className="mt-8 rounded-lg border border-warm-200 bg-white p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-warm-500">สิ่งที่คุณจะได้เรียนรู้</h2>
-            <ul className="mt-3 space-y-2 text-navy-500">
-              {asset.learningObjectives.map((lo, i) => (
-                <li key={i} className="flex gap-2 text-[15px]">
-                  <span className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-magenta-500" />
-                  <span>{lo}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+
+
 
         <div className="prose prose-slate mt-10 max-w-none prose-headings:text-navy-500 prose-h2:mt-10 prose-h2:text-2xl prose-h3:text-lg prose-a:text-magenta-600 prose-strong:text-navy-500 prose-table:text-sm prose-th:bg-warm-100 prose-th:p-2 prose-td:p-2 prose-blockquote:border-l-magenta-500 prose-blockquote:bg-cream prose-blockquote:not-italic">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{asset.contentMd}</ReactMarkdown>
