@@ -96,6 +96,8 @@ function KnowledgeLibrary() {
         </p>
       </div>
 
+      <LessonUploadCard />
+
       {/* Search + filters */}
       <div className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm">
         <div className="relative">
