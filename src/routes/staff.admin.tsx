@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { CheckCircle2, RotateCcw, Pencil, Trash2, Plus, GraduationCap } from "lucide-react";
+import { useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { CheckCircle2, RotateCcw, Pencil, Trash2, Plus, GraduationCap, Camera, Loader2, X } from "lucide-react";
 import seed from "@/data/seed-data.json";
+import { listAvatars, createAvatarUploadUrl, setAvatar, deleteAvatar } from "@/lib/avatars.functions";
 
 export const Route = createFileRoute("/staff/admin")({
   component: AdminPage,
@@ -220,6 +223,47 @@ function UsersTable() {
     const hay = `${p.name} ${p.nameTh ?? ""} ${p.role} ${p.roleTh ?? ""} ${p.email}`.toLowerCase();
     return hay.includes(q.toLowerCase());
   });
+
+  const qc = useQueryClient();
+  const listFn = useServerFn(listAvatars);
+  const uploadFn = useServerFn(createAvatarUploadUrl);
+  const setFn = useServerFn(setAvatar);
+  const delFn = useServerFn(deleteAvatar);
+  const { data: avatarData } = useQuery({
+    queryKey: ["person-avatars"],
+    queryFn: () => listFn(),
+  });
+  const avatars: Record<string, string> = avatarData?.avatars ?? {};
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const handleUpload = async (personId: string, file: File) => {
+    if (!file.type.startsWith("image/")) { alert("Please pick an image file."); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("Image must be under 5MB."); return; }
+    setBusy(personId);
+    try {
+      const { signedUrl, path } = await uploadFn({ data: { personId, filename: file.name } });
+      const up = await fetch(signedUrl, { method: "PUT", body: file, headers: { "content-type": file.type } });
+      if (!up.ok) throw new Error("Upload failed");
+      await setFn({ data: { person_id: personId, storage_path: path, mime_type: file.type, size_bytes: file.size } });
+      qc.invalidateQueries({ queryKey: ["person-avatars"] });
+    } catch (e: any) {
+      alert(e?.message ?? "Upload failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDelete = async (personId: string) => {
+    if (!confirm("Remove this profile photo?")) return;
+    setBusy(personId);
+    try {
+      await delFn({ data: { personId } });
+      qc.invalidateQueries({ queryKey: ["person-avatars"] });
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <section className="overflow-hidden rounded-lg border border-warm-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center gap-2 border-b border-warm-200 px-5 py-3">
@@ -259,9 +303,14 @@ function UsersTable() {
               <tr key={p.id} className="hover:bg-warm-50">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-lavender-100 text-xs font-semibold text-lavender-900">
-                      {p.avatarInitial}
-                    </span>
+                    <AvatarCell
+                      personId={p.id}
+                      initial={p.avatarInitial}
+                      url={avatars[p.id]}
+                      busy={busy === p.id}
+                      onUpload={(f) => handleUpload(p.id, f)}
+                      onDelete={() => handleDelete(p.id)}
+                    />
                     <div className="min-w-0">
                       <p className="font-semibold text-navy-500">{p.name}</p>
                       {p.nameTh && (
@@ -298,6 +347,74 @@ function UsersTable() {
         </table>
       </div>
     </section>
+  );
+}
+
+function AvatarCell({
+  personId,
+  initial,
+  url,
+  busy,
+  onUpload,
+  onDelete,
+}: {
+  personId: string;
+  initial: string;
+  url?: string;
+  busy: boolean;
+  onUpload: (f: File) => void;
+  onDelete: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div className="group relative h-9 w-9 shrink-0">
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onUpload(f);
+          if (ref.current) ref.current.value = "";
+        }}
+      />
+      {url ? (
+        <img
+          src={url}
+          alt={`Avatar for ${personId}`}
+          className="h-9 w-9 rounded-pill object-cover ring-1 ring-warm-200"
+        />
+      ) : (
+        <span className="flex h-9 w-9 items-center justify-center rounded-pill bg-lavender-100 text-xs font-semibold text-lavender-900">
+          {initial}
+        </span>
+      )}
+      {busy && (
+        <span className="absolute inset-0 flex items-center justify-center rounded-pill bg-white/70">
+          <Loader2 className="h-4 w-4 animate-spin text-magenta-500" />
+        </span>
+      )}
+      <button
+        type="button"
+        onClick={() => ref.current?.click()}
+        disabled={busy}
+        aria-label="Upload profile photo"
+        className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-pill bg-magenta-500 text-white opacity-0 shadow ring-1 ring-white transition group-hover:opacity-100 focus:opacity-100"
+      >
+        <Camera className="h-2.5 w-2.5" />
+      </button>
+      {url && !busy && (
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Remove profile photo"
+          className="absolute -top-1 -right-1 hidden h-4 w-4 items-center justify-center rounded-pill bg-warm-700 text-white shadow ring-1 ring-white group-hover:flex"
+        >
+          <X className="h-2.5 w-2.5" />
+        </button>
+      )}
+    </div>
   );
 }
 
