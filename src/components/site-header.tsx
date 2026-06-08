@@ -4,6 +4,7 @@ import { Languages, Menu, X, LogOut } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import { SignInModal } from "@/components/sign-in-modal";
+import { BrandLogo } from "@/components/brand-logo";
 
 const NAV: { to: string; label: Localized }[] = [
   { to: "/", label: { th: "หน้าแรก", en: "Home" } },
@@ -23,14 +24,15 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-40 w-full border-b border-warm-200 bg-cream/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
-          <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-magenta-500 text-white font-bold">
-              S
-            </span>
-            <span className="text-lg font-semibold text-navy-500 whitespace-nowrap">
-              SWING <span className="text-magenta-500">Academy</span>
-            </span>
+          <Link
+            to="/"
+            className="flex items-center gap-2 transition-opacity hover:opacity-90"
+            aria-label="SWING Academy — Home"
+            onClick={() => setOpen(false)}
+          >
+            <BrandLogo size={40} />
           </Link>
+
 
           <nav className="hidden items-center gap-6 lg:flex">
             {NAV.map((item) => (

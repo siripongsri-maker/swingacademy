@@ -1,5 +1,6 @@
-import { X, Award, ShieldCheck } from "lucide-react";
+import { X, ShieldCheck } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
+import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type Props = {
   open: boolean;
@@ -52,8 +53,8 @@ export function CertificatePreviewModal({
         <div className="pride-gradient h-2 w-full" aria-hidden />
 
         <div className="px-10 py-12 text-center">
-          <div className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-pill bg-gold/15 text-gold">
-            <Award className="h-7 w-7" />
+          <div className="mx-auto mb-5 inline-flex h-20 w-20 items-center justify-center rounded-pill bg-white p-2 shadow-sm ring-1 ring-warm-200">
+            <img src={logoAsset.url} alt="SWING Academy" className="h-full w-full object-contain" />
           </div>
           <p className="eyebrow mb-2" style={{ color: "#C9A227" }}>
             {t({ th: "ใบประกาศสำเร็จการเรียน", en: "Certificate of completion" })}

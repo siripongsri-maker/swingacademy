@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { X, Award, Download, QrCode, CheckCircle2 } from "lucide-react";
 import seed from "@/data/seed-data.json";
+import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type Props = {
   certificateId: string;
@@ -54,12 +55,17 @@ export function StaffCertificateModal({ certificateId, onClose }: Props) {
                 aria-hidden
               />
               <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">
-                      SWING Academy
-                    </p>
-                    <p className="mt-0.5 text-xs text-white/60">Certificate of Completion</p>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-md bg-white p-1.5 shadow-md">
+                      <img src={logoAsset.url} alt="SWING Academy" className="h-full w-full object-contain" />
+                    </span>
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">
+                        SWING Academy
+                      </p>
+                      <p className="mt-0.5 text-xs text-white/60">Certificate of Completion</p>
+                    </div>
                   </div>
                   <Award className="h-10 w-10 text-gold" />
                 </div>
