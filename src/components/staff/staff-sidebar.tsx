@@ -56,7 +56,10 @@ type Props = {
 export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const { openExport } = useStaff();
+  const { role, setRole, isDemo, can } = useConsoleRole();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+
+  const visible = (items: NavItem[]) => items.filter((i) => !i.requires || can(i.requires));
 
   const renderItem = (item: NavItem) => {
     const Icon = item.icon;
