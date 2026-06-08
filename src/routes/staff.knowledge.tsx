@@ -24,6 +24,7 @@ import {
   type QaChecklist,
 } from "@/lib/product-knowledge-store";
 import { suggestKnowledgeMeta } from "@/lib/knowledge-ai.functions";
+import { useConsoleRole } from "@/lib/console-role-context";
 
 export const Route = createFileRoute("/staff/knowledge")({
   component: KnowledgeManagementPage,
@@ -58,11 +59,28 @@ const DOMAINS = [
 
 function KnowledgeManagementPage() {
   const km = useProductKnowledge();
+  const { can } = useConsoleRole();
   const [tab, setTab] = useState<"assets" | "collections">("assets");
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | KnowledgeStatus>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [collectionEditing, setCollectionEditing] = useState<string | "new" | null>(null);
+
+  if (!can("km.categorize")) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+        <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Knowledge Management</p>
+        <h1 className="mt-2 text-2xl font-semibold text-navy-500">ต้องเป็น Trainer หรือ Admin</h1>
+        <p className="mt-2 text-sm text-warm-500">
+          หน้านี้สำหรับ Trainer / Admin ที่จะตรวจสอบ จัดหมวด และเชื่อมโยงความรู้
+          ถ้าคุณเป็น Staff สามารถส่ง Knowledge Product ของคุณให้ review ได้จาก{" "}
+          <Link to="/staff/product-knowledge" className="font-semibold text-magenta-600 hover:underline">
+            Knowledge Product
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -256,26 +274,54 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
           </div>
         </div>
       </button>
-      <div className="flex flex-wrap items-center gap-2">
-        {asset.status === "draft" && (
-          <button onClick={sendReview} className="inline-flex items-center gap-1 rounded-pill bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-200">
-            <Send className="h-3.5 w-3.5" /> Review
-          </button>
-        )}
-        {asset.status !== "published" && asset.status !== "archived" && (
-          <button onClick={approve} className="inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90">
-            <CheckCircle2 className="h-3.5 w-3.5" /> Approve
-          </button>
-        )}
-        {asset.status !== "archived" && (
-          <button onClick={archive} className="inline-flex items-center gap-1 rounded-pill border border-warm-200 px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
-            <Archive className="h-3.5 w-3.5" /> Archive
-          </button>
-        )}
-      </div>
+      <AssetRowActions asset={asset} approve={approve} sendReview={sendReview} archive={archive} />
     </div>
   );
 }
+
+function AssetRowActions({
+  asset,
+  approve,
+  sendReview,
+  archive,
+}: {
+  asset: KnowledgeAsset;
+  approve: () => void;
+  sendReview: () => void;
+  archive: () => void;
+}) {
+  const { can, canEditAsset } = useConsoleRole();
+  const mayReview = can("knowledge.review");
+  const mayPublish = can("knowledge.publish");
+  const mayArchive = can("knowledge.archive");
+  const maySubmit = canEditAsset({ ownerId: asset.ownerId }) && can("knowledge.submitForReview");
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {asset.status === "draft" && maySubmit && (
+        <button onClick={sendReview} className="inline-flex items-center gap-1 rounded-pill bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-200">
+          <Send className="h-3.5 w-3.5" /> Review
+        </button>
+      )}
+      {asset.status === "review" && mayReview && !mayPublish && (
+        <span className="inline-flex items-center gap-1 rounded-pill bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+          <CheckCircle2 className="h-3.5 w-3.5" /> Reviewed — admin to publish
+        </span>
+      )}
+      {asset.status !== "published" && asset.status !== "archived" && mayPublish && (
+        <button onClick={approve} className="inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90">
+          <CheckCircle2 className="h-3.5 w-3.5" /> Approve
+        </button>
+      )}
+      {asset.status !== "archived" && mayArchive && (
+        <button onClick={archive} className="inline-flex items-center gap-1 rounded-pill border border-warm-200 px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
+          <Archive className="h-3.5 w-3.5" /> Archive
+        </button>
+      )}
+    </div>
+  );
+}
+
 
 function AssetDrawer({ asset, onClose }: { asset: KnowledgeAsset; onClose: () => void }) {
   const { updateAsset, categoryLabels, audiences } = useProductKnowledge();

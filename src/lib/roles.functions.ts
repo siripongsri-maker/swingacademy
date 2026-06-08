@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type AppRole = "learner" | "staff" | "admin";
+export type AppRole = "learner" | "staff" | "trainer" | "admin";
 
 export const getMyRoles = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -21,7 +21,7 @@ export const grantRole = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>
     z.object({
       userId: z.string().uuid(),
-      role: z.enum(["learner", "staff", "admin"]),
+      role: z.enum(["learner", "staff", "trainer", "admin"]),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
