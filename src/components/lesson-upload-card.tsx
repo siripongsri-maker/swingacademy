@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, Video, FileText, Link as LinkIcon, Trash2, Loader2, CheckCircle2 } from "lucide-react";
+import { Upload, Video, FileText, Link as LinkIcon, Trash2, Loader2, CheckCircle2, GripVertical, X } from "lucide-react";
 import {
   createAttachmentUploadUrl,
   saveLessonAttachment,
