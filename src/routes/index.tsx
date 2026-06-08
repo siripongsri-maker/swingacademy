@@ -62,12 +62,6 @@ const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
   { icon: Heart, label: { th: "ไม่มีการตัดสิน", en: "No judgment" } },
 ];
 
-const STATS: { value: string; label: Localized }[] = [
-  { value: "12,400+", label: { th: "ผู้เรียนในชุมชน", en: "Community learners" } },
-  { value: "24", label: { th: "คอร์สฟรี", en: "Free courses" } },
-  { value: "3,800+", label: { th: "ใบประกาศที่ออก", en: "Certificates issued" } },
-  { value: "5", label: { th: "เมืองที่ให้บริการ", en: "Cities served" } },
-];
 
 function HomePage() {
   const { t, lang } = useLanguage();
