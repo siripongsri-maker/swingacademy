@@ -209,45 +209,94 @@ function Row({ primary, secondary }: { primary: string; secondary: string }) {
 
 function UsersTable() {
   const sc = seed.staffConsole;
+  const [q, setQ] = useState("");
+  const [site, setSite] = useState<string>("all");
+  const sites = Array.from(
+    new Set(sc.people.map((p: any) => p.site).filter(Boolean)),
+  ) as string[];
+  const filtered = sc.people.filter((p: any) => {
+    if (site !== "all" && p.site !== site) return false;
+    if (!q.trim()) return true;
+    const hay = `${p.name} ${p.nameTh ?? ""} ${p.role} ${p.roleTh ?? ""} ${p.email}`.toLowerCase();
+    return hay.includes(q.toLowerCase());
+  });
   return (
     <section className="overflow-hidden rounded-lg border border-warm-200 bg-white shadow-sm">
-      <table className="w-full text-sm">
-        <thead className="bg-warm-50 text-left text-[11px] font-bold uppercase tracking-wider text-warm-500">
-          <tr>
-            <th className="px-5 py-3">Person</th>
-            <th className="px-5 py-3">Role</th>
-            <th className="px-5 py-3">Site</th>
-            <th className="px-5 py-3">Email</th>
-            <th className="px-5 py-3">Can teach</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-warm-200">
-          {sc.people.map((p) => (
-            <tr key={p.id} className="hover:bg-warm-50">
-              <td className="px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-lavender-100 text-xs font-semibold text-lavender-900">
-                    {p.avatarInitial}
-                  </span>
-                  <span className="font-semibold text-navy-500">{p.name}</span>
-                </div>
-              </td>
-              <td className="px-5 py-3 text-warm-700">{p.role}</td>
-              <td className="px-5 py-3 text-warm-700">{p.site}</td>
-              <td className="px-5 py-3 text-warm-500">{p.email}</td>
-              <td className="px-5 py-3">
-                {p.canTeach.length === 0 ? (
-                  <span className="text-xs text-warm-400">—</span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
-                    <GraduationCap className="h-3 w-3" /> {p.canTeach.length}
-                  </span>
-                )}
-              </td>
-            </tr>
+      <div className="flex flex-wrap items-center gap-2 border-b border-warm-200 px-5 py-3">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search name, role, email…"
+          className="min-w-[200px] flex-1 rounded-pill border border-warm-200 bg-white px-3 py-1.5 text-sm focus:border-magenta-500 focus:outline-none"
+        />
+        <select
+          value={site}
+          onChange={(e) => setSite(e.target.value)}
+          className="rounded-pill border border-warm-200 bg-white px-3 py-1.5 text-sm focus:border-magenta-500 focus:outline-none"
+        >
+          <option value="all">All sites</option>
+          {sites.map((s) => (
+            <option key={s} value={s}>{s}</option>
           ))}
-        </tbody>
-      </table>
+        </select>
+        <span className="text-xs text-warm-500">
+          {filtered.length} of {sc.people.length}
+        </span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-warm-50 text-left text-[11px] font-bold uppercase tracking-wider text-warm-500">
+            <tr>
+              <th className="px-5 py-3">Person</th>
+              <th className="px-5 py-3">Role</th>
+              <th className="px-5 py-3">Site</th>
+              <th className="px-5 py-3">Contact</th>
+              <th className="px-5 py-3">Can teach</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-warm-200">
+            {filtered.map((p: any) => (
+              <tr key={p.id} className="hover:bg-warm-50">
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-lavender-100 text-xs font-semibold text-lavender-900">
+                      {p.avatarInitial}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-navy-500">{p.name}</p>
+                      {p.nameTh && (
+                        <p className="text-[11px] text-warm-500">{p.nameTh}</p>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-5 py-3 text-warm-700">
+                  <p>{p.role}</p>
+                  {p.roleTh && (
+                    <p className="text-[11px] text-warm-500">{p.roleTh}</p>
+                  )}
+                </td>
+                <td className="px-5 py-3 text-warm-700">{p.site}</td>
+                <td className="px-5 py-3 text-warm-500">
+                  <p className="truncate">{p.email}</p>
+                  {p.phone && (
+                    <p className="text-[11px] text-warm-400">{p.phone}</p>
+                  )}
+                </td>
+                <td className="px-5 py-3">
+                  {!p.canTeach || p.canTeach.length === 0 ? (
+                    <span className="text-xs text-warm-400">—</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                      <GraduationCap className="h-3 w-3" /> {p.canTeach.length}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
