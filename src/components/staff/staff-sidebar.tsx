@@ -14,6 +14,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
+import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 const nav = [
   { to: "/staff/dashboard", label: "Dashboard", labelTh: "ภาพรวม", icon: LayoutDashboard },
@@ -57,9 +58,13 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
             collapsed ? "lg:justify-center" : ""
           }`}
         >
-          <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-magenta-500 text-sm font-bold text-white">
-            S
-          </div>
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white p-1 shadow-sm ring-1 ring-white/10">
+            <img
+              src={logoAsset.url}
+              alt="SWING Academy"
+              className="h-full w-full object-contain"
+            />
+          </span>
           <div className={`min-w-0 ${collapsed ? "lg:hidden" : ""}`}>
             <p className="truncate text-sm font-semibold leading-tight">SWING Console</p>
             <p className="truncate text-[11px] text-white/50">Knowledge management</p>

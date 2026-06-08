@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Shield } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
+import { BrandLogo } from "@/components/brand-logo";
 
 const QUICK_LINKS: { to: string; label: Localized }[] = [
   { to: "/courses", label: { th: "คอร์สทั้งหมด", en: "All courses" } },
@@ -18,13 +19,12 @@ export function SiteFooter() {
     <footer className="mt-20 border-t border-warm-200 bg-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-4">
         <div className="md:col-span-2">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-magenta-500 text-white font-bold">
-              S
-            </span>
-            <span className="text-lg font-semibold text-navy-500">
-              SWING <span className="text-magenta-500">Academy</span>
-            </span>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 transition-opacity hover:opacity-90"
+            aria-label="SWING Academy — Home"
+          >
+            <BrandLogo size={44} />
           </Link>
           <p lang={lang} className="mt-4 max-w-md text-sm text-warm-500">
             {t({
