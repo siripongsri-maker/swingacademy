@@ -35,6 +35,15 @@ export type Attachment = {
 };
 export type VersionEntry = { v: string; at: string; by: string; note: string };
 
+export type QaChecklist = {
+  titleClear?: boolean;
+  keyMessageOk?: boolean;
+  sourceCited?: boolean;
+  languageOk?: boolean;
+  nonStigmatizing?: boolean;
+  expertReviewed?: boolean;
+};
+
 export type KnowledgeAsset = {
   id: string;
   slug: string;
@@ -59,6 +68,25 @@ export type KnowledgeAsset = {
   updatedAt: string;
   versionHistory: VersionEntry[];
   attachments: Attachment[];
+  // Phase 4 — Knowledge Management
+  learningObjectives?: string[];
+  competencyTags?: string[];
+  relatedServices?: string[];
+  relatedCourses?: string[];
+  linkedCurriculum?: string;
+  qaChecklist?: QaChecklist;
+  approvedAt?: string;
+  approvedBy?: string;
+};
+
+export type KnowledgeCollection = {
+  id: string;
+  name: string;
+  description: string;
+  domain: string;
+  assetIds: string[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type TranslationStatus = "draft" | "ready" | "published";
