@@ -27,7 +27,7 @@ import {
   type TranslationStatus,
   type Attachment,
 } from "@/lib/product-knowledge-store";
-import { translateKnowledge } from "@/lib/knowledge-ai.functions";
+import { translateKnowledge, creativeAssist } from "@/lib/knowledge-ai.functions";
 
 const searchSchema = z.object({
   from: z.string().optional(),
@@ -257,7 +257,9 @@ function TranslationEditor({
 }) {
   const pk = useProductKnowledge();
   const aiTranslate = useServerFn(translateKnowledge);
+  const aiCreative = useServerFn(creativeAssist);
   const [generating, setGenerating] = useState(false);
+  const [creativeTool, setCreativeTool] = useState<string | null>(null);
   const [picking, setPicking] = useState(!source && !translation);
   const [currentSource, setCurrentSource] = useState<KnowledgeAsset | null>(source);
 
@@ -329,6 +331,38 @@ function TranslationEditor({
       setGenerating(false);
     }
   }
+
+  async function runCreative(tool:
+    | "rewrite" | "summary" | "social" | "html" | "flowchart"
+    | "graphic_brief" | "image_prompt" | "layout" | "inclusivity_check") {
+    if (!currentSource) {
+      toast.error("เลือก source asset ก่อน");
+      return;
+    }
+    setCreativeTool(tool);
+    try {
+      const res = await aiCreative({
+        data: {
+          tool,
+          assetContent: currentSource.contentMd,
+          currentOutput: form.outputMd || undefined,
+          audience: pk.audiences.find((a) => a.id === form.audience)?.en ?? form.audience,
+          format: pk.formats.find((f) => f.id === form.format)?.en ?? form.format,
+          tone: pk.tones.find((t) => t.id === form.tone)?.en ?? form.tone,
+          language: form.language,
+          instruction: form.instruction || undefined,
+        },
+      });
+      const block = `\n\n---\n## ${res.label}\n${res.text}\n`;
+      setForm((f) => ({ ...f, outputMd: (f.outputMd ?? "") + block }));
+      toast.success(`${res.label} เพิ่มลงผลลัพธ์แล้ว`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "AI error");
+    } finally {
+      setCreativeTool(null);
+    }
+  }
+
 
   function save(targetStatus?: TranslationStatus) {
     if (!form.assetId) {
@@ -498,7 +532,7 @@ function TranslationEditor({
             />
           </Field>
 
-          <div className="md:col-span-4">
+          <div className="md:col-span-4 space-y-2">
             <button
               onClick={generate}
               disabled={generating || !currentSource}
@@ -507,7 +541,43 @@ function TranslationEditor({
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {generating ? "กำลังสร้าง…" : "Generate with AI"}
             </button>
+
+            <div className="rounded-md border border-dashed border-border bg-warm-50/40 p-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Creative AI tools — เพิ่มลงผลลัพธ์
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  ["rewrite", "✍️ Rewrite"],
+                  ["summary", "📝 Summary"],
+                  ["social", "📣 Social"],
+                  ["html", "🌐 HTML"],
+                  ["flowchart", "🔀 Flow chart"],
+                  ["graphic_brief", "🎨 Graphic brief"],
+                  ["image_prompt", "🖼️ Image prompt"],
+                  ["layout", "📐 Visual layout"],
+                  ["inclusivity_check", "💗 Inclusivity check"],
+                ] as const).map(([id, label]) => {
+                  const active = creativeTool === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => runCreative(id)}
+                      disabled={!!creativeTool || !currentSource}
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-foreground hover:bg-magenta-50 hover:text-magenta-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {active ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                ผลลัพธ์จะถูก append ใต้ output ปัจจุบัน · ใช้ audience / format / tone / language ด้านบนเป็นบริบท · เชื่อมกลับยัง source asset เสมอ
+              </p>
+            </div>
           </div>
+
 
           <Field label="Output (Markdown)" className="md:col-span-4">
             <textarea

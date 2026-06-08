@@ -16,6 +16,27 @@ const TranslateInput = z.object({
   instruction: z.string().min(1).max(2000),
 });
 
+const CreativeInput = z.object({
+  tool: z.enum([
+    "rewrite",
+    "summary",
+    "social",
+    "html",
+    "flowchart",
+    "graphic_brief",
+    "image_prompt",
+    "layout",
+    "inclusivity_check",
+  ]),
+  assetContent: z.string().min(1).max(20000),
+  currentOutput: z.string().max(20000).optional(),
+  audience: z.string().min(1).max(80),
+  format: z.string().min(1).max(80),
+  tone: z.string().min(1).max(80),
+  language: z.enum(["th", "en", "bilingual"]),
+  instruction: z.string().max(2000).optional(),
+});
+
 const SuggestInput = z.object({
   titleTh: z.string().max(300).optional(),
   titleEn: z.string().max(300).optional(),
@@ -124,6 +145,82 @@ ${data.assetContent}`;
 
     const text = await callLovableModel(system, userPrompt);
     return { outputMd: text.trim() };
+  });
+
+const CREATIVE_PROMPTS: Record<
+  z.infer<typeof CreativeInput>["tool"],
+  { label: string; system: string }
+> = {
+  rewrite: {
+    label: "Rewrite",
+    system:
+      "คุณคือบรรณาธิการ Knowledge Translation เขียนข้อความใหม่ให้กระชับ เข้าใจง่าย เคารพศักดิ์ศรี ใช้ inclusive language และคงข้อมูลสำคัญ ตอบกลับเป็น markdown",
+  },
+  summary: {
+    label: "Summary",
+    system:
+      "คุณคือผู้สรุปความ ให้สรุปเนื้อหาเป็น bullet 3-6 ข้อ พร้อม key message 1 ประโยค ตอบเป็น markdown",
+  },
+  social: {
+    label: "Social content",
+    system:
+      "คุณคือ social content writer สาย health & rights สร้าง caption 1 หลัก + 2 ทางเลือก + 5-8 hashtag + แนะนำภาพประกอบ 1 บรรทัด ตอบเป็น markdown",
+  },
+  html: {
+    label: "HTML page",
+    system:
+      "คุณคือ frontend designer สร้างหน้า HTML เบื้องต้นแบบ semantic (h1, section, p, ul, blockquote) พร้อม inline Tailwind class ที่ดูสะอาด เข้าถึงง่าย ไม่ใส่ <script> หรือลิงก์ภายนอก ตอบเฉพาะ HTML ในบล็อก ```html ... ```",
+  },
+  flowchart: {
+    label: "Flow chart",
+    system:
+      "คุณคือ instructional designer สร้าง flow chart เป็น mermaid syntax (flowchart TD) อธิบายขั้นตอนของเนื้อหา ตอบเฉพาะบล็อก ```mermaid ... ``` และมีคำอธิบายสั้นใต้บล็อก",
+  },
+  graphic_brief: {
+    label: "Graphic brief",
+    system:
+      "คุณคือ art director เขียน brief ให้ดีไซเนอร์: objective, key message, audience, mood/tone, color palette แนะนำ, typography แนะนำ, key visual elements, do/don't ตอบเป็น markdown",
+  },
+  image_prompt: {
+    label: "Image prompt",
+    system:
+      "คุณคือนักเขียน prompt ภาพ สร้าง prompt 3 ทางเลือก สำหรับ generative image model (อังกฤษ) เน้น representation ที่เคารพชุมชน หลีกเลี่ยง stereotype ระบุ style, composition, lighting, mood ตอบเป็น markdown 3 บล็อก",
+  },
+  layout: {
+    label: "Visual layout",
+    system:
+      "คุณคือ UX/visual designer แนะนำ layout structure สำหรับสื่อที่กำลังทำ: ลำดับชั้น (hierarchy), grid, จุดสนใจ (focal point), CTA placement, mobile vs desktop หากเกี่ยวข้อง ตอบเป็น markdown bullet",
+  },
+  inclusivity_check: {
+    label: "Inclusivity check",
+    system:
+      "คุณคือ language reviewer ด้านสิทธิและสุขภาพ ตรวจข้อความว่ามีคำ stigmatizing, gendered, ageist, ableist หรือไม่ ระบุ: 1) คำที่ควรเลี่ยง 2) คำที่แนะนำแทน 3) note สั้นๆ ตอบเป็น markdown ตาราง",
+  },
+};
+
+export const creativeAssist = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => CreativeInput.parse(i))
+  .handler(async ({ data }) => {
+    const spec = CREATIVE_PROMPTS[data.tool];
+    const langInstruction =
+      data.language === "bilingual"
+        ? "เขียนผลลัพธ์เป็นสองภาษา ไทยก่อน อังกฤษตามด้านล่าง"
+        : data.language === "en"
+        ? "Write the result in English"
+        : "เขียนผลลัพธ์เป็นภาษาไทย";
+    const system = `${spec.system}
+บริบท: audience=${data.audience} | format=${data.format} | tone=${data.tone}
+${langInstruction}`;
+    const userPrompt = `Instruction (optional):
+${data.instruction ?? "-"}
+
+---
+Source content:
+${data.assetContent}
+
+${data.currentOutput ? `---\nCurrent draft (improve/extend if relevant):\n${data.currentOutput}` : ""}`;
+    const text = await callLovableModel(system, userPrompt);
+    return { tool: data.tool, label: spec.label, text: text.trim() };
   });
 
 export const suggestKnowledgeMeta = createServerFn({ method: "POST" })

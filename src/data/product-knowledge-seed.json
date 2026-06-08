@@ -31,29 +31,42 @@
     { "id": "youth", "th": "เยาวชน", "en": "Youth" },
     { "id": "sex_workers", "th": "พนักงานบริการ", "en": "Sex Workers" },
     { "id": "lgbtq", "th": "ชุมชน LGBTQ+", "en": "LGBTQ+ Community" },
+    { "id": "lgbtq_youth", "th": "เยาวชน LGBTQ+", "en": "LGBTQ+ Youth" },
+    { "id": "community_leaders", "th": "ผู้นำชุมชน", "en": "Community Leaders" },
+    { "id": "service_providers", "th": "ผู้ให้บริการ", "en": "Service Providers" },
     { "id": "outreach_workers", "th": "นักเอาท์รีช", "en": "Outreach Workers" },
     { "id": "healthcare_providers", "th": "บุคลากรสาธารณสุข", "en": "Healthcare Providers" },
     { "id": "policy_partners", "th": "พาร์ทเนอร์เชิงนโยบาย", "en": "Policy Partners" }
   ],
   "formats": [
     { "id": "social_caption", "th": "แคปชั่นโซเชียล", "en": "Social Caption" },
+    { "id": "carousel", "th": "คาร์รูเซลโซเชียล", "en": "Social Carousel" },
+    { "id": "infographic_text", "th": "ข้อความอินโฟกราฟิก", "en": "Infographic Text" },
     { "id": "short_article", "th": "บทความสั้น", "en": "Short Article" },
     { "id": "learning_card", "th": "การ์ดเรียนรู้", "en": "Learning Card" },
+    { "id": "training_handout", "th": "เอกสารประกอบการอบรม", "en": "Training Handout" },
     { "id": "faq", "th": "FAQ", "en": "FAQ" },
+    { "id": "chatbot_script", "th": "สคริปต์แชทบอท", "en": "Chatbot Script" },
     { "id": "script", "th": "สคริปต์พูด", "en": "Script" },
-    { "id": "infographic_text", "th": "ข้อความอินโฟกราฟิก", "en": "Infographic Text" },
+    { "id": "short_video_script", "th": "สคริปต์วิดีโอสั้น", "en": "Short Video Script" },
     { "id": "slide_outline", "th": "โครงสไลด์", "en": "Slide Outline" },
+    { "id": "html_page", "th": "หน้าเว็บ HTML", "en": "HTML Page" },
+    { "id": "flow_chart", "th": "แผนผังโฟลว์", "en": "Flow Chart" },
+    { "id": "poster_concept", "th": "คอนเซ็ปต์โปสเตอร์", "en": "Poster Concept" },
     { "id": "campaign_message", "th": "ข้อความแคมเปญ", "en": "Campaign Message" },
     { "id": "micro_learning", "th": "บทเรียนสั้น", "en": "Micro-learning Lesson" }
   ],
   "tones": [
     { "id": "friendly", "th": "เป็นกันเอง", "en": "Friendly" },
     { "id": "empowering", "th": "ให้พลัง", "en": "Empowering" },
+    { "id": "youth_friendly", "th": "เข้าถึงเยาวชน", "en": "Youth-friendly" },
+    { "id": "rights_based", "th": "อิงสิทธิ", "en": "Rights-based" },
     { "id": "simple", "th": "เรียบง่าย", "en": "Simple" },
     { "id": "professional", "th": "เป็นทางการ", "en": "Professional" },
     { "id": "community_voice", "th": "เสียงชุมชน", "en": "Community Voice" },
     { "id": "advocacy", "th": "เชิงรณรงค์", "en": "Advocacy" }
   ],
+
   "assets": [
     {
       "id": "pk_prep_starter",
