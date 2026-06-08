@@ -17,14 +17,14 @@ export function FunderExportModal({ onClose }: Props) {
   const [funderId, setFunderId] = useState<string>(sc.funders[0]?.id ?? "");
   const [view, setView] = useState<View>("assets");
 
-  const funder = sc.funders.find((f) => f.id === funderId);
+  const funder = sc.funders.find((f: any) => f.id === funderId);
 
   const assets = useMemo(
-    () => sc.knowledgeAssets.filter((a) => a.funderId === funderId),
+    () => sc.knowledgeAssets.filter((a: any) => a.funderId === funderId),
     [sc.knowledgeAssets, funderId],
   );
   const products = useMemo(
-    () => sc.products.filter((p) => p.funderId === funderId),
+    () => sc.products.filter((p: any) => p.funderId === funderId),
     [sc.products, funderId],
   );
 
@@ -61,7 +61,7 @@ export function FunderExportModal({ onClose }: Props) {
               Funder
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {sc.funders.map((f) => {
+              {sc.funders.map((f: any) => {
                 const active = f.id === funderId;
                 return (
                   <button
@@ -102,7 +102,7 @@ export function FunderExportModal({ onClose }: Props) {
               {assets.length === 0 ? (
                 <EmptyRow colSpan={5} />
               ) : (
-                assets.map((a) => (
+                assets.map((a: any) => (
                   <tr key={a.id} className="hover:bg-warm-50">
                     <td className="px-3 py-2 text-sm font-medium text-navy-500">{a.title}</td>
                     <td className="px-3 py-2 text-xs text-warm-700">
@@ -122,7 +122,7 @@ export function FunderExportModal({ onClose }: Props) {
               {products.length === 0 ? (
                 <EmptyRow colSpan={5} />
               ) : (
-                products.map((p) => (
+                products.map((p: any) => (
                   <tr key={p.id} className="hover:bg-warm-50">
                     <td className="px-3 py-2 text-sm font-medium text-navy-500">{p.title}</td>
                     <td className="px-3 py-2 text-xs text-warm-700 capitalize">{p.productType}</td>

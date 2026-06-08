@@ -154,10 +154,10 @@ function AssetDrawer({ id, onClose }: { id: string; onClose: () => void }) {
     );
   }
 
-  const owner = sc.people.find((p) => p.id === asset.ownerId);
-  const funder = sc.funders.find((f) => f.id === asset.funderId);
+  const owner = sc.people.find((p: any) => p.id === asset.ownerId);
+  const funder = sc.funders.find((f: any) => f.id === asset.funderId);
   const project = asset.projectId
-    ? sc.projects.find((p) => p.id === asset.projectId)
+    ? sc.projects.find((p: any) => p.id === asset.projectId)
     : undefined;
   const typeLabel = (sc.typeLabels as Record<string, string>)[asset.type] ?? asset.type;
   const domainLabel = (sc.domainLabels as Record<string, string>)[asset.domain] ?? asset.domain;
@@ -167,7 +167,7 @@ function AssetDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const overdue =
     asset.nextReview !== null && new Date(asset.nextReview).getTime() < TODAY.getTime();
 
-  const linkedProducts = sc.products.filter((p) =>
+  const linkedProducts = sc.products.filter((p: any) =>
     (p.sourceAssetIds ?? []).includes(asset.id),
   );
 
@@ -291,7 +291,7 @@ function AssetDrawer({ id, onClose }: { id: string; onClose: () => void }) {
               </p>
             ) : (
               <ul className="divide-y divide-warm-200 overflow-hidden rounded-md border border-warm-200">
-                {linkedProducts.map((p) => (
+                {linkedProducts.map((p: any) => (
                   <li key={p.id}>
                     <button
                       onClick={() => goToProduct(p.id)}
@@ -381,7 +381,7 @@ function ProductDrawer({ id }: { id: string }) {
   const sc = seed.staffConsole as any;
   const navigate = useNavigate();
   const { openAsset, openCertificate, close } = useStaff();
-  const product = sc.products.find((p) => p.id === id);
+  const product = sc.products.find((p: any) => p.id === id);
   const [published, setPublished] = useState(product?.status === "published");
 
   if (!product) {
@@ -392,14 +392,14 @@ function ProductDrawer({ id }: { id: string }) {
     );
   }
 
-  const funder = sc.funders.find((f) => f.id === product.funderId);
+  const funder = sc.funders.find((f: any) => f.id === product.funderId);
   const records = (sc.learningRecords as LearningRecord[]).filter((r) => r.productId === product.id);
   const cert = (sc.certificates as Certificate[]).find((c) => c.productId === product.id);
   const sourceAssets = (product.sourceAssetIds ?? [])
-    .map((aid) => sc.knowledgeAssets.find((a) => a.id === aid))
-    .filter((a): a is NonNullable<typeof a> => Boolean(a));
+    .map((aid: any) => sc.knowledgeAssets.find((a: any) => a.id === aid))
+    .filter((a: any): a is NonNullable<typeof a> => Boolean(a));
   const modules = product.course?.modules ?? [];
-  const totalMins = modules.reduce((sum, m) => sum + (m.durationMins ?? 0), 0);
+  const totalMins = modules.reduce((sum: any, m: any) => sum + (m.durationMins ?? 0), 0);
 
   const openSourceAsset = (assetId: string) => {
     openAsset(assetId);
@@ -465,7 +465,7 @@ function ProductDrawer({ id }: { id: string }) {
                 </p>
               </div>
               <ol className="overflow-hidden rounded-md border border-warm-200">
-                {modules.map((m, i) => (
+                {modules.map((m: any, i: any) => (
                   <li
                     key={m.id}
                     className="flex items-center gap-3 border-b border-warm-200 px-3 py-2.5 last:border-b-0"
@@ -493,7 +493,7 @@ function ProductDrawer({ id }: { id: string }) {
               </p>
               <ul className="space-y-2">
                 {records.slice(0, 4).map((r) => {
-                  const person = sc.people.find((p) => p.id === r.personId);
+                  const person = sc.people.find((p: any) => p.id === r.personId);
                   return (
                     <li
                       key={r.id}
@@ -532,7 +532,7 @@ function ProductDrawer({ id }: { id: string }) {
                 Source knowledge assets
               </p>
               <ul className="divide-y divide-warm-200 overflow-hidden rounded-md border border-warm-200">
-                {sourceAssets.map((a) => (
+                {sourceAssets.map((a: any) => (
                   <li key={a.id}>
                     <button
                       onClick={() => {
