@@ -16,6 +16,16 @@ const TranslateInput = z.object({
   instruction: z.string().min(1).max(2000),
 });
 
+const SuggestInput = z.object({
+  titleTh: z.string().max(300).optional(),
+  titleEn: z.string().max(300).optional(),
+  summary: z.string().max(2000).optional(),
+  contentMd: z.string().max(20000).optional(),
+  keyMessage: z.string().max(2000).optional(),
+  availableCategories: z.array(z.string().max(80)).max(40),
+  availableAudiences: z.array(z.string().max(80)).max(40),
+});
+
 async function callLovableModel(systemPrompt: string, userPrompt: string) {
   const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
   const { generateText } = await import("ai");
