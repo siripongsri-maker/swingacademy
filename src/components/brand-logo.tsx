@@ -1,7 +1,7 @@
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type Props = {
-  /** Pixel size of the logo mark (square). */
+  /** Pixel size of the logo mark (square). Optional when using imgClassName for responsive sizing. */
   size?: number;
   /** Show the "SWING Academy" wordmark next to the mark. */
   withWordmark?: boolean;
@@ -9,6 +9,8 @@ type Props = {
   wordmarkClassName?: string;
   /** Additional classes for the outer element. */
   className?: string;
+  /** Tailwind classes for the <img> element (enables responsive sizing via e.g. h-8 w-8 md:h-10 md:w-10). */
+  imgClassName?: string;
   /** Force light/dark text variant for the wordmark. */
   variant?: "auto" | "light" | "dark";
 };
@@ -18,10 +20,11 @@ type Props = {
  * an optional wordmark beside it.
  */
 export function BrandLogo({
-  size = 36,
+  size,
   withWordmark = true,
   wordmarkClassName,
   className,
+  imgClassName,
   variant = "auto",
 }: Props) {
   const wordmarkBase =
@@ -37,8 +40,8 @@ export function BrandLogo({
         alt="SWING Academy"
         width={size}
         height={size}
-        className="block h-auto w-auto select-none drop-shadow-sm"
-        style={{ height: size, width: size, objectFit: "contain" }}
+        className={`block select-none drop-shadow-sm ${imgClassName ?? "h-auto w-auto"}`}
+        style={size ? { height: size, width: size, objectFit: "contain" } : undefined}
         loading="eager"
         decoding="async"
       />
