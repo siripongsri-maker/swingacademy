@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Users, Heart, Scale, Sparkles, CheckCircle2, Circle } from "lucide-react";
+import { ArrowRight, Users, Heart, Scale, Sparkles, CheckCircle2, Circle, Route as RouteIcon } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
