@@ -44,6 +44,18 @@ type Asset = {
   fileUrl?: string;
 };
 
+type LearningRecord = {
+  id: string;
+  personId: string;
+  productId: string;
+  progressPct: number;
+};
+
+type Certificate = {
+  id: string;
+  productId: string;
+};
+
 const statusTone: Record<string, string> = {
   published: "bg-success/15 text-success",
   draft: "bg-warm-200 text-warm-700",
