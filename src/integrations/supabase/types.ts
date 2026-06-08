@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      knowledge_products: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          audiences: string[]
+          categories: string[]
+          content_md: string
+          cover_url: string | null
+          created_at: string
+          featured_order: number
+          id: string
+          is_featured: boolean
+          key_message: string | null
+          language: string
+          owner_id: string | null
+          product_service: string | null
+          published_at: string | null
+          slug: string
+          source: string | null
+          source_type: string | null
+          sponsors: Json
+          status: string
+          summary: string | null
+          tags: string[]
+          title_en: string | null
+          title_th: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          audiences?: string[]
+          categories?: string[]
+          content_md?: string
+          cover_url?: string | null
+          created_at?: string
+          featured_order?: number
+          id?: string
+          is_featured?: boolean
+          key_message?: string | null
+          language?: string
+          owner_id?: string | null
+          product_service?: string | null
+          published_at?: string | null
+          slug: string
+          source?: string | null
+          source_type?: string | null
+          sponsors?: Json
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title_en?: string | null
+          title_th: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          audiences?: string[]
+          categories?: string[]
+          content_md?: string
+          cover_url?: string | null
+          created_at?: string
+          featured_order?: number
+          id?: string
+          is_featured?: boolean
+          key_message?: string | null
+          language?: string
+          owner_id?: string | null
+          product_service?: string | null
+          published_at?: string | null
+          slug?: string
+          source?: string | null
+          source_type?: string | null
+          sponsors?: Json
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title_en?: string | null
+          title_th?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       lesson_attachments: {
         Row: {
           course_id: string
