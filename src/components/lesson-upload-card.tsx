@@ -21,7 +21,8 @@ export function LessonUploadCard() {
   const [language, setLanguage] = useState<"th" | "en">("th");
   const [published, setPublished] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
-  const [slideFile, setSlideFile] = useState<File | null>(null);
+  const [slideFiles, setSlideFiles] = useState<File[]>([]);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
