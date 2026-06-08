@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { CheckCircle2, RotateCcw, Pencil, Trash2, Plus, GraduationCap } from "lucide-react";
+import { useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { CheckCircle2, RotateCcw, Pencil, Trash2, Plus, GraduationCap, Camera, Loader2, X } from "lucide-react";
 import seed from "@/data/seed-data.json";
+import { listAvatars, createAvatarUploadUrl, setAvatar, deleteAvatar } from "@/lib/avatars.functions";
 
 export const Route = createFileRoute("/staff/admin")({
   component: AdminPage,
