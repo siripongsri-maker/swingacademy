@@ -15,6 +15,7 @@ import {
   ChevronRight,
   X,
   Plus,
+  Mic,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
@@ -27,6 +28,7 @@ type NavItem = {
 };
 
 const knowledgeFlow: NavItem[] = [
+  { to: "/staff/capture", label: "Live Capture", labelTh: "อัดเสียง / สรุปสด", icon: Mic },
   { to: "/staff/product-knowledge", label: "Knowledge Product", labelTh: "บันทึก/สร้างความรู้", icon: BookMarked },
   { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library },
   { to: "/staff/talent", label: "Talent Mapping", labelTh: "เชื่อมความรู้กับคน", icon: Users },

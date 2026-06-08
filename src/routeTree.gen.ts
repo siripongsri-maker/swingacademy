@@ -29,6 +29,7 @@ import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.produc
 import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
 import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
+import { Route as StaffCaptureRouteImport } from './routes/staff.capture'
 import { Route as StaffAdminRouteImport } from './routes/staff.admin'
 import { Route as KSlugRouteImport } from './routes/k.$slug'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
@@ -134,6 +135,11 @@ const StaffDashboardRoute = StaffDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffCaptureRoute = StaffCaptureRouteImport.update({
+  id: '/capture',
+  path: '/capture',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffAdminRoute = StaffAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/staff/admin': typeof StaffAdminRoute
+  '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/staff/admin': typeof StaffAdminRoute
+  '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/staff/admin': typeof StaffAdminRoute
+  '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/courses/$id'
     | '/k/$slug'
     | '/staff/admin'
+    | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
     | '/staff/knowledge-translation'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/courses/$id'
     | '/k/$slug'
     | '/staff/admin'
+    | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
     | '/staff/knowledge-translation'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/courses/$id'
     | '/k/$slug'
     | '/staff/admin'
+    | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
     | '/staff/knowledge-translation'
@@ -458,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffDashboardRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/capture': {
+      id: '/staff/capture'
+      path: '/capture'
+      fullPath: '/staff/capture'
+      preLoaderRoute: typeof StaffCaptureRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/admin': {
       id: '/staff/admin'
       path: '/admin'
@@ -495,6 +514,7 @@ const CoursesRouteWithChildren =
 
 interface StaffRouteChildren {
   StaffAdminRoute: typeof StaffAdminRoute
+  StaffCaptureRoute: typeof StaffCaptureRoute
   StaffDashboardRoute: typeof StaffDashboardRoute
   StaffKnowledgeRoute: typeof StaffKnowledgeRoute
   StaffKnowledgeTranslationRoute: typeof StaffKnowledgeTranslationRoute
@@ -509,6 +529,7 @@ interface StaffRouteChildren {
 
 const StaffRouteChildren: StaffRouteChildren = {
   StaffAdminRoute: StaffAdminRoute,
+  StaffCaptureRoute: StaffCaptureRoute,
   StaffDashboardRoute: StaffDashboardRoute,
   StaffKnowledgeRoute: StaffKnowledgeRoute,
   StaffKnowledgeTranslationRoute: StaffKnowledgeTranslationRoute,
