@@ -48,7 +48,7 @@ function StaffDashboard() {
   const journeys = sc.ktJourneys as KtJourney[];
   const people = sc.people;
 
-  const personById = (id: string) => people.find((p) => p.id === id);
+  const personById = (id: string) => people.find((p: any) => p.id === id);
 
   // Recent updates — last 6 by updatedAt
   const recent = [...assets]
@@ -114,7 +114,7 @@ function StaffDashboard() {
           accent="#1F8A5B"
           label="Products"
           value={products.length}
-          sub={`${products.filter((p) => p.status === "published").length} live`}
+          sub={`${products.filter((p: any) => p.status === "published").length} live`}
         />
         <PillarCard
           icon={<Award className="h-5 w-5" />}

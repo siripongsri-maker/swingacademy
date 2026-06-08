@@ -101,7 +101,7 @@ function ProductsPage() {
 
 function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
   const sc = seed.staffConsole as any;
-  const funder = sc.funders.find((f) => f.id === product.funderId);
+  const funder = sc.funders.find((f: any) => f.id === product.funderId);
   const Icon = productIcon[product.productType] ?? FileText;
   const statusLabel =
     (sc.statusLabels as Record<string, string>)[product.status] ?? product.status;

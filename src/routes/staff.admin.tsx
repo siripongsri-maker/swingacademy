@@ -73,7 +73,7 @@ function AdminPage() {
 function ReviewQueue() {
   const sc = seed.staffConsole as any;
   const queue = sc.knowledgeAssets.filter(
-    (a) => a.status === "draft" || a.status === "in_review",
+    (a: any) => a.status === "draft" || a.status === "in_review",
   );
   const [acted, setActed] = useState<Record<string, "approved" | "returned">>({});
 
@@ -85,8 +85,8 @@ function ReviewQueue() {
         </p>
       ) : (
         <ul className="divide-y divide-warm-200">
-          {queue.map((a) => {
-            const owner = sc.people.find((p) => p.id === a.ownerId);
+          {queue.map((a: any) => {
+            const owner = sc.people.find((p: any) => p.id === a.ownerId);
             const status = acted[a.id];
             return (
               <li key={a.id} className="flex flex-wrap items-start gap-4 px-5 py-4">
@@ -160,7 +160,7 @@ function TaxonomyEditor() {
       </Section>
       <Section title="Skills" addLabel="Add skill">
         <ul className="divide-y divide-warm-200">
-          {sc.skills.map((s) => (
+          {sc.skills.map((s: any) => (
             <Row
               key={s.id}
               primary={s.name}
@@ -450,8 +450,8 @@ function RecordsTable() {
         </thead>
         <tbody className="divide-y divide-warm-200">
           {(sc.learningRecords as LearningRecord[]).map((r) => {
-            const person = sc.people.find((p) => p.id === r.personId);
-            const product = sc.products.find((p) => p.id === r.productId);
+            const person = sc.people.find((p: any) => p.id === r.personId);
+            const product = sc.products.find((p: any) => p.id === r.productId);
             return (
               <tr key={r.id} className="hover:bg-warm-50">
                 <td className="px-5 py-3">

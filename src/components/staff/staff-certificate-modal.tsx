@@ -25,11 +25,11 @@ export function StaffCertificateModal({ certificateId, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const certs = sc.certificates as Cert[];
   const cert = certs.find((c) => c.id === certificateId);
-  const person = cert ? sc.people.find((p) => p.id === cert.personId) : null;
-  const product = cert ? sc.products.find((p) => p.id === cert.productId) : null;
+  const person = cert ? sc.people.find((p: any) => p.id === cert.personId) : null;
+  const product = cert ? sc.products.find((p: any) => p.id === cert.productId) : null;
 
   return (
     <div
