@@ -13,7 +13,7 @@ export function FunderExportModal({ onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const [funderId, setFunderId] = useState<string>(sc.funders[0]?.id ?? "");
   const [view, setView] = useState<View>("assets");
 

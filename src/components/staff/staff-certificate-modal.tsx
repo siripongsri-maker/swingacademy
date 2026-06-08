@@ -25,7 +25,7 @@ export function StaffCertificateModal({ certificateId, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const certs = sc.certificates as Cert[];
   const cert = certs.find((c) => c.id === certificateId);
   const person = cert ? sc.people.find((p) => p.id === cert.personId) : null;
