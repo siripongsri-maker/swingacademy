@@ -1,197 +1,176 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import {
   Search,
+  CheckCircle2,
+  Archive,
+  Send,
+  Sparkles,
+  Layers,
+  Plus,
+  X,
+  Trash2,
+  Save,
   BookOpen,
+  ShieldCheck,
   FileText,
-  Wrench,
-  ClipboardList,
-  Megaphone,
-  StickyNote,
-  Database,
-  Scale,
-  Image as ImageIcon,
-  Video,
-  GraduationCap,
-  AlertTriangle,
 } from "lucide-react";
-import { useStaff } from "@/lib/staff-context";
-import seed from "@/data/seed-data.json";
-import { LessonUploadCard } from "@/components/lesson-upload-card";
+import {
+  useProductKnowledge,
+  type KnowledgeAsset,
+  type KnowledgeStatus,
+  type QaChecklist,
+} from "@/lib/product-knowledge-store";
+import { suggestKnowledgeMeta } from "@/lib/knowledge-ai.functions";
 
 export const Route = createFileRoute("/staff/knowledge")({
-  component: KnowledgeLibrary,
+  component: KnowledgeManagementPage,
 });
 
-type Asset = {
-  id: string;
-  title: string;
-  type: string;
-  domain: string;
-  source: string;
-  ownerId: string;
-  funderId: string;
-  language: string;
-  status: string;
-  version: string;
-  lastReviewed: string | null;
-  nextReview: string | null;
-  summary: string;
-  tags: string[];
-  updatedAt: string;
-};
-
-const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
-  curriculum: GraduationCap,
-  sop: ClipboardList,
-  toolkit: Wrench,
-  brief: FileText,
-  media: Megaphone,
-  note: StickyNote,
-  dataset: Database,
-  policy: Scale,
-  infographic: ImageIcon,
-  video: Video,
-  course: BookOpen,
-};
-
-const statusTone: Record<string, string> = {
-  published: "bg-success/15 text-success",
+const STATUS_STYLES: Record<KnowledgeStatus, string> = {
   draft: "bg-warm-200 text-warm-700",
-  in_review: "bg-gold/15 text-gold",
+  review: "bg-amber-100 text-amber-700",
+  published: "bg-success/15 text-success",
   archived: "bg-warm-100 text-warm-500",
 };
 
-const TODAY = new Date("2026-06-07");
+const QA_ITEMS: Array<{ key: keyof QaChecklist; label: string }> = [
+  { key: "titleClear", label: "ชื่อเรื่องชัดเจน เข้าใจง่าย" },
+  { key: "keyMessageOk", label: "Key message ครบถ้วน" },
+  { key: "sourceCited", label: "อ้างอิงแหล่งที่มา" },
+  { key: "languageOk", label: "ภาษาถูกต้อง สะกดดี" },
+  { key: "nonStigmatizing", label: "ภาษา inclusive ไม่ตีตรา" },
+  { key: "expertReviewed", label: "ผ่านการตรวจโดยผู้เชี่ยวชาญ" },
+];
 
-function KnowledgeLibrary() {
-  const sc = seed.staffConsole;
-  const assets = sc.knowledgeAssets as Asset[];
-  const { openAsset } = useStaff();
+// Domain choices for KM (Phase 4 spec)
+const DOMAINS = [
+  "HIV Prevention",
+  "PrEP/PEP",
+  "ART",
+  "Community Care",
+  "Rights & Law",
+  "Communication",
+  "M&E",
+];
 
+function KnowledgeManagementPage() {
+  const km = useProductKnowledge();
+  const [tab, setTab] = useState<"assets" | "collections">("assets");
   const [q, setQ] = useState("");
-  const [source, setSource] = useState<string>("all");
-  const [funderId, setFunderId] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | KnowledgeStatus>("all");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [collectionEditing, setCollectionEditing] = useState<string | "new" | null>(null);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return assets.filter((a) => {
-      if (source !== "all" && a.source !== source) return false;
-      if (funderId !== "all" && a.funderId !== funderId) return false;
+    return km.assets.filter((a) => {
+      if (statusFilter !== "all" && a.status !== statusFilter) return false;
       if (!needle) return true;
       return (
-        a.title.toLowerCase().includes(needle) ||
+        a.titleTh.toLowerCase().includes(needle) ||
+        a.titleEn.toLowerCase().includes(needle) ||
         a.tags.some((t) => t.toLowerCase().includes(needle))
       );
     });
-  }, [assets, q, source, funderId]);
+  }, [km.assets, q, statusFilter]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-warm-500">KM Library</p>
-        <h1 className="mt-1 text-3xl font-semibold text-navy-500">Knowledge assets</h1>
+        <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Knowledge Management</p>
+        <h1 className="mt-1 text-3xl font-semibold text-navy-500">จัดการความรู้</h1>
         <p className="mt-1 text-sm text-warm-500">
-          Curricula, SOPs, toolkits and reports — produced by SWING or received from partners.
+          Admin / Trainer ตรวจสอบ approve และจัดหมวด Knowledge Product, รวมเป็น collection, เชื่อม competency และ curriculum
         </p>
       </div>
 
-      <LessonUploadCard />
-
-      {/* Search + filters */}
-      <div className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-400" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by title or tag…"
-            className="w-full rounded-pill border border-warm-200 bg-warm-50 py-2.5 pl-10 pr-4 text-sm text-navy-500 placeholder:text-warm-400 focus:border-magenta-500 focus:bg-white focus:outline-none"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <FilterGroup label="Source">
-            <Chip active={source === "all"} onClick={() => setSource("all")}>All</Chip>
-            {Object.entries(sc.sourceLabels as Record<string, string>).map(([k, v]) => (
-              <Chip key={k} active={source === k} onClick={() => setSource(k)}>{v}</Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup label="Funder">
-            <Chip active={funderId === "all"} onClick={() => setFunderId("all")}>All</Chip>
-            {sc.funders.map((f) => (
-              <Chip
-                key={f.id}
-                active={funderId === f.id}
-                onClick={() => setFunderId(f.id)}
-                color={f.color}
-              >
-                {f.shortName}
-              </Chip>
-            ))}
-          </FilterGroup>
-        </div>
+      <div className="flex items-center gap-2 border-b border-warm-200">
+        <TabBtn active={tab === "assets"} onClick={() => setTab("assets")}>
+          Knowledge Assets ({km.assets.length})
+        </TabBtn>
+        <TabBtn active={tab === "collections"} onClick={() => setTab("collections")}>
+          Collections ({km.collections.length})
+        </TabBtn>
       </div>
 
-      <p className="text-xs text-warm-500">
-        Showing <span className="font-semibold text-navy-500">{filtered.length}</span> of {assets.length}
-      </p>
+      {tab === "assets" ? (
+        <>
+          <div className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-400" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="ค้นหาตามชื่อหรือ tag…"
+                className="w-full rounded-pill border border-warm-200 bg-warm-50 py-2.5 pl-10 pr-4 text-sm text-navy-500 placeholder:text-warm-400 focus:border-magenta-500 focus:bg-white focus:outline-none"
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {(["all", "draft", "review", "published", "archived"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`rounded-pill border px-3 py-1 text-xs font-semibold transition-colors ${
+                    statusFilter === s
+                      ? "border-magenta-500 bg-magenta-500 text-white"
+                      : "border-warm-200 bg-white text-warm-700 hover:border-magenta-500"
+                  }`}
+                >
+                  {s === "all" ? "All" : s}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {filtered.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-warm-200 bg-white p-12 text-center">
-          <p className="text-sm font-semibold text-navy-500">No matching assets</p>
-          <p className="mt-1 text-xs text-warm-500">Try a different search or clear the filters.</p>
-        </div>
+          {filtered.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid gap-3">
+              {filtered.map((a) => (
+                <AssetRow key={a.id} asset={a} onOpen={() => setEditingId(a.id)} />
+              ))}
+            </div>
+          )}
+        </>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((a) => (
-            <KnowledgeCard key={a.id} asset={a} onOpen={() => openAsset(a.id)} />
-          ))}
-        </div>
+        <CollectionsView onEdit={(id) => setCollectionEditing(id)} />
+      )}
+
+      {editingId && (
+        <AssetDrawer
+          asset={km.assets.find((a) => a.id === editingId)!}
+          onClose={() => setEditingId(null)}
+        />
+      )}
+
+      {collectionEditing && (
+        <CollectionDrawer
+          collectionId={collectionEditing === "new" ? null : collectionEditing}
+          onClose={() => setCollectionEditing(null)}
+        />
+      )}
+
+      {tab === "collections" && (
+        <button
+          onClick={() => setCollectionEditing("new")}
+          className="fixed bottom-6 right-6 inline-flex items-center gap-2 rounded-pill bg-magenta-500 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-magenta-600"
+        >
+          <Plus className="h-4 w-4" /> สร้าง Collection
+        </button>
       )}
     </div>
   );
 }
 
-function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-warm-500">{label}</span>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
-    </div>
-  );
-}
-
-function Chip({
-  children,
-  active,
-  onClick,
-  color,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-  color?: string;
-}) {
-  const style =
-    active && color
-      ? { backgroundColor: color, color: "#fff", borderColor: color }
-      : active
-      ? undefined
-      : color
-      ? { borderColor: `${color}55`, color }
-      : undefined;
+function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
-      style={style}
-      className={`rounded-pill border px-3 py-1 text-xs font-semibold transition-colors ${
-        active && !color
-          ? "border-magenta-500 bg-magenta-500 text-white"
-          : !active && !color
-          ? "border-warm-200 bg-white text-warm-700 hover:border-magenta-500"
-          : "bg-white hover:opacity-80"
+      className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+        active ? "border-magenta-500 text-magenta-600" : "border-transparent text-warm-500 hover:text-navy-500"
       }`}
     >
       {children}
@@ -199,79 +178,451 @@ function Chip({
   );
 }
 
-function KnowledgeCard({ asset, onOpen }: { asset: Asset; onOpen: () => void }) {
-  const sc = seed.staffConsole;
-  const owner = sc.people.find((p) => p.id === asset.ownerId);
-  const funder = sc.funders.find((f) => f.id === asset.funderId);
-  const typeLabel = (sc.typeLabels as Record<string, string>)[asset.type] ?? asset.type;
-  const statusLabel = (sc.statusLabels as Record<string, string>)[asset.status] ?? asset.status;
-  const Icon = typeIcon[asset.type] ?? FileText;
+function EmptyState() {
+  return (
+    <div className="rounded-lg border border-dashed border-warm-200 bg-white p-12 text-center">
+      <p className="text-sm font-semibold text-navy-500">ยังไม่มี Knowledge Product</p>
+      <p className="mt-1 text-xs text-warm-500">
+        เริ่มจากปุ่ม "บันทึกความรู้" ที่ sidebar หรือไปที่{" "}
+        <Link to="/staff/product-knowledge" className="text-magenta-500 underline">
+          Knowledge Product
+        </Link>
+      </p>
+    </div>
+  );
+}
 
-  const overdue =
-    asset.nextReview !== null && new Date(asset.nextReview).getTime() < TODAY.getTime();
+function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void }) {
+  const { updateAsset, categoryLabels } = useProductKnowledge();
+  const qa = asset.qaChecklist ?? {};
+  const qaCount = QA_ITEMS.filter((i) => qa[i.key]).length;
+
+  const approve = () => {
+    updateAsset(
+      asset.id,
+      {
+        status: "published",
+        approvedAt: new Date().toISOString(),
+        approvedBy: "You",
+      },
+      "Approved & published",
+    );
+    toast.success("Approved & published");
+  };
+
+  const sendReview = () => {
+    updateAsset(asset.id, { status: "review" }, "Sent to review");
+    toast.success("ส่งให้ตรวจสอบแล้ว");
+  };
+
+  const archive = () => {
+    updateAsset(asset.id, { status: "archived" }, "Archived");
+    toast.success("Archived");
+  };
 
   return (
-    <button
-      onClick={onOpen}
-      className="group flex h-full flex-col overflow-hidden rounded-lg border border-warm-200 bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-magenta-500 hover:shadow-md"
-    >
-      <div className="h-1 w-full" style={{ backgroundColor: funder?.color ?? "#7A6FC4" }} aria-hidden />
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <span
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md"
-            style={{
-              backgroundColor: `${funder?.color ?? "#7A6FC4"}1A`,
-              color: funder?.color ?? "#7A6FC4",
-            }}
-          >
-            <Icon className="h-5 w-5" />
-          </span>
-          <span
-            className={`inline-flex items-center rounded-pill px-2.5 py-0.5 text-[11px] font-semibold ${statusTone[asset.status]}`}
-          >
-            {statusLabel}
-          </span>
-        </div>
-
-        <h3 className="line-clamp-2 text-base font-semibold leading-snug text-navy-500 group-hover:text-magenta-500">
-          {asset.title}
-        </h3>
-        <p className="mt-1.5 line-clamp-2 text-xs text-warm-500">{asset.summary}</p>
-
-        {overdue && (
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-danger/10 px-2.5 py-1 text-[11px] font-semibold text-danger">
-            <AlertTriangle className="h-3 w-3" />
-            Overdue for review
+    <div className="flex flex-col gap-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm md:flex-row md:items-center">
+      <button onClick={onOpen} className="flex-1 text-left">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-base font-semibold text-navy-500">{asset.titleTh || asset.titleEn}</h3>
+              <span
+                className={`inline-flex items-center rounded-pill px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLES[asset.status]}`}
+              >
+                {asset.status}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-pill bg-warm-100 px-2 py-0.5 text-[11px] font-semibold text-warm-700">
+                v{asset.versionHistory.at(-1)?.v ?? "1.0"}
+              </span>
+            </div>
+            <p className="mt-1 line-clamp-1 text-xs text-warm-500">{asset.summary}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {asset.categories.map((c) => (
+                <span key={c} className="inline-flex items-center rounded-pill bg-lavender-100 px-2 py-0.5 text-[11px] font-semibold text-lavender-900">
+                  {categoryLabels[c]?.th ?? c}
+                </span>
+              ))}
+              {(asset.competencyTags ?? []).slice(0, 3).map((t) => (
+                <span key={t} className="inline-flex items-center gap-1 rounded-pill bg-magenta-500/10 px-2 py-0.5 text-[11px] font-semibold text-magenta-600">
+                  <ShieldCheck className="h-3 w-3" />
+                  {t}
+                </span>
+              ))}
+              <span className="inline-flex items-center gap-1 rounded-pill border border-warm-200 px-2 py-0.5 text-[11px] font-semibold text-warm-700">
+                <CheckCircle2 className="h-3 w-3" /> QA {qaCount}/{QA_ITEMS.length}
+              </span>
+            </div>
           </div>
+        </div>
+      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        {asset.status === "draft" && (
+          <button onClick={sendReview} className="inline-flex items-center gap-1 rounded-pill bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-200">
+            <Send className="h-3.5 w-3.5" /> Review
+          </button>
         )}
+        {asset.status !== "published" && asset.status !== "archived" && (
+          <button onClick={approve} className="inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Approve
+          </button>
+        )}
+        {asset.status !== "archived" && (
+          <button onClick={archive} className="inline-flex items-center gap-1 rounded-pill border border-warm-200 px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
+            <Archive className="h-3.5 w-3.5" /> Archive
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
-        <div className="mt-4 flex flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center rounded-pill bg-lavender-100 px-2.5 py-0.5 text-[11px] font-semibold text-lavender-900">
-            {typeLabel}
-          </span>
-          {funder && (
-            <span
-              className="inline-flex items-center rounded-pill px-2.5 py-0.5 text-[11px] font-semibold"
-              style={{ backgroundColor: `${funder.color}1A`, color: funder.color }}
-            >
-              {funder.shortName}
-            </span>
-          )}
+function AssetDrawer({ asset, onClose }: { asset: KnowledgeAsset; onClose: () => void }) {
+  const { updateAsset, categoryLabels, audiences } = useProductKnowledge();
+  const suggest = useServerFn(suggestKnowledgeMeta);
+
+  const [objectives, setObjectives] = useState((asset.learningObjectives ?? []).join("\n"));
+  const [competencies, setCompetencies] = useState((asset.competencyTags ?? []).join(", "));
+  const [services, setServices] = useState((asset.relatedServices ?? []).join(", "));
+  const [courses, setCourses] = useState((asset.relatedCourses ?? []).join(", "));
+  const [curriculum, setCurriculum] = useState(asset.linkedCurriculum ?? "");
+  const [domain, setDomain] = useState(asset.categories[0] ?? "");
+  const [audienceIds, setAudienceIds] = useState<string[]>(asset.audiences);
+  const [tags, setTags] = useState(asset.tags.join(", "));
+  const [qa, setQa] = useState<QaChecklist>(asset.qaChecklist ?? {});
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const toggleAud = (id: string) =>
+    setAudienceIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggleQa = (key: keyof QaChecklist) => setQa((q) => ({ ...q, [key]: !q[key] }));
+
+  const aiSuggest = async () => {
+    setAiLoading(true);
+    try {
+      const out = await suggest({
+        data: {
+          titleTh: asset.titleTh,
+          titleEn: asset.titleEn,
+          summary: asset.summary,
+          keyMessage: asset.keyMessage,
+          contentMd: asset.contentMd.slice(0, 8000),
+          availableCategories: Object.keys(categoryLabels),
+          availableAudiences: audiences.map((a) => a.id),
+        },
+      });
+      if (out.categories.length) setDomain(out.categories[0]);
+      if (out.audiences.length) setAudienceIds(out.audiences);
+      if (out.tags.length) setTags(out.tags.join(", "));
+      if (out.competencyTags.length) setCompetencies(out.competencyTags.join(", "));
+      if (out.learningObjectives.length) setObjectives(out.learningObjectives.join("\n"));
+      toast.success("AI แนะนำเสร็จแล้ว ตรวจสอบและบันทึก");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI suggest failed");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const save = () => {
+    const newCategories = domain
+      ? [domain, ...asset.categories.filter((c) => c !== domain)]
+      : asset.categories;
+    updateAsset(
+      asset.id,
+      {
+        categories: newCategories,
+        audiences: audienceIds,
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        learningObjectives: objectives.split("\n").map((s) => s.trim()).filter(Boolean),
+        competencyTags: competencies.split(",").map((s) => s.trim()).filter(Boolean),
+        relatedServices: services.split(",").map((s) => s.trim()).filter(Boolean),
+        relatedCourses: courses.split(",").map((s) => s.trim()).filter(Boolean),
+        linkedCurriculum: curriculum.trim() || undefined,
+        qaChecklist: qa,
+      },
+      "Updated KM metadata",
+    );
+    toast.success("บันทึกแล้ว");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <button aria-label="Close" onClick={onClose} className="flex-1 bg-navy-900/50 backdrop-blur-sm" />
+      <div className="flex w-full max-w-2xl flex-col bg-white shadow-xl">
+        <div className="flex items-start justify-between border-b border-warm-200 px-6 py-4">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Manage knowledge</p>
+            <h2 className="truncate text-lg font-semibold text-navy-500">{asset.titleTh || asset.titleEn}</h2>
+          </div>
+          <button onClick={onClose} className="rounded-md p-2 text-warm-500 hover:bg-warm-100">
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        <div className="mt-auto flex items-center gap-2 pt-4">
-          <span
-            className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-warm-100 text-[11px] font-semibold text-navy-500"
-            aria-hidden
+        <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+          <button
+            onClick={aiSuggest}
+            disabled={aiLoading}
+            className="inline-flex items-center gap-2 rounded-pill bg-lavender-100 px-4 py-2 text-sm font-semibold text-lavender-900 hover:bg-lavender-200 disabled:opacity-50"
           >
-            {owner?.avatarInitial ?? "?"}
-          </span>
-          <span className="truncate text-xs text-warm-500">
-            {owner?.name ?? "—"} <span className="text-warm-400">· v{asset.version.replace(/^v/, "")}</span>
-          </span>
+            <Sparkles className="h-4 w-4" />
+            {aiLoading ? "AI กำลังคิด…" : "AI แนะนำหมวดหมู่ / tags / competency"}
+          </button>
+
+          <Field label="Domain (หมวดหลัก)">
+            <select value={domain} onChange={(e) => setDomain(e.target.value)} className="input">
+              <option value="">— เลือก —</option>
+              {Object.entries(categoryLabels).map(([k, v]) => (
+                <option key={k} value={k}>{v.th} / {v.en}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Target audience">
+            <div className="flex flex-wrap gap-1.5">
+              {audiences.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => toggleAud(a.id)}
+                  className={`rounded-pill border px-3 py-1 text-xs font-semibold transition-colors ${
+                    audienceIds.includes(a.id)
+                      ? "border-magenta-500 bg-magenta-500 text-white"
+                      : "border-warm-200 bg-white text-warm-700 hover:border-magenta-500"
+                  }`}
+                >
+                  {a.th}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Learning objectives (บรรทัดละ 1 ข้อ)">
+            <textarea
+              value={objectives}
+              onChange={(e) => setObjectives(e.target.value)}
+              rows={4}
+              placeholder="ผู้เรียนสามารถ…"
+              className="input"
+            />
+          </Field>
+
+          <Field label="Competency tags (คั่นด้วย ,)">
+            <input value={competencies} onChange={(e) => setCompetencies(e.target.value)} className="input" placeholder="counselling, harm-reduction" />
+          </Field>
+
+          <Field label="Tags (คั่นด้วย ,)">
+            <input value={tags} onChange={(e) => setTags(e.target.value)} className="input" />
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Related services">
+              <input value={services} onChange={(e) => setServices(e.target.value)} className="input" placeholder="PrEP clinic, HIVST" />
+            </Field>
+            <Field label="Related courses">
+              <input value={courses} onChange={(e) => setCourses(e.target.value)} className="input" placeholder="Outreach 101" />
+            </Field>
+          </div>
+
+          <Field label="Linked curriculum / training module">
+            <input value={curriculum} onChange={(e) => setCurriculum(e.target.value)} className="input" placeholder="เช่น Outreach Worker Curriculum 2026" />
+          </Field>
+
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-warm-500">Content quality checklist</p>
+            <div className="space-y-1.5 rounded-md border border-warm-200 bg-warm-50 p-3">
+              {QA_ITEMS.map((item) => (
+                <label key={item.key} className="flex items-center gap-2 text-sm text-navy-500">
+                  <input
+                    type="checkbox"
+                    checked={!!qa[item.key]}
+                    onChange={() => toggleQa(item.key)}
+                    className="h-4 w-4 rounded border-warm-300 text-magenta-500 focus:ring-magenta-500"
+                  />
+                  {item.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-warm-500">Version history</p>
+            <ul className="space-y-1 rounded-md border border-warm-200 bg-warm-50 p-3 text-xs text-warm-700">
+              {asset.versionHistory.slice().reverse().map((v, i) => (
+                <li key={i} className="flex justify-between gap-2">
+                  <span className="font-semibold text-navy-500">v{v.v}</span>
+                  <span className="flex-1 truncate">{v.note}</span>
+                  <span className="text-warm-500">{new Date(v.at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-warm-200 px-6 py-4">
+          <button onClick={onClose} className="rounded-pill border border-warm-200 px-4 py-2 text-sm font-semibold text-warm-700 hover:bg-warm-100">
+            ยกเลิก
+          </button>
+          <button onClick={save} className="inline-flex items-center gap-2 rounded-pill bg-magenta-500 px-5 py-2 text-sm font-semibold text-white hover:bg-magenta-600">
+            <Save className="h-4 w-4" /> บันทึก
+          </button>
         </div>
       </div>
-    </button>
+      <style>{`.input{width:100%;border:1px solid hsl(var(--warm-200,30 10% 90%));border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#1a2332} .input:focus{outline:none;border-color:#d6336c}`}</style>
+    </div>
+  );
+}
+
+function CollectionsView({ onEdit }: { onEdit: (id: string) => void }) {
+  const { collections, assets } = useProductKnowledge();
+  if (collections.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-warm-200 bg-white p-12 text-center">
+        <Layers className="mx-auto h-8 w-8 text-warm-400" />
+        <p className="mt-3 text-sm font-semibold text-navy-500">ยังไม่มี Collection</p>
+        <p className="mt-1 text-xs text-warm-500">รวม Knowledge Product หลายชิ้นเป็นชุดเดียวสำหรับการอบรมหรือแคมเปญ</p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {collections.map((c) => (
+        <button
+          key={c.id}
+          onClick={() => onEdit(c.id)}
+          className="rounded-lg border border-warm-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-magenta-500 hover:shadow-md"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <Layers className="h-5 w-5 text-magenta-500" />
+            <span className="inline-flex items-center rounded-pill bg-lavender-100 px-2 py-0.5 text-[11px] font-semibold text-lavender-900">
+              {c.domain || "—"}
+            </span>
+          </div>
+          <h3 className="mt-2 text-base font-semibold text-navy-500">{c.name}</h3>
+          <p className="mt-1 line-clamp-2 text-xs text-warm-500">{c.description}</p>
+          <div className="mt-3 flex items-center gap-2 text-xs text-warm-700">
+            <BookOpen className="h-3.5 w-3.5" />
+            {c.assetIds.filter((id) => assets.some((a) => a.id === id)).length} items
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CollectionDrawer({ collectionId, onClose }: { collectionId: string | null; onClose: () => void }) {
+  const { collections, assets, createCollection, updateCollection, removeCollection } = useProductKnowledge();
+  const existing = collectionId ? collections.find((c) => c.id === collectionId) : null;
+
+  const [name, setName] = useState(existing?.name ?? "");
+  const [description, setDescription] = useState(existing?.description ?? "");
+  const [domain, setDomain] = useState(existing?.domain ?? DOMAINS[0]);
+  const [assetIds, setAssetIds] = useState<string[]>(existing?.assetIds ?? []);
+
+  const toggle = (id: string) =>
+    setAssetIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const save = () => {
+    if (!name.trim()) return toast.error("กรุณาใส่ชื่อ collection");
+    if (existing) {
+      updateCollection(existing.id, { name, description, domain, assetIds });
+      toast.success("บันทึก collection แล้ว");
+    } else {
+      createCollection({ name, description, domain, assetIds });
+      toast.success("สร้าง collection แล้ว");
+    }
+    onClose();
+  };
+
+  const del = () => {
+    if (!existing) return;
+    if (!confirm("ลบ collection นี้?")) return;
+    removeCollection(existing.id);
+    toast.success("ลบแล้ว");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <button aria-label="Close" onClick={onClose} className="flex-1 bg-navy-900/50 backdrop-blur-sm" />
+      <div className="flex w-full max-w-xl flex-col bg-white shadow-xl">
+        <div className="flex items-start justify-between border-b border-warm-200 px-6 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Collection</p>
+            <h2 className="text-lg font-semibold text-navy-500">{existing ? "แก้ไข" : "สร้างใหม่"}</h2>
+          </div>
+          <button onClick={onClose} className="rounded-md p-2 text-warm-500 hover:bg-warm-100">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+          <Field label="ชื่อ Collection">
+            <input value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="เช่น ชุดความรู้ PrEP สำหรับ Outreach" />
+          </Field>
+          <Field label="คำอธิบาย">
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="input" />
+          </Field>
+          <Field label="Domain">
+            <select value={domain} onChange={(e) => setDomain(e.target.value)} className="input">
+              {DOMAINS.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </Field>
+
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-warm-500">เลือก Knowledge Product ({assetIds.length})</p>
+            {assets.length === 0 ? (
+              <p className="rounded-md border border-dashed border-warm-200 p-4 text-center text-xs text-warm-500">ยังไม่มี asset ในระบบ</p>
+            ) : (
+              <div className="max-h-80 space-y-1 overflow-y-auto rounded-md border border-warm-200 p-2">
+                {assets.map((a) => (
+                  <label key={a.id} className="flex items-start gap-2 rounded-md p-2 text-sm hover:bg-warm-50">
+                    <input
+                      type="checkbox"
+                      checked={assetIds.includes(a.id)}
+                      onChange={() => toggle(a.id)}
+                      className="mt-0.5 h-4 w-4 rounded border-warm-300 text-magenta-500 focus:ring-magenta-500"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="h-3 w-3 shrink-0 text-warm-500" />
+                        <span className="truncate font-medium text-navy-500">{a.titleTh || a.titleEn}</span>
+                      </div>
+                      <p className="line-clamp-1 text-xs text-warm-500">{a.summary}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t border-warm-200 px-6 py-4">
+          {existing ? (
+            <button onClick={del} className="inline-flex items-center gap-1 rounded-pill px-3 py-2 text-xs font-semibold text-danger hover:bg-danger/10">
+              <Trash2 className="h-3.5 w-3.5" /> ลบ
+            </button>
+          ) : <span />}
+          <div className="flex items-center gap-2">
+            <button onClick={onClose} className="rounded-pill border border-warm-200 px-4 py-2 text-sm font-semibold text-warm-700 hover:bg-warm-100">
+              ยกเลิก
+            </button>
+            <button onClick={save} className="inline-flex items-center gap-2 rounded-pill bg-magenta-500 px-5 py-2 text-sm font-semibold text-white hover:bg-magenta-600">
+              <Save className="h-4 w-4" /> บันทึก
+            </button>
+          </div>
+        </div>
+      </div>
+      <style>{`.input{width:100%;border:1px solid #e7e3dd;border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#1a2332} .input:focus{outline:none;border-color:#d6336c}`}</style>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-warm-500">{label}</span>
+      {children}
+    </label>
   );
 }
