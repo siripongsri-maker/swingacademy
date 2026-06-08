@@ -332,6 +332,38 @@ function TranslationEditor({
     }
   }
 
+  async function runCreative(tool:
+    | "rewrite" | "summary" | "social" | "html" | "flowchart"
+    | "graphic_brief" | "image_prompt" | "layout" | "inclusivity_check") {
+    if (!currentSource) {
+      toast.error("เลือก source asset ก่อน");
+      return;
+    }
+    setCreativeTool(tool);
+    try {
+      const res = await aiCreative({
+        data: {
+          tool,
+          assetContent: currentSource.contentMd,
+          currentOutput: form.outputMd || undefined,
+          audience: pk.audiences.find((a) => a.id === form.audience)?.en ?? form.audience,
+          format: pk.formats.find((f) => f.id === form.format)?.en ?? form.format,
+          tone: pk.tones.find((t) => t.id === form.tone)?.en ?? form.tone,
+          language: form.language,
+          instruction: form.instruction || undefined,
+        },
+      });
+      const block = `\n\n---\n## ${res.label}\n${res.text}\n`;
+      update("outputMd", (form.outputMd ?? "") + block);
+      toast.success(`${res.label} เพิ่มลงผลลัพธ์แล้ว`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "AI error");
+    } finally {
+      setCreativeTool(null);
+    }
+  }
+
+
   function save(targetStatus?: TranslationStatus) {
     if (!form.assetId) {
       toast.error("เลือก source asset ก่อน");
