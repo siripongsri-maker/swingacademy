@@ -26,6 +26,25 @@ const SuggestInput = z.object({
   availableAudiences: z.array(z.string().max(80)).max(40),
 });
 
+const TalentSummaryInput = z.object({
+  personName: z.string().min(1).max(200),
+  personRole: z.string().max(200).optional(),
+  personSite: z.string().max(200).optional(),
+  mappings: z
+    .array(
+      z.object({
+        assetTitle: z.string().max(300),
+        domain: z.string().max(80).optional(),
+        role: z.string().max(40),
+        competencyTags: z.array(z.string().max(80)).max(20).optional(),
+        evidenceCount: z.number().int().min(0).max(999),
+        evidenceTypes: z.array(z.string().max(40)).max(20).optional(),
+      }),
+    )
+    .min(1)
+    .max(80),
+});
+
 async function callLovableModel(systemPrompt: string, userPrompt: string) {
   const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
   const { generateText } = await import("ai");
