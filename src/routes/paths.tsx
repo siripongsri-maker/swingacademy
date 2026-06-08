@@ -80,130 +80,147 @@ function PathsPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-8 lg:grid-cols-2">
-          {paths.map((p) => {
-            const Icon = iconMap[p.icon] ?? Sparkles;
-            const isFocus = focus === p.id;
-            const pathCourses = p.courseIds.map(courseById).filter(Boolean) as Course[];
-            const completed = signedIn
-              ? pathCourses.filter((c) => (progress[c.id] ?? 0) >= 100).length
-              : 0;
-            const pctPath = pathCourses.length
-              ? Math.round((completed / pathCourses.length) * 100)
-              : 0;
+        {paths.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-warm-300 bg-white p-12 text-center">
+            <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-lavender-100 text-lavender-900">
+              <RouteIcon className="h-8 w-8" />
+            </div>
+            <p lang={lang} className="text-base font-semibold text-navy-500">
+              {t({ th: "ยังไม่มีเส้นทางเรียนรู้", en: "No learning paths available yet" })}
+            </p>
+            <p lang={lang} className="mt-1 text-sm text-warm-500">
+              {t({
+                th: "เส้นทางเรียนรู้ใหม่จะถูกเพิ่มเร็ว ๆ นี้ กรุณากลับมาตรวจสอบอีกครั้ง",
+                en: "New learning paths will be added soon. Please check back later.",
+              })}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-2">
+            {paths.map((p) => {
+              const Icon = iconMap[p.icon] ?? Sparkles;
+              const isFocus = focus === p.id;
+              const pathCourses = p.courseIds.map(courseById).filter(Boolean) as Course[];
+              const completed = signedIn
+                ? pathCourses.filter((c) => (progress[c.id] ?? 0) >= 100).length
+                : 0;
+              const pctPath = pathCourses.length
+                ? Math.round((completed / pathCourses.length) * 100)
+                : 0;
 
-            return (
-              <article
-                key={p.id}
-                ref={(el) => {
-                  refs.current[p.id] = el;
-                }}
-                className={`overflow-hidden rounded-lg border bg-white shadow-sm transition-all ${
-                  isFocus
-                    ? "border-magenta-500 shadow-md ring-2 ring-magenta-500/30"
-                    : "border-warm-200"
-                }`}
-                style={{ scrollMarginTop: 96 }}
-              >
-                <div className="h-1.5 w-full" style={{ backgroundColor: p.accent }} aria-hidden />
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div
-                      className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md"
-                      style={{ backgroundColor: `${p.accent}1A`, color: p.accent }}
-                    >
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <div className="flex-1">
-                      <h2 lang={lang} className="text-xl font-semibold text-navy-500">
-                        {t(p.name)}
-                      </h2>
-                      <p lang={lang} className="mt-1 text-sm text-warm-500">
-                        {t(p.blurb)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {signedIn && (
-                    <div className="mt-5">
-                      <div className="flex items-center justify-between text-xs font-medium text-navy-500">
-                        <span lang={lang}>
-                          {t({ th: "ความคืบหน้าเส้นทาง", en: "Path progress" })}
-                        </span>
-                        <span>
-                          {completed}/{pathCourses.length} · {pctPath}%
-                        </span>
+              return (
+                <article
+                  key={p.id}
+                  ref={(el) => {
+                    refs.current[p.id] = el;
+                  }}
+                  className={`overflow-hidden rounded-lg border bg-white shadow-sm transition-all ${
+                    isFocus
+                      ? "border-magenta-500 shadow-md ring-2 ring-magenta-500/30"
+                      : "border-warm-200"
+                  }`}
+                  style={{ scrollMarginTop: 96 }}
+                >
+                  <div className="h-1.5 w-full" style={{ backgroundColor: p.accent }} aria-hidden />
+                  <div className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md"
+                        style={{ backgroundColor: `${p.accent}1A`, color: p.accent }}
+                      >
+                        <Icon className="h-6 w-6" />
                       </div>
-                      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-pill bg-warm-100">
-                        <div
-                          className="h-full rounded-pill"
-                          style={{ width: `${pctPath}%`, backgroundColor: p.accent }}
-                        />
+                      <div className="flex-1">
+                        <h2 lang={lang} className="text-xl font-semibold text-navy-500">
+                          {t(p.name)}
+                        </h2>
+                        <p lang={lang} className="mt-1 text-sm text-warm-500">
+                          {t(p.blurb)}
+                        </p>
                       </div>
                     </div>
-                  )}
 
-                  <ol className="mt-6 space-y-3">
-                    {pathCourses.map((c, i) => {
-                      const pct = progress[c.id] ?? 0;
-                      const done = signedIn && pct >= 100;
-                      return (
-                        <li key={c.id}>
-                          <Link
-                            to="/courses/$id"
-                            params={{ id: c.id }}
-                            className="group flex items-start gap-3 rounded-md border border-warm-200 bg-cream p-3 transition-all hover:border-magenta-500 hover:bg-white"
-                          >
-                            <div
-                              className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill text-xs font-semibold"
-                              style={{
-                                backgroundColor: done ? p.accent : "#fff",
-                                color: done ? "#fff" : p.accent,
-                                border: `1.5px solid ${p.accent}`,
-                              }}
+                    {signedIn && (
+                      <div className="mt-5">
+                        <div className="flex items-center justify-between text-xs font-medium text-navy-500">
+                          <span lang={lang}>
+                            {t({ th: "ความคืบหน้าเส้นทาง", en: "Path progress" })}
+                          </span>
+                          <span>
+                            {completed}/{pathCourses.length} · {pctPath}%
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-pill bg-warm-100">
+                          <div
+                            className="h-full rounded-pill"
+                            style={{ width: `${pctPath}%`, backgroundColor: p.accent }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <ol className="mt-6 space-y-3">
+                      {pathCourses.map((c, i) => {
+                        const pct = progress[c.id] ?? 0;
+                        const done = signedIn && pct >= 100;
+                        return (
+                          <li key={c.id}>
+                            <Link
+                              to="/courses/$id"
+                              params={{ id: c.id }}
+                              className="group flex items-start gap-3 rounded-md border border-warm-200 bg-cream p-3 transition-all hover:border-magenta-500 hover:bg-white"
                             >
-                              {done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <p
-                                  lang={lang}
-                                  className="truncate text-sm font-semibold text-navy-500"
-                                >
-                                  {t(c.title)}
-                                </p>
-                                <ArrowRight className="h-4 w-4 shrink-0 text-warm-500 transition-transform group-hover:translate-x-0.5 group-hover:text-magenta-500" />
+                              <div
+                                className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill text-xs font-semibold"
+                                style={{
+                                  backgroundColor: done ? p.accent : "#fff",
+                                  color: done ? "#fff" : p.accent,
+                                  border: `1.5px solid ${p.accent}`,
+                                }}
+                              >
+                                {done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                               </div>
-                              <p lang={lang} className="mt-0.5 truncate text-xs text-warm-500">
-                                {t(c.tagline)} · {c.durationMins}m
-                              </p>
-                              {signedIn && enrolled.includes(c.id) && pct > 0 && pct < 100 && (
-                                <div className="mt-2 h-1 w-full overflow-hidden rounded-pill bg-warm-100">
-                                  <div
-                                    className="h-full rounded-pill"
-                                    style={{ width: `${pct}%`, backgroundColor: p.accent }}
-                                  />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p
+                                    lang={lang}
+                                    className="truncate text-sm font-semibold text-navy-500"
+                                  >
+                                    {t(c.title)}
+                                  </p>
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-warm-500 transition-transform group-hover:translate-x-0.5 group-hover:text-magenta-500" />
                                 </div>
-                              )}
-                              {!signedIn && (
-                                <div className="mt-1 inline-flex items-center gap-1 text-xs text-warm-500">
-                                  <Circle className="h-3 w-3" />
-                                  <span lang={lang}>
-                                    {t({ th: "ยังไม่เริ่ม", en: "Not started" })}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                                <p lang={lang} className="mt-0.5 truncate text-xs text-warm-500">
+                                  {t(c.tagline)} · {c.durationMins}m
+                                </p>
+                                {signedIn && enrolled.includes(c.id) && pct > 0 && pct < 100 && (
+                                  <div className="mt-2 h-1 w-full overflow-hidden rounded-pill bg-warm-100">
+                                    <div
+                                      className="h-full rounded-pill"
+                                      style={{ width: `${pct}%`, backgroundColor: p.accent }}
+                                    />
+                                  </div>
+                                )}
+                                {!signedIn && (
+                                  <div className="mt-1 inline-flex items-center gap-1 text-xs text-warm-500">
+                                    <Circle className="h-3 w-3" />
+                                    <span lang={lang}>
+                                      {t({ th: "ยังไม่เริ่ม", en: "Not started" })}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </PublicLayout>
   );
