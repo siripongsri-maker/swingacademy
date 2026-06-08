@@ -13,6 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/language-context";
 import { AccountProvider } from "../lib/account-context";
+import logoAsset from "../assets/swing-academy-logo.png.asset.json";
+
+const LOGO_URL = `https://swingacademy.lovable.app${logoAsset.url}`;
 
 function NotFoundComponent() {
   return (
@@ -99,12 +102,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "SWING Academy is a free, bilingual (TH/EN) learning platform for sexual health, rights, and life skills from the SWING Foundation.",
       },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KT2ExYhzQvVnbWOZrapb2296DWu1/social-images/social-1780851246611-ChatGPT_Image_Jun_7,_2026,_11_53_57_PM.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KT2ExYhzQvVnbWOZrapb2296DWu1/social-images/social-1780851246611-ChatGPT_Image_Jun_7,_2026,_11_53_57_PM.webp" },
+      { property: "og:image", content: LOGO_URL },
+      { name: "twitter:image", content: LOGO_URL },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: logoAsset.url },
+      { rel: "apple-touch-icon", href: logoAsset.url },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
