@@ -195,16 +195,16 @@ export const setKnowledgePublishState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => PublishSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
-    if (data.status !== undefined) patch.status = data.status;
-    if (data.visibility !== undefined) patch.visibility = data.visibility;
-    if (data.isFeatured !== undefined) patch.is_featured = data.isFeatured;
-    if (data.featuredOrder !== undefined) patch.featured_order = data.featuredOrder;
-    if (data.status === "published") {
-      patch.published_at = new Date().toISOString();
-      patch.approved_by = context.userId;
-      patch.approved_at = new Date().toISOString();
-    }
+    const nowIso = new Date().toISOString();
+    const patch = {
+      ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.visibility !== undefined ? { visibility: data.visibility } : {}),
+      ...(data.isFeatured !== undefined ? { is_featured: data.isFeatured } : {}),
+      ...(data.featuredOrder !== undefined ? { featured_order: data.featuredOrder } : {}),
+      ...(data.status === "published"
+        ? { published_at: nowIso, approved_by: context.userId, approved_at: nowIso }
+        : {}),
+    };
     const { data: row, error } = await context.supabase
       .from("knowledge_products")
       .update(patch)
