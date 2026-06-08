@@ -62,12 +62,6 @@ const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
   { icon: Heart, label: { th: "ไม่มีการตัดสิน", en: "No judgment" } },
 ];
 
-const STATS: { value: string; label: Localized }[] = [
-  { value: "12,400+", label: { th: "ผู้เรียนในชุมชน", en: "Community learners" } },
-  { value: "24", label: { th: "คอร์สฟรี", en: "Free courses" } },
-  { value: "3,800+", label: { th: "ใบประกาศที่ออก", en: "Certificates issued" } },
-  { value: "5", label: { th: "เมืองที่ให้บริการ", en: "Cities served" } },
-];
 
 function HomePage() {
   const { t, lang } = useLanguage();
@@ -193,20 +187,6 @@ function HomePage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* 2. STAT STRIP */}
-      <section className="border-y border-warm-200 bg-white">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-6 py-10 md:grid-cols-4">
-          {STATS.map((s) => (
-            <div key={s.value} className="px-2 text-center md:text-left">
-              <p className="text-3xl font-semibold text-navy-500 md:text-4xl">{s.value}</p>
-              <p lang={lang} className="mt-1 text-sm text-warm-500">
-                {t(s.label)}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 
