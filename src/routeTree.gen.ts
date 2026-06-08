@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as TrainingsRouteImport } from './routes/trainings'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -19,6 +20,7 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
+import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
 import { Route as StaffTalentRouteImport } from './routes/staff.talent'
 import { Route as StaffProductsRouteImport } from './routes/staff.products'
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
@@ -29,6 +31,11 @@ import { Route as CoursesIdRouteImport } from './routes/courses.$id'
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainingsRoute = TrainingsRouteImport.update({
+  id: '/trainings',
+  path: '/trainings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -76,6 +83,11 @@ const StaffTransferRoute = StaffTransferRouteImport.update({
   path: '/transfer',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffTrainingsRoute = StaffTrainingsRouteImport.update({
+  id: '/trainings',
+  path: '/trainings',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffTalentRoute = StaffTalentRouteImport.update({
   id: '/talent',
   path: '/talent',
@@ -115,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/staff': typeof StaffRouteWithChildren
+  '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
   '/staff/admin': typeof StaffAdminRoute
@@ -122,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
+  '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/': typeof StaffIndexRoute
 }
@@ -132,6 +146,7 @@ export interface FileRoutesByTo {
   '/paths': typeof PathsRoute
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
   '/staff/admin': typeof StaffAdminRoute
@@ -139,6 +154,7 @@ export interface FileRoutesByTo {
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
+  '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff': typeof StaffIndexRoute
 }
@@ -151,6 +167,7 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/staff': typeof StaffRouteWithChildren
+  '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
   '/staff/admin': typeof StaffAdminRoute
@@ -158,6 +175,7 @@ export interface FileRoutesById {
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
+  '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/': typeof StaffIndexRoute
 }
@@ -171,6 +189,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/sitemap.xml'
     | '/staff'
+    | '/trainings'
     | '/verify'
     | '/courses/$id'
     | '/staff/admin'
@@ -178,6 +197,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge'
     | '/staff/products'
     | '/staff/talent'
+    | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/'
   fileRoutesByTo: FileRoutesByTo
@@ -188,6 +208,7 @@ export interface FileRouteTypes {
     | '/paths'
     | '/resources'
     | '/sitemap.xml'
+    | '/trainings'
     | '/verify'
     | '/courses/$id'
     | '/staff/admin'
@@ -195,6 +216,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge'
     | '/staff/products'
     | '/staff/talent'
+    | '/staff/trainings'
     | '/staff/transfer'
     | '/staff'
   id:
@@ -206,6 +228,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/sitemap.xml'
     | '/staff'
+    | '/trainings'
     | '/verify'
     | '/courses/$id'
     | '/staff/admin'
@@ -213,6 +236,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge'
     | '/staff/products'
     | '/staff/talent'
+    | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/'
   fileRoutesById: FileRoutesById
@@ -225,6 +249,7 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StaffRoute: typeof StaffRouteWithChildren
+  TrainingsRoute: typeof TrainingsRoute
   VerifyRoute: typeof VerifyRoute
 }
 
@@ -235,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify'
       preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trainings': {
+      id: '/trainings'
+      path: '/trainings'
+      fullPath: '/trainings'
+      preLoaderRoute: typeof TrainingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -300,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffTransferRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/trainings': {
+      id: '/staff/trainings'
+      path: '/trainings'
+      fullPath: '/staff/trainings'
+      preLoaderRoute: typeof StaffTrainingsRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/talent': {
       id: '/staff/talent'
       path: '/talent'
@@ -362,6 +401,7 @@ interface StaffRouteChildren {
   StaffKnowledgeRoute: typeof StaffKnowledgeRoute
   StaffProductsRoute: typeof StaffProductsRoute
   StaffTalentRoute: typeof StaffTalentRoute
+  StaffTrainingsRoute: typeof StaffTrainingsRoute
   StaffTransferRoute: typeof StaffTransferRoute
   StaffIndexRoute: typeof StaffIndexRoute
 }
@@ -372,6 +412,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffKnowledgeRoute: StaffKnowledgeRoute,
   StaffProductsRoute: StaffProductsRoute,
   StaffTalentRoute: StaffTalentRoute,
+  StaffTrainingsRoute: StaffTrainingsRoute,
   StaffTransferRoute: StaffTransferRoute,
   StaffIndexRoute: StaffIndexRoute,
 }
@@ -386,18 +427,9 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StaffRoute: StaffRouteWithChildren,
+  TrainingsRoute: TrainingsRoute,
   VerifyRoute: VerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

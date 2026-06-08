@@ -11,12 +11,14 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  CalendarClock,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 
 const nav = [
   { to: "/staff/dashboard", label: "Dashboard", labelTh: "ภาพรวม", icon: LayoutDashboard },
   { to: "/staff/knowledge", label: "KM Library", labelTh: "คลังความรู้", icon: Library },
+  { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", icon: CalendarClock },
   { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
   { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
   { to: "/staff/talent", label: "Talent Map", labelTh: "แผนที่คน", icon: Users },

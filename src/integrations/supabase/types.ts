@@ -14,7 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      training_attachments: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          kind: string
+          label: string | null
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          training_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          kind?: string
+          label?: string | null
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          training_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          kind?: string
+          label?: string | null
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_attachments_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trainings: {
+        Row: {
+          cover_attachment_id: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          location: string | null
+          meeting_notes: string | null
+          notes: string | null
+          outcomes: string | null
+          participants: string | null
+          public_summary_en: string | null
+          public_summary_th: string | null
+          public_title_en: string | null
+          public_title_th: string | null
+          published: boolean
+          sites: string | null
+          source: string | null
+          start_date: string | null
+          topics: string | null
+          updated_at: string
+          visit_type: string | null
+        }
+        Insert: {
+          cover_attachment_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          meeting_notes?: string | null
+          notes?: string | null
+          outcomes?: string | null
+          participants?: string | null
+          public_summary_en?: string | null
+          public_summary_th?: string | null
+          public_title_en?: string | null
+          public_title_th?: string | null
+          published?: boolean
+          sites?: string | null
+          source?: string | null
+          start_date?: string | null
+          topics?: string | null
+          updated_at?: string
+          visit_type?: string | null
+        }
+        Update: {
+          cover_attachment_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          meeting_notes?: string | null
+          notes?: string | null
+          outcomes?: string | null
+          participants?: string | null
+          public_summary_en?: string | null
+          public_summary_th?: string | null
+          public_title_en?: string | null
+          public_title_th?: string | null
+          published?: boolean
+          sites?: string | null
+          source?: string | null
+          start_date?: string | null
+          topics?: string | null
+          updated_at?: string
+          visit_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
