@@ -171,3 +171,49 @@ ${data.contentMd ?? ""}`;
       throw new Error("AI ส่งข้อมูลกลับมาในรูปแบบที่อ่านไม่ได้ ลองอีกครั้ง");
     }
   });
+
+export const summarizeTalent = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => TalentSummaryInput.parse(i))
+  .handler(async ({ data }) => {
+    const sys = `คุณคือผู้จัดการคน (people lead) ของ SWING Academy งานสุขภาพและสิทธิ
+หน้าที่: สรุป talent profile ของเจ้าหน้าที่ จากรายการความรู้ที่เกี่ยวข้อง
+ตอบเป็น JSON เท่านั้น ไม่มีคำอธิบายอื่น โครงสร้าง:
+{
+  "strengths": string[],     // 3-5 ด้านที่เก่ง (ภาษาไทย สั้น)
+  "growAreas": string[],     // 2-4 ด้านที่ควรพัฒนาต่อ (ภาษาไทย สั้น)
+  "summary": string          // 2-3 ประโยคสรุปบุคคลนี้ (ภาษาไทย)
+}`;
+
+    const user = `ชื่อ: ${data.personName}
+ตำแหน่ง: ${data.personRole ?? "-"}
+พื้นที่: ${data.personSite ?? "-"}
+
+ความรู้ที่เกี่ยวข้อง (${data.mappings.length} รายการ):
+${data.mappings
+  .map(
+    (m, i) =>
+      `${i + 1}. ${m.assetTitle} — บทบาท ${m.role}${
+        m.domain ? `, domain ${m.domain}` : ""
+      }, evidence ${m.evidenceCount} ชิ้น${
+        m.evidenceTypes && m.evidenceTypes.length ? ` (${m.evidenceTypes.join(", ")})` : ""
+      }${m.competencyTags && m.competencyTags.length ? `, competency: ${m.competencyTags.join(", ")}` : ""}`,
+  )
+  .join("\n")}`;
+
+    const raw = await callLovableModel(sys, user);
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    try {
+      const parsed = JSON.parse(cleaned) as {
+        strengths?: string[];
+        growAreas?: string[];
+        summary?: string;
+      };
+      return {
+        strengths: (parsed.strengths ?? []).slice(0, 5),
+        growAreas: (parsed.growAreas ?? []).slice(0, 4),
+        summary: (parsed.summary ?? "").slice(0, 600),
+      };
+    } catch {
+      throw new Error("AI ส่งข้อมูลกลับมาในรูปแบบที่อ่านไม่ได้ ลองอีกครั้ง");
+    }
+  });
