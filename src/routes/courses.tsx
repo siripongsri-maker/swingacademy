@@ -179,6 +179,26 @@ function CoursesPage() {
   );
 }
 
+function EmptyState({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-warm-300 bg-white p-12 text-center">
+      <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-lavender-100 text-lavender-900">
+        {icon}
+      </div>
+      <p className="text-base font-semibold text-navy-500">{title}</p>
+      <p className="mt-1 text-sm text-warm-500">{body}</p>
+    </div>
+  );
+}
+
 function Chip({
   active,
   accent,
