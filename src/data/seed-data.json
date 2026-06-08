@@ -178,11 +178,11 @@
         "id": "c_prep",
         "category": "health",
         "level": "beginner",
-        "durationMins": 75,
+        "durationMins": 120,
         "funderId": "f_epic",
         "facilitatorId": "pe_nat",
         "hasCertificate": true,
-        "learners": 1840,
+        "learners": 2480,
         "rating": 4.9,
         "title": {
           "th": "รู้จัก PrEP ฉบับเข้าใจง่าย",
@@ -198,29 +198,51 @@
         },
         "reassure": [
           "free",
+          "noid",
           "private",
-          "nojudge"
+          "nojudge",
+          "anytime",
+          "mobile"
         ],
         "glossaryKeys": [
           "prep",
-          "pep"
+          "pep",
+          "uu",
+          "art",
+          "hivst"
         ],
         "outcomes": [
           {
-            "th": "อธิบายได้ว่า PrEP ทำงานอย่างไร",
-            "en": "Explain how PrEP works"
+            "th": "อธิบายได้ว่า PrEP ทำงานอย่างไรในร่างกาย",
+            "en": "Explain how PrEP works in the body"
           },
           {
-            "th": "รู้ว่าตัวเองเหมาะกับ PrEP หรือไม่",
-            "en": "Know if PrEP is right for you"
+            "th": "ประเมินตัวเองว่าเหมาะกับ PrEP หรือไม่",
+            "en": "Assess whether PrEP is right for you"
           },
           {
-            "th": "รู้ขั้นตอนการเริ่มและการติดตาม",
-            "en": "Know how to start and follow up"
+            "th": "รู้ขั้นตอนการเริ่ม การติดตาม และการตรวจ",
+            "en": "Know the steps to start, follow up, and test"
           },
           {
-            "th": "หาบริการ PrEP ฟรีใกล้บ้านได้",
-            "en": "Find free PrEP services near you"
+            "th": "จัดการผลข้างเคียงเบื้องต้นได้อย่างมั่นใจ",
+            "en": "Manage common side effects confidently"
+          },
+          {
+            "th": "แยกแยะ PrEP กับ PEP ได้ถูกต้อง",
+            "en": "Distinguish PrEP from PEP correctly"
+          },
+          {
+            "th": "หาบริการ PrEP ฟรีและเป็นมิตรใกล้บ้าน",
+            "en": "Find free, friendly PrEP services near you"
+          },
+          {
+            "th": "พูดคุยเรื่อง PrEP กับคู่หรือเพื่อนได้อย่างสบายใจ",
+            "en": "Talk about PrEP with partners or friends comfortably"
+          },
+          {
+            "th": "เข้าใจสิทธิ์ของคุณในการเข้าถึงบริการสุขภาพ",
+            "en": "Understand your rights to access healthcare"
           }
         ],
         "lessons": [
@@ -229,8 +251,8 @@
             "type": "video",
             "mins": 8,
             "title": {
-              "th": "PrEP คืออะไร",
-              "en": "What is PrEP?"
+              "th": "PrEP คืออะไร — ฉบับเข้าใจง่าย",
+              "en": "What is PrEP? — a simple intro"
             }
           },
           {
@@ -247,8 +269,8 @@
             "type": "video",
             "mins": 12,
             "title": {
-              "th": "เริ่ม PrEP ทีละขั้น",
-              "en": "Starting PrEP step by step"
+              "th": "เริ่ม PrEP ทีละขั้นตอน",
+              "en": "Starting PrEP, step by step"
             }
           },
           {
@@ -256,26 +278,53 @@
             "type": "reading",
             "mins": 10,
             "title": {
-              "th": "ผลข้างเคียงและการดูแล",
-              "en": "Side effects & care"
+              "th": "ผลข้างเคียงและการดูแลตัวเอง",
+              "en": "Side effects & self-care"
             }
           },
           {
             "id": "l5",
             "type": "video",
-            "mins": 9,
+            "mins": 11,
             "title": {
-              "th": "หาบริการฟรีใกล้บ้าน",
-              "en": "Finding free services"
+              "th": "PrEP vs PEP ต่างกันอย่างไร",
+              "en": "PrEP vs PEP — what's the difference"
             }
           },
           {
             "id": "l6",
-            "type": "quiz",
+            "type": "reading",
             "mins": 8,
             "title": {
-              "th": "ทบทวนความเข้าใจ",
-              "en": "Check your understanding"
+              "th": "คุยเรื่อง PrEP กับคู่และครอบครัว",
+              "en": "Talking about PrEP with partners & family"
+            }
+          },
+          {
+            "id": "l7",
+            "type": "video",
+            "mins": 9,
+            "title": {
+              "th": "หาบริการฟรีใกล้บ้าน",
+              "en": "Finding free services near you"
+            }
+          },
+          {
+            "id": "l8",
+            "type": "reading",
+            "mins": 7,
+            "title": {
+              "th": "สิทธิ์ของคุณในการเข้าถึงบริการ",
+              "en": "Your rights to access services"
+            }
+          },
+          {
+            "id": "l9",
+            "type": "quiz",
+            "mins": 10,
+            "title": {
+              "th": "ทบทวนความเข้าใจ — ทำได้แม้คะแนนน้อย",
+              "en": "Check your understanding — no judgment"
             }
           }
         ],

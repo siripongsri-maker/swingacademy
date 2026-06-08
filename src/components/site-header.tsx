@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Languages, Menu, X, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Languages, Menu, X, LogOut, HelpCircle } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
-import { SignInModal } from "@/components/sign-in-modal";
 import { BrandLogo } from "@/components/brand-logo";
+import { OnboardingTour, hasSeenTour } from "@/components/onboarding-tour";
 
 const NAV: { to: string; label: Localized }[] = [
   { to: "/", label: { th: "หน้าแรก", en: "Home" } },
@@ -17,8 +17,18 @@ const NAV: { to: string; label: Localized }[] = [
 export function SiteHeader() {
   const { lang, toggle, t } = useLanguage();
   const { signedIn, learner, signOut } = useAccount();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !hasSeenTour("learner")) {
+      const id = setTimeout(() => setTourOpen(true), 1200);
+      return () => clearTimeout(id);
+    }
+  }, []);
+
+
 
   return (
     <>
@@ -78,13 +88,23 @@ export function SiteHeader() {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => setSignInOpen(true)}
+              <Link
+                to="/auth"
                 className="hidden rounded-pill bg-magenta-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-magenta-700 md:inline-flex"
               >
                 {t({ th: "เข้าสู่ระบบ", en: "Sign in" })}
-              </button>
+              </Link>
             )}
+
+            <button
+              type="button"
+              onClick={() => setTourOpen(true)}
+              aria-label="Help / tour"
+              className="hidden rounded-pill border border-warm-300 bg-white p-2 text-navy-500 hover:border-magenta-500 hover:text-magenta-500 md:inline-flex"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </button>
+
 
             <button
               type="button"
@@ -124,15 +144,13 @@ export function SiteHeader() {
                     {t({ th: "ออกจากระบบ", en: "Sign out" })} ({t(learner.name)})
                   </button>
                 ) : (
-                  <button
-                    onClick={() => {
-                      setSignInOpen(true);
-                      setOpen(false);
-                    }}
-                    className="w-full rounded-pill bg-magenta-500 px-4 py-2 text-sm font-semibold text-white"
+                  <Link
+                    to="/auth"
+                    onClick={() => setOpen(false)}
+                    className="block w-full rounded-pill bg-magenta-500 px-4 py-2 text-center text-sm font-semibold text-white"
                   >
                     {t({ th: "เข้าสู่ระบบ", en: "Sign in" })}
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>
@@ -140,7 +158,7 @@ export function SiteHeader() {
         )}
       </header>
 
-      <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
+      <OnboardingTour open={tourOpen} onClose={() => setTourOpen(false)} variant="learner" />
     </>
   );
 }
