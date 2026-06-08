@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, MapPin, Users, Loader2, FileText, Image as ImageIcon } from "lucide-react";
+import { CalendarClock, MapPin, Users, Loader2 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { useLanguage } from "@/lib/language-context";
-import { listTrainings, signAttachmentUrl } from "@/lib/trainings.functions";
+import { listTrainings } from "@/lib/trainings.functions";
 import { pageHead } from "@/lib/seo";
-import { useState } from "react";
+
+
 
 export const Route = createFileRoute("/trainings")({
   head: () => pageHead({
