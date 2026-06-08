@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useRef, type ChangeEvent } from "react";
 import {
   Search,
@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Save,
   CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
