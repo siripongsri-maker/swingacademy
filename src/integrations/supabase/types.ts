@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      person_avatars: {
+        Row: {
+          created_at: string
+          mime_type: string | null
+          person_id: string
+          size_bytes: number | null
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          mime_type?: string | null
+          person_id: string
+          size_bytes?: number | null
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          mime_type?: string | null
+          person_id?: string
+          size_bytes?: number | null
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_attachments: {
         Row: {
           created_at: string
