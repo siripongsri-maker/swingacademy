@@ -124,130 +124,123 @@ function KnowledgeHubPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
+    <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       {/* Header + big capture button */}
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="space-y-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Knowledge Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            ภาพรวมความรู้ทั้งหมดของทีม — ค้นหา กรอง และจัดการได้ในที่เดียว
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            คลังความรู้ของทีม
+          </h1>
+          <p lang="th" className="mt-1 text-sm text-muted-foreground">
+            เก็บความรู้จากงานจริง แล้วต่อยอดเป็นสื่อ ใช้สอน และเห็นศักยภาพของทีมได้ชัดขึ้น
           </p>
         </div>
         <Link
           to="/staff/product-knowledge"
           search={{ create: 1 }}
-          className="inline-flex items-center gap-2 rounded-lg bg-magenta-500 px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-magenta-600"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-magenta-500 px-5 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-magenta-600 sm:w-auto sm:py-3"
         >
-          <Plus className="h-5 w-5" /> บันทึกความรู้
+          <Plus className="h-5 w-5" />
+          <span>บันทึกความรู้ใหม่</span>
+          <span className="text-xs font-normal text-white/70">(Add Knowledge)</span>
         </Link>
       </header>
 
       {/* Quick actions */}
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-        <QuickAction to="/staff/capture" icon={Mic} title="Record Audio" desc="อัดเสียงทันที" />
-        <QuickAction
-          to="/staff/product-knowledge"
-          search={{ create: 1 }}
-          icon={Upload}
-          title="Upload File"
-          desc="อัปโหลด PDF / สไลด์ / วิดีโอ"
-        />
-        <QuickAction
-          to="/staff/product-knowledge"
-          search={{ create: 1 }}
-          icon={LinkIcon}
-          title="Add External Source"
-          desc="ลิงก์ บทความ พาร์ทเนอร์"
-        />
-        <QuickAction to="/staff/capture" icon={ListChecks} title="Create from Agenda" desc="บันทึกตามวาระ" />
-        <QuickAction
-          to="/staff/knowledge-translation"
-          icon={Sparkles}
-          title="Translate Content"
-          desc="แปลงเป็นสื่อ / เนื้อหา"
-        />
-      </div>
+      <section aria-labelledby="qa-heading" className="space-y-2">
+        <h2 id="qa-heading" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          เริ่มแบบเร็ว
+        </h2>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <QuickAction to="/staff/capture" icon={Mic} title="อัดเสียง" en="Record" desc="บันทึกเสียงทันที" />
+          <QuickAction
+            to="/staff/product-knowledge"
+            search={{ create: 1 }}
+            icon={Upload}
+            title="อัปโหลดไฟล์"
+            en="Upload"
+            desc="PDF / สไลด์ / วิดีโอ"
+          />
+          <QuickAction
+            to="/staff/product-knowledge"
+            search={{ create: 1 }}
+            icon={LinkIcon}
+            title="เพิ่มลิงก์"
+            en="External"
+            desc="บทความ / พาร์ทเนอร์"
+          />
+          <QuickAction to="/staff/capture" icon={ListChecks} title="บันทึกตามวาระ" en="Agenda" desc="สำหรับประชุม/อบรม" />
+          <QuickAction
+            to="/staff/knowledge-translation"
+            icon={Sparkles}
+            title="แปลงเป็นสื่อ"
+            en="Translate"
+            desc="ทำสื่อจากความรู้"
+          />
+        </div>
+      </section>
 
       {/* Filters */}
-      <div className="rounded-lg border border-border bg-card p-3">
-        <div className="grid gap-2 md:grid-cols-12">
-          <div className="relative md:col-span-4">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="ค้นหา title, slug, tag, key message…"
-              className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm"
-            />
-          </div>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as KnowledgeStatus | "all")}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm md:col-span-2"
-          >
-            <option value="all">All status</option>
-            <option value="draft">Draft</option>
-            <option value="review">Review</option>
-            <option value="published">Published</option>
-            <option value="archived">Archived</option>
-          </select>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as KnowledgeType | "all")}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm md:col-span-2"
-          >
-            <option value="all">All types</option>
+      <section className="rounded-xl border border-border bg-card p-3 sm:p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="ค้นหา ชื่อเรื่อง คำสำคัญ หรือ tag…"
+            className="w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-3 text-sm"
+          />
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <LabeledSelect label="สถานะ" value={status} onChange={(v) => setStatus(v as KnowledgeStatus | "all")}>
+            <option value="all">ทั้งหมด</option>
+            <option value="draft">ร่าง</option>
+            <option value="review">รอตรวจ</option>
+            <option value="published">เผยแพร่แล้ว</option>
+            <option value="archived">เก็บเข้าคลัง</option>
+          </LabeledSelect>
+          <LabeledSelect label="ประเภท" value={type} onChange={(v) => setType(v as KnowledgeType | "all")}>
+            <option value="all">ทั้งหมด</option>
             {Object.entries(pk.typeLabels).map(([id, l]) => (
               <option key={id} value={id}>
-                {l.en}
+                {l.th || l.en}
               </option>
             ))}
-          </select>
-          <select
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm md:col-span-2"
-          >
-            <option value="all">All domains</option>
+          </LabeledSelect>
+          <LabeledSelect label="หมวด (Domain)" value={domain} onChange={setDomain}>
+            <option value="all">ทั้งหมด</option>
             {Object.entries(pk.categoryLabels).map(([id, l]) => (
               <option key={id} value={id}>
-                {l.en}
+                {l.th || l.en}
               </option>
             ))}
-          </select>
-          <select
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm md:col-span-2"
-          >
-            <option value="all">All owners</option>
+          </LabeledSelect>
+          <LabeledSelect label="ผู้บันทึก" value={owner} onChange={setOwner}>
+            <option value="all">ทุกคน</option>
             {owners.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.label}
               </option>
             ))}
-          </select>
-          <select
-            value={range}
-            onChange={(e) => setRange(e.target.value as DateRange)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm md:col-span-2 md:col-start-11"
-          >
-            <option value="all">Any date</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-          </select>
+          </LabeledSelect>
+          <LabeledSelect label="ช่วงเวลา" value={range} onChange={(v) => setRange(v as DateRange)}>
+            <option value="all">ทุกช่วงเวลา</option>
+            <option value="7d">7 วันล่าสุด</option>
+            <option value="30d">30 วันล่าสุด</option>
+            <option value="90d">90 วันล่าสุด</option>
+          </LabeledSelect>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          แสดง <span className="font-semibold text-foreground">{filtered.length}</span> /
+          พบ <span className="font-semibold text-foreground">{filtered.length}</span> จาก
           {" "}{pk.assets.length} รายการ
         </p>
-      </div>
+      </section>
 
       {/* Cards */}
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center">
-          <p className="text-sm text-muted-foreground">ไม่พบความรู้ที่ตรงกับตัวกรอง</p>
+        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+          <p className="text-sm text-muted-foreground">ยังไม่มีรายการที่ตรงกับตัวกรอง</p>
+          <p className="mt-1 text-xs text-muted-foreground">ลองล้างตัวกรอง หรือเริ่มบันทึกความรู้ชิ้นใหม่</p>
         </div>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
