@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, X } from "lucide-react";
+import { Search, X, GraduationCap } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
@@ -142,12 +142,24 @@ function CoursesPage() {
         <p className="mb-5 text-sm text-warm-500">
           {filtered.length} {t({ th: "คอร์ส", en: "courses" })}
         </p>
-        {filtered.length === 0 ? (
-          <div className="rounded-md border border-dashed border-warm-300 bg-white p-12 text-center">
-            <p lang={lang} className="text-navy-500">
-              {t({ th: "ไม่พบคอร์สที่ตรงกับการค้นหา", en: "No courses match your search." })}
-            </p>
-          </div>
+        {courses.length === 0 ? (
+          <EmptyState
+            icon={<GraduationCap className="h-10 w-10" />}
+            title={t({ th: "ยังไม่มีคอร์สในระบบ", en: "No courses available yet" })}
+            body={t({
+              th: "คอร์สและเนื้อหาใหม่จะถูกเพิ่มเร็ว ๆ นี้ กรุณากลับมาตรวจสอบอีกครั้ง",
+              en: "New courses will be added soon. Please check back later.",
+            })}
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={<Search className="h-8 w-8" />}
+            title={t({ th: "ไม่พบคอร์สที่ตรงกับการค้นหา", en: "No courses match your search" })}
+            body={t({
+              th: "ลองปรับตัวกรองหรือคำค้นหาใหม่",
+              en: "Try adjusting your filters or search terms",
+            })}
+          />
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((c) => (
@@ -164,6 +176,26 @@ function CoursesPage() {
         )}
       </section>
     </PublicLayout>
+  );
+}
+
+function EmptyState({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-warm-300 bg-white p-12 text-center">
+      <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-lavender-100 text-lavender-900">
+        {icon}
+      </div>
+      <p className="text-base font-semibold text-navy-500">{title}</p>
+      <p className="mt-1 text-sm text-warm-500">{body}</p>
+    </div>
   );
 }
 

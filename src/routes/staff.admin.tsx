@@ -12,6 +12,16 @@ export const Route = createFileRoute("/staff/admin")({
 
 type TabKey = "review" | "taxonomy" | "users" | "records";
 
+type LearningRecord = {
+  id: string;
+  personId: string;
+  productId: string;
+  status: string;
+  progressPct: number;
+  completedDate: string | null;
+  score: number | null;
+};
+
 const TABS: { key: TabKey; label: string }[] = [
   { key: "review", label: "Review queue" },
   { key: "taxonomy", label: "Taxonomy" },
@@ -439,7 +449,7 @@ function RecordsTable() {
           </tr>
         </thead>
         <tbody className="divide-y divide-warm-200">
-          {sc.learningRecords.map((r) => {
+          {(sc.learningRecords as LearningRecord[]).map((r) => {
             const person = sc.people.find((p) => p.id === r.personId);
             const product = sc.products.find((p) => p.id === r.productId);
             return (

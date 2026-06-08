@@ -44,6 +44,18 @@ type Asset = {
   fileUrl?: string;
 };
 
+type LearningRecord = {
+  id: string;
+  personId: string;
+  productId: string;
+  progressPct: number;
+};
+
+type Certificate = {
+  id: string;
+  productId: string;
+};
+
 const statusTone: Record<string, string> = {
   published: "bg-success/15 text-success",
   draft: "bg-warm-200 text-warm-700",
@@ -381,8 +393,8 @@ function ProductDrawer({ id }: { id: string }) {
   }
 
   const funder = sc.funders.find((f) => f.id === product.funderId);
-  const records = sc.learningRecords.filter((r) => r.productId === product.id);
-  const cert = sc.certificates.find((c) => c.productId === product.id);
+  const records = (sc.learningRecords as LearningRecord[]).filter((r) => r.productId === product.id);
+  const cert = (sc.certificates as Certificate[]).find((c) => c.productId === product.id);
   const sourceAssets = (product.sourceAssetIds ?? [])
     .map((aid) => sc.knowledgeAssets.find((a) => a.id === aid))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));

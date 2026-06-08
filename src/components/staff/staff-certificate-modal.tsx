@@ -8,6 +8,16 @@ type Props = {
   onClose: () => void;
 };
 
+type Cert = {
+  id: string;
+  personId: string;
+  productId: string;
+  issuedDate: string;
+  expiresDate: string;
+  status: string;
+  verifyCode: string;
+};
+
 export function StaffCertificateModal({ certificateId, onClose }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -16,7 +26,8 @@ export function StaffCertificateModal({ certificateId, onClose }: Props) {
   }, [onClose]);
 
   const sc = seed.staffConsole;
-  const cert = sc.certificates.find((c) => c.id === certificateId);
+  const certs = sc.certificates as Cert[];
+  const cert = certs.find((c) => c.id === certificateId);
   const person = cert ? sc.people.find((p) => p.id === cert.personId) : null;
   const product = cert ? sc.products.find((p) => p.id === cert.productId) : null;
 

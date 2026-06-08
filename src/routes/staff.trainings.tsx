@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search, Plus, MapPin, Users, Tag, X, Upload, Trash2,
-  Globe, Lock, Eye, EyeOff, Languages, FileText, Image as ImageIcon, Loader2, CheckCircle2,
+  Globe, Lock, Eye, EyeOff, Languages, FileText, Image as ImageIcon, Loader2, CheckCircle2, BookOpen,
 } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import {
@@ -72,6 +72,10 @@ const tx = {
   showing: { en: "Showing", th: "แสดง" },
   of: { en: "of", th: "จาก" },
   empty: { en: "No trainings match your filters.", th: "ไม่พบรายการที่ตรงกับตัวกรอง" },
+  emptyAll: {
+    en: "No training records yet. Record your first workshop, meeting, or conference to start building your knowledge history.",
+    th: "ยังไม่มีรายการอบรม บันทึกการอบรม ประชุม หรือสัมมนาครั้งแรกเพื่อเริ่มสร้างประวัติความรู้",
+  },
 };
 
 function TrainingsPage() {
@@ -157,7 +161,22 @@ function TrainingsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-lg border border-dashed border-warm-200 bg-white p-12 text-center">
-          <p className="text-sm font-semibold text-navy-500">{t(tx.empty)}</p>
+          {rows.length === 0 ? (
+            <>
+              <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-lavender-100 text-lavender-900">
+                <BookOpen className="h-8 w-8" />
+              </div>
+              <p className="text-base font-semibold text-navy-500">{t(tx.emptyAll)}</p>
+              <button
+                onClick={() => setCreating(true)}
+                className="mt-4 inline-flex items-center gap-2 rounded-pill bg-magenta-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-magenta-600"
+              >
+                <Plus className="h-4 w-4" /> {t(tx.newRecord)}
+              </button>
+            </>
+          ) : (
+            <p className="text-sm font-semibold text-navy-500">{t(tx.empty)}</p>
+          )}
         </div>
       ) : (
         <ul className="divide-y divide-warm-200 overflow-hidden rounded-lg border border-warm-200 bg-white shadow-sm">
