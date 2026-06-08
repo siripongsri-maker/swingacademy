@@ -164,11 +164,16 @@ type StoreCtx = StoreState & {
 };
 
 const Ctx = createContext<StoreCtx | null>(null);
-const LS_KEY = "swing.product-knowledge.v2";
+const LS_KEY = "swing.product-knowledge.v3";
+const LEGACY_LS_KEYS = ["swing.product-knowledge.v1", "swing.product-knowledge.v2"];
 
 function loadInitial(): StoreState {
   if (typeof window !== "undefined") {
     try {
+      // Purge any stale cached data from previous versions
+      for (const k of LEGACY_LS_KEYS) {
+        try { window.localStorage.removeItem(k); } catch { /* ignore */ }
+      }
       const raw = window.localStorage.getItem(LS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<StoreState>;
