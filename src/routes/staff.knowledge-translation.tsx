@@ -532,7 +532,7 @@ function TranslationEditor({
             />
           </Field>
 
-          <div className="md:col-span-4">
+          <div className="md:col-span-4 space-y-2">
             <button
               onClick={generate}
               disabled={generating || !currentSource}
@@ -541,7 +541,43 @@ function TranslationEditor({
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {generating ? "กำลังสร้าง…" : "Generate with AI"}
             </button>
+
+            <div className="rounded-md border border-dashed border-border bg-warm-50/40 p-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Creative AI tools — เพิ่มลงผลลัพธ์
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  ["rewrite", "✍️ Rewrite"],
+                  ["summary", "📝 Summary"],
+                  ["social", "📣 Social"],
+                  ["html", "🌐 HTML"],
+                  ["flowchart", "🔀 Flow chart"],
+                  ["graphic_brief", "🎨 Graphic brief"],
+                  ["image_prompt", "🖼️ Image prompt"],
+                  ["layout", "📐 Visual layout"],
+                  ["inclusivity_check", "💗 Inclusivity check"],
+                ] as const).map(([id, label]) => {
+                  const active = creativeTool === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => runCreative(id)}
+                      disabled={!!creativeTool || !currentSource}
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-foreground hover:bg-magenta-50 hover:text-magenta-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {active ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                ผลลัพธ์จะถูก append ใต้ output ปัจจุบัน · ใช้ audience / format / tone / language ด้านบนเป็นบริบท · เชื่อมกลับยัง source asset เสมอ
+              </p>
+            </div>
           </div>
+
 
           <Field label="Output (Markdown)" className="md:col-span-4">
             <textarea
