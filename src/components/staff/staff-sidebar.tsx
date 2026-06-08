@@ -16,8 +16,11 @@ import {
   X,
   Plus,
   Mic,
+  Shield,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
+import { useConsoleRole } from "@/lib/console-role-context";
+import { ROLE_LABEL, type Capability } from "@/lib/permissions";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type NavItem = {
