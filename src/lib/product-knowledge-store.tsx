@@ -35,6 +35,15 @@ export type Attachment = {
 };
 export type VersionEntry = { v: string; at: string; by: string; note: string };
 
+export type QaChecklist = {
+  titleClear?: boolean;
+  keyMessageOk?: boolean;
+  sourceCited?: boolean;
+  languageOk?: boolean;
+  nonStigmatizing?: boolean;
+  expertReviewed?: boolean;
+};
+
 export type KnowledgeAsset = {
   id: string;
   slug: string;
@@ -59,6 +68,25 @@ export type KnowledgeAsset = {
   updatedAt: string;
   versionHistory: VersionEntry[];
   attachments: Attachment[];
+  // Phase 4 — Knowledge Management
+  learningObjectives?: string[];
+  competencyTags?: string[];
+  relatedServices?: string[];
+  relatedCourses?: string[];
+  linkedCurriculum?: string;
+  qaChecklist?: QaChecklist;
+  approvedAt?: string;
+  approvedBy?: string;
+};
+
+export type KnowledgeCollection = {
+  id: string;
+  name: string;
+  description: string;
+  domain: string;
+  assetIds: string[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type TranslationStatus = "draft" | "ready" | "published";
@@ -80,6 +108,7 @@ export type KnowledgeTranslation = {
 type StoreState = {
   assets: KnowledgeAsset[];
   translations: KnowledgeTranslation[];
+  collections: KnowledgeCollection[];
 };
 
 type CreateAssetInput = Omit<
@@ -102,6 +131,9 @@ type StoreCtx = StoreState & {
   updateTranslation: (id: string, patch: Partial<KnowledgeTranslation>) => void;
   removeTranslation: (id: string) => void;
   getTranslation: (id: string) => KnowledgeTranslation | undefined;
+  createCollection: (c: Omit<KnowledgeCollection, "id" | "createdAt" | "updatedAt">) => KnowledgeCollection;
+  updateCollection: (id: string, patch: Partial<KnowledgeCollection>) => void;
+  removeCollection: (id: string) => void;
   slugify: (input: string) => string;
   reset: () => void;
 };
@@ -113,12 +145,19 @@ function loadInitial(): StoreState {
   if (typeof window !== "undefined") {
     try {
       const raw = window.localStorage.getItem(LS_KEY);
-      if (raw) return JSON.parse(raw) as StoreState;
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<StoreState>;
+        return {
+          assets: parsed.assets ?? [],
+          translations: parsed.translations ?? [],
+          collections: parsed.collections ?? [],
+        };
+      }
     } catch {
       /* ignore */
     }
   }
-  return { assets: [], translations: [] };
+  return { assets: [], translations: [], collections: [] };
 }
 
 const uid = (prefix: string) =>
@@ -148,7 +187,7 @@ function ensureUniqueSlug(slug: string, assets: KnowledgeAsset[], ignoreId?: str
 }
 
 export function ProductKnowledgeProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [] }));
+  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [], collections: [] }));
 
   useEffect(() => {
     setState(loadInitial());
@@ -208,7 +247,11 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
   }, []);
 
   const removeAsset: StoreCtx["removeAsset"] = useCallback((id) => {
-    setState((s) => ({ ...s, assets: s.assets.filter((a) => a.id !== id) }));
+    setState((s) => ({
+      ...s,
+      assets: s.assets.filter((a) => a.id !== id),
+      collections: s.collections.map((c) => ({ ...c, assetIds: c.assetIds.filter((x) => x !== id) })),
+    }));
   }, []);
 
   const createTranslation: StoreCtx["createTranslation"] = useCallback((t) => {
@@ -231,6 +274,29 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     setState((s) => ({ ...s, translations: s.translations.filter((t) => t.id !== id) }));
   }, []);
 
+  const createCollection: StoreCtx["createCollection"] = useCallback((c) => {
+    const now = new Date().toISOString();
+    let created!: KnowledgeCollection;
+    setState((s) => {
+      created = { ...c, id: uid("col"), createdAt: now, updatedAt: now };
+      return { ...s, collections: [created, ...s.collections] };
+    });
+    return created;
+  }, []);
+
+  const updateCollection: StoreCtx["updateCollection"] = useCallback((id, patch) => {
+    setState((s) => ({
+      ...s,
+      collections: s.collections.map((c) =>
+        c.id === id ? { ...c, ...patch, updatedAt: new Date().toISOString() } : c,
+      ),
+    }));
+  }, []);
+
+  const removeCollection: StoreCtx["removeCollection"] = useCallback((id) => {
+    setState((s) => ({ ...s, collections: s.collections.filter((c) => c.id !== id) }));
+  }, []);
+
   const value = useMemo<StoreCtx>(
     () => ({
       ...state,
@@ -248,13 +314,16 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       updateTranslation,
       removeTranslation,
       getTranslation: (id) => state.translations.find((t) => t.id === id),
+      createCollection,
+      updateCollection,
+      removeCollection,
       slugify,
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setState({ assets: [], translations: [] });
+        setState({ assets: [], translations: [], collections: [] });
       },
     }),
-    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation],
+    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation, createCollection, updateCollection, removeCollection],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
