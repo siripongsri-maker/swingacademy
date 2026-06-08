@@ -190,20 +190,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 2. STAT STRIP */}
-      <section className="border-y border-warm-200 bg-white">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-6 py-10 md:grid-cols-4">
-          {STATS.map((s) => (
-            <div key={s.value} className="px-2 text-center md:text-left">
-              <p className="text-3xl font-semibold text-navy-500 md:text-4xl">{s.value}</p>
-              <p lang={lang} className="mt-1 text-sm text-warm-500">
-                {t(s.label)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* 3. CATEGORIES */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mb-10 max-w-2xl">
