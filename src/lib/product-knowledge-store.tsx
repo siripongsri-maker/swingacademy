@@ -164,7 +164,8 @@ type StoreCtx = StoreState & {
 };
 
 const Ctx = createContext<StoreCtx | null>(null);
-const LS_KEY = "swing.product-knowledge.v2";
+const LS_KEY = "swing.product-knowledge.v3";
+const LEGACY_LS_KEYS = ["swing.product-knowledge.v1", "swing.product-knowledge.v2"];
 
 function loadInitial(): StoreState {
   if (typeof window !== "undefined") {
