@@ -197,10 +197,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       getTranslation: (id) => state.translations.find((t) => t.id === id),
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setState({
-          assets: seed.assets as KnowledgeAsset[],
-          translations: seed.translations as KnowledgeTranslation[],
-        });
+        setState({ assets: [], translations: [] });
       },
     }),
     [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation],
