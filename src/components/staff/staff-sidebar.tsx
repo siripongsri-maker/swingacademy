@@ -15,6 +15,7 @@ import {
   ChevronRight,
   X,
   Plus,
+  Mic,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
