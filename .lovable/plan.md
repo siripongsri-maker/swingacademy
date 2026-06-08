@@ -1,93 +1,144 @@
-## 1. Investigate the "Internal Server Error"
 
-I checked `https://swingacademy.life` and every visible page returns HTTP 200 (home, /courses, /paths, /resources, /staff → /staff/dashboard, /staff/admin). The only 500s in server logs are bot probes hitting `/api/gql`, `/api/graphql`, `/api` — not real app routes.
+# Product Knowledge + Knowledge Translation
 
-To actually fix it, I need one of:
-- a screenshot of the error page, **or**
-- the exact URL / the action that triggered it (e.g. "I clicked Sign in", "I refreshed /staff/users")
+Two new menus in the Staff Console that let staff capture organizational knowledge and reshape it for different audiences. UI ships first against mock/seed data; database wiring is one swap away.
 
-I'll proceed with the other three tasks below; please drop the URL or screenshot in your next message and I'll patch the 500.
+## Sidebar
 
-## 2. Polish the PrEP demo course (the canonical mockup)
+Add two entries between **KM Library** and **KT Transfer**:
 
-Treat `prep-101` (the PrEP course in `seed-data.json`) as the showcase. Fill out every field so the rest of the app has rich defaults to display:
+- `Product Knowledge` (ความรู้ผลิตภัณฑ์) → `/staff/product-knowledge`
+- `Knowledge Translation` (แปลความรู้) → `/staff/knowledge-translation`
 
-- Full bilingual title, tagline, summary, learning outcomes (6–8 items)
-- Complete lesson list (~6 lessons mixing video / reading / quiz, realistic minutes)
-- Reassurance tags, glossary keys, facilitator, funder, level, rating, learners
-- Hero/cover already wired; add a `resources` array (downloadable PDF placeholders) and a `transcript` snippet per video lesson
-- A polished sample certificate entry tied to the demo learner
+## Routes
 
-Trim or hide other half-empty mock courses so the course grid showcases the polished one first.
-
-## 3. Staff tools: slide & recording upload (UI now, storage wired)
-
-New staff route: **`/staff/knowledge/upload`** (or extend the existing `staff.knowledge.tsx`):
-
-- Course selector → Lesson selector
-- Two upload zones:
-  - **Slides** — accepts `.pdf`, `.ppt`, `.pptx` (drag-and-drop)
-  - **Recording** — accepts video file upload OR external URL (YouTube / Vimeo / direct mp4); a "Record later" placeholder card explains in-browser recording is planned
-- Optional title, description, language (TH/EN), visibility (draft / published)
-- Files go to existing `training-attachments` storage bucket via a `createServerFn` (auth-gated with `requireSupabaseAuth`); metadata stored in a new `lesson_attachments` table with proper RLS + GRANTs
-- List view of already-uploaded slides/recordings per course with delete
-
-In-browser recording (mic/camera) is **not** built now — it's a labeled "Coming soon" card so the UI is ready for the future.
-
-## 4. Unified login page with Learner / Staff tabs + tutorial
-
-New public route **`/auth`** replacing the current modal-only flow:
-
-- Tabs: **"ผู้เรียน / Learner"** (default) and **"เจ้าหน้าที่ / Staff"**
-- Both tabs share the same Supabase email/password + Google sign-in form
-- Role distinction is enforced server-side via a `user_roles` table (`learner` | `staff` | `admin`) using the canonical `has_role()` SECURITY DEFINER pattern — no role on profiles
-- After sign-in:
-  - Learner → `/dashboard`
-  - Staff/admin → `/staff/dashboard`
-  - Wrong tab for the account → friendly inline message, no redirect loop
-- Existing `SignInModal` becomes a thin wrapper that links to `/auth`
-- Google OAuth via `lovable.auth.signInWithOAuth("google", ...)` (managed broker); enable Google provider in the same turn
-
-### Step-by-step tutorial
-
-First-visit onboarding overlay (driver.js-style, no extra dep — small custom component):
-
-- 4 steps for **Learners**: pick language → browse courses → start a course → earn certificate
-- 4 steps for **Staff**: dashboard overview → upload knowledge (slides/video) → manage trainings → manage users
-- "Skip" + "Don't show again" stored in `localStorage`
-- Launchable any time from a "?" help button in the header
-
-## 5. Backend changes (one migration)
-
-```text
-user_roles (id, user_id → auth.users, role app_role, unique(user_id, role))
-  + has_role(uuid, app_role) SECURITY DEFINER
-  + RLS: user reads own roles; service_role full
-
-lesson_attachments (id, course_id, lesson_id, kind: 'slides'|'video'|'video_url',
-                    storage_path nullable, external_url nullable,
-                    title, description, language, published, uploaded_by)
-  + RLS: authenticated staff/admin manage; anyone reads where published=true
+```
+src/routes/
+  staff.product-knowledge.tsx          List + dashboard + create modal
+  staff.product-knowledge.$id.tsx      Detail view (content, attachments, versions, "Use for Translation")
+  staff.knowledge-translation.tsx      List of outputs + "+ New translation"
+  staff.knowledge-translation.new.tsx  Step builder (asset → audience → format → tone → AI → preview → save)
+  staff.knowledge-translation.$id.tsx  Output detail (copy / export / publish toggle)
 ```
 
-All public-schema tables get explicit `GRANT` + RLS in the same migration.
+## Product Knowledge — list page
 
-## 6. Technical notes
+- Header with **+ Create Knowledge** button.
+- Dashboard strip (6 small cards): Total assets, Published, Drafts, Archived, Translation Outputs, Top category.
+- Search box + filter chips: Category, Audience, Language, Status, Tags.
+- Card grid (3-up desktop, 2-up tablet, 1-up mobile) — type icon, title, audience badge, language pill, status tone (draft/published/archived), updated-at, owner avatar.
+- Empty state and "no results" state.
 
-- `createServerFn` for all uploads / role checks; no Supabase Edge Functions
-- `/auth` and `/staff/*` stay outside `_authenticated/` because role-based routing is handled inside the page (staff area shows its own login CTA if signed out as learner)
-- Tutorial is pure client component, lazy-loaded — no SSR cost
-- PrEP polish is data-only (`seed-data.json`); no schema impact
-- I'll verify by visiting `/auth`, `/courses/prep-101`, and `/staff/knowledge` after each change
+### Create Knowledge form (modal)
 
-## Files I'll touch
+Single-column, sectioned, autosaved-as-draft feel.
 
-- `src/data/seed-data.json` — flesh out PrEP, demo cert
-- `src/routes/auth.tsx` — new login page with tabs
-- `src/routes/staff.knowledge.tsx` — slide + video upload UI
-- `src/lib/lesson-attachments.functions.ts` — server fns for upload/list/delete
-- `src/lib/roles.functions.ts` — has_role helper + role lookup
-- `src/components/onboarding-tour.tsx` — tutorial overlay
-- `src/components/site-header.tsx` — "?" help button, link Sign in → `/auth`
-- `src/components/sign-in-modal.tsx` — slim down or redirect to `/auth`
-- One Supabase migration for `user_roles` + `lesson_attachments`
+Fields:
+
+- Title (TH + EN tabs)
+- Type — `curriculum | sop | toolkit | campaign | health_product | service_guide | partner_resource | research_summary`
+- Category (multi-select: health, rights, skills, wellbeing, outreach, digital_safety)
+- Product/Service (free text or pick from courses/products seed)
+- Target Audience (multi-select chips)
+- Key Message (short)
+- Full Knowledge Content (markdown textarea, simple)
+- Source / Reference
+- Tags (chip input)
+- Language: TH / EN / Bilingual
+- Attachments: PDF, Slide, Image, Video URL — drag/drop area
+- Status: Draft / Published / Archived (segmented control)
+
+**AI Assist Card** (right rail in the modal):
+
+- "สรุปให้สั้นลง" → fills Key Message from Full Content
+- "แปล TH ↔ EN" → fills opposite-language fields
+- "ทำให้อ่านง่าย (plain language)" → rewrites Full Content
+- All three call a single server fn `runKnowledgeAssist` → Lovable AI gateway (`google/gemini-3-flash-preview`) with three preset system prompts.
+
+## Product Knowledge — detail page
+
+- Header: title (TH/EN toggle), type/status/lang badges, updated-at.
+- Body: Key Message callout, Full Content (markdown rendered), Source.
+- Right rail: Attachments list (slides/PDF/image/video URL), Version history (mock array), Tags, Audience.
+- Primary CTA: **Use for Translation** → navigates to `/staff/knowledge-translation/new?assetId=…`.
+- Secondary: Edit, Archive.
+
+## Knowledge Translation — list
+
+- Table/cards of past outputs: source asset title, audience, format, tone, language, status, updated-at.
+- Filters: audience, format, status, language.
+- **+ New translation** CTA.
+
+## Knowledge Translation — step builder
+
+Single page, 5 visible steps with sticky preview on the right.
+
+1. **Pick asset** — autocomplete + recent. Pre-filled if `?assetId=` present.
+2. **Audience** — picker chips: General Public, Youth, Sex Workers, LGBTQ+ Community, Outreach Workers, Healthcare Providers, Policy Partners.
+3. **Format** — Social Caption, Short Article, Learning Card, FAQ, Script, Infographic Text, Slide Outline, Campaign Message, Micro-learning Lesson.
+4. **Tone** — Friendly, Empowering, Simple, Professional, Community Voice, Advocacy.
+5. **Language** — TH / EN / Bilingual.
+
+Below the steps: **AI Prompt Builder** card:
+
+- Auto-composed instruction textarea (editable), pre-filled with the user's template, e.g.
+  > "แปลงความรู้นี้ให้อ่านง่ายสำหรับ [audience] โดยใช้โทน [tone]…"
+- Buttons: **Generate**, **Regenerate**.
+
+Right-side **Preview card**: rendered output (markdown), copy-to-clipboard, download as .md/.txt, language pill.
+
+Save bar: Status segmented (Draft / Ready to Publish / Published) + **Save**.
+
+## AI server functions
+
+`src/lib/knowledge-ai.functions.ts` (TanStack `createServerFn`, reads `LOVABLE_API_KEY` inside handler):
+
+- `runKnowledgeAssist({ mode: "summarize" | "translate" | "simplify", text, targetLang? })`
+- `translateKnowledge({ assetContent, audience, format, tone, language, instruction })`
+
+Both use AI SDK `generateText` with the Lovable gateway. Validation via Zod. Errors surfaced as user-readable toasts (429/402 special-cased).
+
+## Mock / seed data
+
+New file: `src/data/product-knowledge-seed.json`. 12 assets covering:
+
+PrEP starter pack · HIV self-test how-to · STI screening guide · Sex worker rights pocket card · Mental wellbeing check-in · Outreach safety SOP · Safe-service onboarding · Digital safety toolkit · World AIDS Day campaign kit · Condom + lube product brief · Peer educator FAQ · Partner reporting template.
+
+Each row has the same shape as the form, plus `id`, `createdAt`, `updatedAt`, `versionHistory: [{ v, at, by, note }]`, `ownerId`.
+
+Also seed 4 sample translation outputs.
+
+In-memory store (`src/lib/product-knowledge-store.ts`) wraps the seed in a tiny context with `create / update / list / get / remove` plus `translations.create/list/get`. State persists for the session via `localStorage` so reloads keep changes — clear hook included for QA.
+
+## Future DB shape (commented in seed file, not migrated yet)
+
+```text
+knowledge_assets(id, title_th, title_en, type, categories[], product_service,
+  audiences[], key_message, content_md, source, tags[], language, status,
+  owner_id, created_at, updated_at)
+knowledge_attachments(id, asset_id, kind, storage_path|external_url, title)
+knowledge_versions(id, asset_id, v, note, by, at, snapshot_json)
+knowledge_translations(id, asset_id, audience, format, tone, language,
+  instruction, output_md, status, owner_id, created_at, updated_at)
+```
+
+When the user is ready, this maps to a single Supabase migration with RLS scoped to `has_role(auth.uid(),'staff' | 'admin')`. Not in this pass.
+
+## UX / visual
+
+- Reuses existing tokens (`warm-*`, `navy-*`, `magenta-*`, `lavender-*`, status tones).
+- Card layout, sticky right rails on desktop, stacked on tablet/mobile.
+- Toasts via `sonner` for save / publish / AI errors.
+- Drag-drop upload zones reuse the pattern from `lesson-upload-card.tsx`.
+- No new dependencies (markdown rendered with a tiny `<pre className="prose">` block; can upgrade to `react-markdown` later if needed).
+
+## Acceptance check
+
+After build, manually verify on `/staff/product-knowledge`:
+- Sidebar shows both new entries.
+- Create Knowledge → fill → Save Draft → appears in list with "Draft" tone.
+- Publish toggle flips badge + count on dashboard.
+- Detail page renders content + attachments; "Use for Translation" deep-links to builder with asset pre-selected.
+- Translation builder: pick audience/format/tone/lang → Generate → preview populates → Save creates an entry in `/staff/knowledge-translation`.
+- All filters/search return correct subsets.
+- Mobile (375px) and tablet (768px) layouts hold.
