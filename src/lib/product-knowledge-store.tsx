@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import seed from "@/data/product-knowledge-seed.json";
+import { HIVST_KNOWLEDGE_ASSET } from "@/data/knowledge-products-seed";
 
 export type KnowledgeType =
   | "training"
@@ -168,9 +169,6 @@ const LS_KEY = "swing.product-knowledge.v4";
 const LEGACY_LS_KEYS = ["swing.product-knowledge.v1", "swing.product-knowledge.v2", "swing.product-knowledge.v3"];
 
 function seedState(): StoreState {
-  // Lazy import to avoid circular type issues during type-check
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { HIVST_KNOWLEDGE_ASSET } = require("@/data/knowledge-products-seed") as typeof import("@/data/knowledge-products-seed");
   return { assets: [HIVST_KNOWLEDGE_ASSET], translations: [], collections: [], talentMappings: [] };
 }
 
