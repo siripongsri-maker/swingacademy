@@ -108,6 +108,7 @@ export type KnowledgeTranslation = {
 type StoreState = {
   assets: KnowledgeAsset[];
   translations: KnowledgeTranslation[];
+  collections: KnowledgeCollection[];
 };
 
 type CreateAssetInput = Omit<
@@ -130,6 +131,9 @@ type StoreCtx = StoreState & {
   updateTranslation: (id: string, patch: Partial<KnowledgeTranslation>) => void;
   removeTranslation: (id: string) => void;
   getTranslation: (id: string) => KnowledgeTranslation | undefined;
+  createCollection: (c: Omit<KnowledgeCollection, "id" | "createdAt" | "updatedAt">) => KnowledgeCollection;
+  updateCollection: (id: string, patch: Partial<KnowledgeCollection>) => void;
+  removeCollection: (id: string) => void;
   slugify: (input: string) => string;
   reset: () => void;
 };
@@ -141,12 +145,19 @@ function loadInitial(): StoreState {
   if (typeof window !== "undefined") {
     try {
       const raw = window.localStorage.getItem(LS_KEY);
-      if (raw) return JSON.parse(raw) as StoreState;
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<StoreState>;
+        return {
+          assets: parsed.assets ?? [],
+          translations: parsed.translations ?? [],
+          collections: parsed.collections ?? [],
+        };
+      }
     } catch {
       /* ignore */
     }
   }
-  return { assets: [], translations: [] };
+  return { assets: [], translations: [], collections: [] };
 }
 
 const uid = (prefix: string) =>
