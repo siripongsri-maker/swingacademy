@@ -20,6 +20,7 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
@@ -90,6 +91,11 @@ const StaffIndexRoute = StaffIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => StaffRoute,
+} as any)
+const KnowledgeIndexRoute = KnowledgeIndexRouteImport.update({
+  id: '/knowledge/',
+  path: '/knowledge/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
   id: '/users',
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/knowledge': typeof KnowledgeIndexRoute
   '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/knowledge/'
     | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/knowledge'
     | '/staff'
   id:
     | '__root__'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/knowledge/'
     | '/staff/'
   fileRoutesById: FileRoutesById
 }
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   VerifyRoute: typeof VerifyRoute
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
+  KnowledgeIndexRoute: typeof KnowledgeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/staff/'
       preLoaderRoute: typeof StaffIndexRouteImport
       parentRoute: typeof StaffRoute
+    }
+    '/knowledge/': {
+      id: '/knowledge/'
+      path: '/knowledge'
+      fullPath: '/knowledge/'
+      preLoaderRoute: typeof KnowledgeIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/staff/users': {
       id: '/staff/users'
@@ -598,7 +618,18 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyRoute: VerifyRoute,
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
+  KnowledgeIndexRoute: KnowledgeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
