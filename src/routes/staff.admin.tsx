@@ -449,7 +449,7 @@ function RecordsTable() {
           </tr>
         </thead>
         <tbody className="divide-y divide-warm-200">
-          {sc.learningRecords.map((r) => {
+          {(sc.learningRecords as LearningRecord[]).map((r) => {
             const person = sc.people.find((p) => p.id === r.personId);
             const product = sc.products.find((p) => p.id === r.productId);
             return (
