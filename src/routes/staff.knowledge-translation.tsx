@@ -257,7 +257,9 @@ function TranslationEditor({
 }) {
   const pk = useProductKnowledge();
   const aiTranslate = useServerFn(translateKnowledge);
+  const aiCreative = useServerFn(creativeAssist);
   const [generating, setGenerating] = useState(false);
+  const [creativeTool, setCreativeTool] = useState<string | null>(null);
   const [picking, setPicking] = useState(!source && !translation);
   const [currentSource, setCurrentSource] = useState<KnowledgeAsset | null>(source);
 
