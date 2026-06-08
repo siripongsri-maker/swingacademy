@@ -37,16 +37,21 @@ const STATUS_STYLES: Record<KnowledgeStatus, string> = {
   published: "bg-success/15 text-success",
   archived: "bg-warm-100 text-warm-500",
 };
-const STATUS_LABEL: Record<KnowledgeStatus, string> = {
-  draft: "Draft",
-  review: "Review",
-  published: "Published",
-  archived: "Archived",
+const STATUS_LABEL_TH: Record<KnowledgeStatus, string> = {
+  draft: "ร่าง",
+  review: "รอตรวจ",
+  published: "เผยแพร่แล้ว",
+  archived: "เก็บเข้าคลัง",
 };
 const VIS_ICON: Record<Visibility, React.ComponentType<{ className?: string }>> = {
   private: Lock,
   staff: UsersIcon,
   public: Globe,
+};
+const VIS_LABEL_TH: Record<Visibility, string> = {
+  private: "ส่วนตัว",
+  staff: "เฉพาะทีม",
+  public: "เปิดสาธารณะ",
 };
 
 type DateRange = "all" | "7d" | "30d" | "90d";
