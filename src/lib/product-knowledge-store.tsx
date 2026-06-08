@@ -183,7 +183,7 @@ function loadInitial(): StoreState {
       /* ignore */
     }
   }
-  return { assets: [], translations: [], collections: [] };
+  return { assets: [], translations: [], collections: [], talentMappings: [] };
 }
 
 const uid = (prefix: string) =>
