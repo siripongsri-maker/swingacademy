@@ -213,7 +213,7 @@ function ensureUniqueSlug(slug: string, assets: KnowledgeAsset[], ignoreId?: str
 }
 
 export function ProductKnowledgeProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [], collections: [] }));
+  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [], collections: [], talentMappings: [] }));
 
   useEffect(() => {
     setState(loadInitial());
