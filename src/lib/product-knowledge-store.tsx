@@ -89,7 +89,7 @@ type StoreCtx = StoreState & {
 };
 
 const Ctx = createContext<StoreCtx | null>(null);
-const LS_KEY = "swing.product-knowledge.v1";
+const LS_KEY = "swing.product-knowledge.v2";
 
 function loadInitial(): StoreState {
   if (typeof window !== "undefined") {
@@ -100,20 +100,14 @@ function loadInitial(): StoreState {
       /* ignore */
     }
   }
-  return {
-    assets: seed.assets as KnowledgeAsset[],
-    translations: seed.translations as KnowledgeTranslation[],
-  };
+  return { assets: [], translations: [] };
 }
 
 const uid = (prefix: string) =>
   `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 
 export function ProductKnowledgeProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoreState>(() => ({
-    assets: seed.assets as KnowledgeAsset[],
-    translations: seed.translations as KnowledgeTranslation[],
-  }));
+  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [] }));
 
   useEffect(() => {
     setState(loadInitial());
@@ -203,10 +197,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       getTranslation: (id) => state.translations.find((t) => t.id === id),
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setState({
-          assets: seed.assets as KnowledgeAsset[],
-          translations: seed.translations as KnowledgeTranslation[],
-        });
+        setState({ assets: [], translations: [] });
       },
     }),
     [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation],
