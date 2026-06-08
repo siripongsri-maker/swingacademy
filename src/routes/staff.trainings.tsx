@@ -72,6 +72,10 @@ const tx = {
   showing: { en: "Showing", th: "แสดง" },
   of: { en: "of", th: "จาก" },
   empty: { en: "No trainings match your filters.", th: "ไม่พบรายการที่ตรงกับตัวกรอง" },
+  emptyAll: {
+    en: "No training records yet. Record your first workshop, meeting, or conference to start building your knowledge history.",
+    th: "ยังไม่มีรายการอบรม บันทึกการอบรม ประชุม หรือสัมมนาครั้งแรกเพื่อเริ่มสร้างประวัติความรู้",
+  },
 };
 
 function TrainingsPage() {
