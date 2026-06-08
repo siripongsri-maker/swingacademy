@@ -143,9 +143,9 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
           >
             <Plus className="h-4 w-4 shrink-0" aria-hidden />
             <span className={`flex flex-1 flex-col text-left leading-tight ${collapsed ? "lg:hidden" : ""}`}>
-              <span>Capture Knowledge</span>
-              <span lang="th" className="text-[11px] font-normal text-white/80">
-                บันทึกความรู้
+              <span>บันทึกความรู้</span>
+              <span className="text-[11px] font-normal text-white/80">
+                Capture Knowledge
               </span>
             </span>
           </Link>
