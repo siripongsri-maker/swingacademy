@@ -16,6 +16,27 @@ const TranslateInput = z.object({
   instruction: z.string().min(1).max(2000),
 });
 
+const CreativeInput = z.object({
+  tool: z.enum([
+    "rewrite",
+    "summary",
+    "social",
+    "html",
+    "flowchart",
+    "graphic_brief",
+    "image_prompt",
+    "layout",
+    "inclusivity_check",
+  ]),
+  assetContent: z.string().min(1).max(20000),
+  currentOutput: z.string().max(20000).optional(),
+  audience: z.string().min(1).max(80),
+  format: z.string().min(1).max(80),
+  tone: z.string().min(1).max(80),
+  language: z.enum(["th", "en", "bilingual"]),
+  instruction: z.string().max(2000).optional(),
+});
+
 const SuggestInput = z.object({
   titleTh: z.string().max(300).optional(),
   titleEn: z.string().max(300).optional(),
