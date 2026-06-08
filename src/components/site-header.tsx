@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Languages, Menu, X, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Languages, Menu, X, LogOut, HelpCircle } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
-import { SignInModal } from "@/components/sign-in-modal";
 import { BrandLogo } from "@/components/brand-logo";
+import { OnboardingTour, hasSeenTour } from "@/components/onboarding-tour";
 
 const NAV: { to: string; label: Localized }[] = [
   { to: "/", label: { th: "หน้าแรก", en: "Home" } },
@@ -17,8 +17,18 @@ const NAV: { to: string; label: Localized }[] = [
 export function SiteHeader() {
   const { lang, toggle, t } = useLanguage();
   const { signedIn, learner, signOut } = useAccount();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !hasSeenTour("learner")) {
+      const id = setTimeout(() => setTourOpen(true), 1200);
+      return () => clearTimeout(id);
+    }
+  }, []);
+
+
 
   return (
     <>
