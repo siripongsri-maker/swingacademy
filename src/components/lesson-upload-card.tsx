@@ -59,17 +59,20 @@ export function LessonUploadCard() {
 
   const submit = useMutation({
     mutationFn: async () => {
-      if (!slideFile && !videoFile && !videoUrl) {
+      if (slideFiles.length === 0 && !videoFile && !videoUrl) {
         throw new Error("Add slides, a video file, or a video URL.");
       }
       const results: any[] = [];
-      if (slideFile) {
-        const path = await uploadFile(slideFile, "slides");
+      for (let i = 0; i < slideFiles.length; i++) {
+        const f = slideFiles[i];
+        const path = await uploadFile(f, "slides");
+        const baseTitle = title || f.name;
+        const slideTitle = slideFiles.length > 1 ? `${baseTitle} (${i + 1}/${slideFiles.length})` : baseTitle;
         results.push(
           await save({
             data: {
               courseId, lessonId: lessonId || null, kind: "slides",
-              storagePath: path, title: title || slideFile.name,
+              storagePath: path, title: slideTitle,
               description: description || null, language, published,
             },
           }),
@@ -102,7 +105,7 @@ export function LessonUploadCard() {
     },
     onSuccess: () => {
       setMsg({ kind: "ok", text: "Saved." });
-      setSlideFile(null); setVideoFile(null); setVideoUrl("");
+      setSlideFiles([]); setVideoFile(null); setVideoUrl("");
       setTitle(""); setDescription(""); setLessonId("");
       refresh();
     },
