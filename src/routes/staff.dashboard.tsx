@@ -39,7 +39,7 @@ const TODAY = new Date("2026-06-07");
 const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 30;
 
 function StaffDashboard() {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const { openAsset } = useStaff();
 
   const assets = sc.knowledgeAssets as Asset[];

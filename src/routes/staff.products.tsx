@@ -15,7 +15,7 @@ export const Route = createFileRoute("/staff/products")({
   component: ProductsPage,
 });
 
-type Product = (typeof seed.staffConsole.products)[number];
+type Product = any;
 
 const productIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   course: GraduationCap,
@@ -42,7 +42,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 function ProductsPage() {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const { openProduct } = useStaff();
   const [tab, setTab] = useState<TabKey>("all");
 
@@ -100,7 +100,7 @@ function ProductsPage() {
 }
 
 function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
-  const sc = seed.staffConsole;
+  const sc = seed.staffConsole as any;
   const funder = sc.funders.find((f) => f.id === product.funderId);
   const Icon = productIcon[product.productType] ?? FileText;
   const statusLabel =
