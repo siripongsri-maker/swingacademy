@@ -28,14 +28,15 @@ type NavItem = {
   label: string;
   labelTh: string;
   icon: React.ComponentType<{ className?: string }>;
+  requires?: Capability;
 };
 
 const knowledgeFlow: NavItem[] = [
-  { to: "/staff/capture", label: "Live Capture", labelTh: "อัดเสียง / สรุปสด", icon: Mic },
+  { to: "/staff/capture", label: "Live Capture", labelTh: "อัดเสียง / สรุปสด", icon: Mic, requires: "knowledge.capture" },
   { to: "/staff/product-knowledge", label: "Knowledge Product", labelTh: "บันทึก/สร้างความรู้", icon: BookMarked },
-  { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library },
-  { to: "/staff/talent", label: "Talent Mapping", labelTh: "เชื่อมความรู้กับคน", icon: Users },
-  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลงเป็นสื่อ/เนื้อหา", icon: GitBranch },
+  { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library, requires: "km.categorize" },
+  { to: "/staff/talent", label: "Talent Mapping", labelTh: "เชื่อมความรู้กับคน", icon: Users, requires: "talent.viewAll" },
+  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลงเป็นสื่อ/เนื้อหา", icon: GitBranch, requires: "translation.fromOwn" },
 ];
 
 const consoleNav: NavItem[] = [
@@ -43,8 +44,8 @@ const consoleNav: NavItem[] = [
   { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", icon: CalendarClock },
   { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
   { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
-  { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", icon: UserCog },
-  { to: "/staff/admin", label: "Admin", labelTh: "ตั้งค่า", icon: Settings },
+  { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", icon: UserCog, requires: "users.manage" },
+  { to: "/staff/admin", label: "Admin", labelTh: "ตั้งค่า", icon: Settings, requires: "roles.manage" },
 ];
 
 type Props = {
