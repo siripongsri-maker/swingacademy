@@ -32,6 +32,21 @@ const crumbMap: Record<string, string> = {
 export function StaffTopbar({ onMobileMenuOpen }: { onMobileMenuOpen?: () => void }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const segments = pathname.split("/").filter(Boolean);
+  const [account, setAccount] = useState<AccountInfo | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) setAccount(deriveAccount(data.user));
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAccount(deriveAccount(session?.user ?? null));
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   const crumbs: { label: string; href: string }[] = [];
   let acc = "";
