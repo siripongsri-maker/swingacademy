@@ -185,13 +185,68 @@ export function LessonUploadCard() {
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <DropZone
-          icon={<FileText className="h-5 w-5" />}
-          label="Slides (PDF / PPT / PPTX)"
-          accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
-          file={slideFile}
-          onFile={setSlideFile}
-        />
+        <div className="rounded-md border border-dashed border-warm-200 bg-warm-50 p-4">
+          <div className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-navy-500">
+            <FileText className="h-5 w-5" /> Slides (PDF / PPT / PPTX)
+          </div>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-pill border border-warm-200 bg-white px-3 py-1.5 text-xs font-semibold text-navy-500 hover:border-magenta-500">
+            <Upload className="h-3.5 w-3.5" /> Add slide files
+            <input
+              type="file" multiple
+              accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+              className="hidden"
+              onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                if (picked.length) setSlideFiles((prev) => [...prev, ...picked]);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {slideFiles.length === 0 ? (
+            <p className="mt-2 text-[11px] text-warm-500">No files selected. Drag rows to reorder once added.</p>
+          ) : (
+            <ul className="mt-3 space-y-1.5">
+              {slideFiles.map((f, i) => (
+                <li
+                  key={`${f.name}-${i}`}
+                  draggable
+                  onDragStart={() => setDragIdx(i)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (dragIdx === null || dragIdx === i) return;
+                    setSlideFiles((prev) => {
+                      const next = prev.slice();
+                      const [moved] = next.splice(dragIdx, 1);
+                      next.splice(i, 0, moved);
+                      return next;
+                    });
+                    setDragIdx(null);
+                  }}
+                  onDragEnd={() => setDragIdx(null)}
+                  className={`flex items-center gap-2 rounded-md border bg-white px-2 py-1.5 text-xs ${
+                    dragIdx === i ? "border-magenta-500 opacity-60" : "border-warm-200"
+                  }`}
+                >
+                  <GripVertical className="h-3.5 w-3.5 cursor-grab text-warm-400" />
+                  <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-warm-100 text-[10px] font-semibold text-navy-500">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-navy-500">{f.name}</span>
+                  <span className="shrink-0 text-[10px] text-warm-500">{(f.size / 1024 / 1024).toFixed(1)}MB</span>
+                  <button
+                    type="button"
+                    onClick={() => setSlideFiles((prev) => prev.filter((_, j) => j !== i))}
+                    className="rounded p-0.5 text-warm-500 hover:bg-warm-50 hover:text-danger"
+                    aria-label="Remove"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <DropZone
           icon={<Video className="h-5 w-5" />}
           label="Recording (MP4 / WebM / MOV)"
