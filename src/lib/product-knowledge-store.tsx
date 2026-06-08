@@ -105,10 +105,31 @@ export type KnowledgeTranslation = {
   updatedAt: string;
 };
 
+export type TalentRole = "contributor" | "reviewer" | "trainer" | "practitioner" | "expert";
+export type EvidenceType = "taught" | "fieldwork" | "authored" | "led_session" | "other";
+
+export type TalentEvidence = {
+  id: string;
+  type: EvidenceType;
+  note: string;
+  date: string;
+};
+
+export type TalentMapping = {
+  id: string;
+  personId: string;
+  assetId: string;
+  role: TalentRole;
+  evidence: TalentEvidence[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 type StoreState = {
   assets: KnowledgeAsset[];
   translations: KnowledgeTranslation[];
   collections: KnowledgeCollection[];
+  talentMappings: TalentMapping[];
 };
 
 type CreateAssetInput = Omit<
