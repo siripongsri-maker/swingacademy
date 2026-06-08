@@ -323,6 +323,62 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     setState((s) => ({ ...s, collections: s.collections.filter((c) => c.id !== id) }));
   }, []);
 
+  const upsertTalentMapping: StoreCtx["upsertTalentMapping"] = useCallback((personId, assetId, role) => {
+    const now = new Date().toISOString();
+    let result!: TalentMapping;
+    setState((s) => {
+      const existing = s.talentMappings.find((m) => m.personId === personId && m.assetId === assetId);
+      if (existing) {
+        result = { ...existing, role, updatedAt: now };
+        return {
+          ...s,
+          talentMappings: s.talentMappings.map((m) => (m.id === existing.id ? result : m)),
+        };
+      }
+      result = {
+        id: uid("tm"),
+        personId,
+        assetId,
+        role,
+        evidence: [],
+        createdAt: now,
+        updatedAt: now,
+      };
+      return { ...s, talentMappings: [result, ...s.talentMappings] };
+    });
+    return result;
+  }, []);
+
+  const removeTalentMapping: StoreCtx["removeTalentMapping"] = useCallback((id) => {
+    setState((s) => ({ ...s, talentMappings: s.talentMappings.filter((m) => m.id !== id) }));
+  }, []);
+
+  const addTalentEvidence: StoreCtx["addTalentEvidence"] = useCallback((mappingId, e) => {
+    setState((s) => ({
+      ...s,
+      talentMappings: s.talentMappings.map((m) =>
+        m.id === mappingId
+          ? {
+              ...m,
+              evidence: [{ ...e, id: uid("ev") }, ...m.evidence],
+              updatedAt: new Date().toISOString(),
+            }
+          : m,
+      ),
+    }));
+  }, []);
+
+  const removeTalentEvidence: StoreCtx["removeTalentEvidence"] = useCallback((mappingId, evidenceId) => {
+    setState((s) => ({
+      ...s,
+      talentMappings: s.talentMappings.map((m) =>
+        m.id === mappingId
+          ? { ...m, evidence: m.evidence.filter((ev) => ev.id !== evidenceId), updatedAt: new Date().toISOString() }
+          : m,
+      ),
+    }));
+  }, []);
+
   const value = useMemo<StoreCtx>(
     () => ({
       ...state,
@@ -343,13 +399,17 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       createCollection,
       updateCollection,
       removeCollection,
+      upsertTalentMapping,
+      removeTalentMapping,
+      addTalentEvidence,
+      removeTalentEvidence,
       slugify,
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setState({ assets: [], translations: [], collections: [] });
+        setState({ assets: [], translations: [], collections: [], talentMappings: [] });
       },
     }),
-    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation, createCollection, updateCollection, removeCollection],
+    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation, createCollection, updateCollection, removeCollection, upsertTalentMapping, removeTalentMapping, addTalentEvidence, removeTalentEvidence],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
