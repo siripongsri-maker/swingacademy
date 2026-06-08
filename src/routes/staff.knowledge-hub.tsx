@@ -374,12 +374,14 @@ function QuickAction({
   to,
   icon: Icon,
   title,
+  en,
   desc,
   search,
 }: {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
   title: string;
+  en?: string;
   desc: string;
   search?: Record<string, unknown>;
 }) {
@@ -387,17 +389,43 @@ function QuickAction({
     <Link
       to={to}
       search={search as never}
-      className="group flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-magenta-500/40 hover:bg-warm-50"
+      className="group flex min-h-[64px] items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-magenta-500/40 hover:bg-warm-50"
     >
-      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-magenta-50 text-magenta-600 group-hover:bg-magenta-100">
-        <Icon className="h-4 w-4" />
+      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-magenta-50 text-magenta-600 group-hover:bg-magenta-100">
+        <Icon className="h-5 w-5" />
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold text-foreground">{title}</span>
-        <span lang="th" className="block truncate text-[11px] text-muted-foreground">
-          {desc}
+        <span className="flex items-baseline gap-1.5">
+          <span className="truncate text-sm font-semibold text-foreground">{title}</span>
+          {en && <span className="truncate text-[10px] font-normal text-muted-foreground">{en}</span>}
         </span>
+        <span className="block truncate text-[11px] text-muted-foreground">{desc}</span>
       </span>
     </Link>
+  );
+}
+
+function LabeledSelect({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block text-xs">
+      <span className="mb-1 block font-medium text-muted-foreground">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm"
+      >
+        {children}
+      </select>
+    </label>
   );
 }
