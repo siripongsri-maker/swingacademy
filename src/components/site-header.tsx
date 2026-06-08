@@ -30,7 +30,7 @@ export function SiteHeader() {
             aria-label="SWING Academy — Home"
             onClick={() => setOpen(false)}
           >
-            <BrandLogo size={40} />
+            <BrandLogo size={400} />
           </Link>
 
 
