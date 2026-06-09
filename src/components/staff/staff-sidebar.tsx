@@ -21,32 +21,33 @@ import {
 import { useStaff } from "@/lib/staff-context";
 import { useConsoleRole } from "@/lib/console-role-context";
 import { ROLE_LABEL, type Capability } from "@/lib/permissions";
+import { useLanguage, type Localized } from "@/lib/language-context";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type NavItem = {
   to: string;
-  label: string;
-  labelTh: string;
+  label: Localized;
+  sub: Localized;
   icon: React.ComponentType<{ className?: string }>;
   requires?: Capability;
 };
 
 const knowledgeFlow: NavItem[] = [
-  { to: "/staff/knowledge-hub", label: "คลังความรู้", labelTh: "Knowledge Hub", icon: LayoutDashboard },
-  { to: "/staff/capture", label: "Live Capture", labelTh: "อัดเสียง / สรุปสด", icon: Mic, requires: "knowledge.capture" },
-  { to: "/staff/product-knowledge", label: "Knowledge Product", labelTh: "บันทึก/สร้างความรู้", icon: BookMarked },
-  { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library, requires: "km.categorize" },
-  { to: "/staff/talent", label: "Talent Mapping", labelTh: "เชื่อมความรู้กับคน", icon: Users, requires: "talent.viewAll" },
-  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลงเป็นสื่อ/เนื้อหา", icon: GitBranch, requires: "translation.fromOwn" },
+  { to: "/staff/knowledge-hub", label: { th: "คลังความรู้", en: "Knowledge Hub" }, sub: { th: "ภาพรวมคลังความรู้", en: "Browse library" }, icon: LayoutDashboard },
+  { to: "/staff/capture", label: { th: "อัดเสียง / สรุปสด", en: "Live Capture" }, sub: { th: "บันทึกสนทนาแบบเรียลไทม์", en: "Record live notes" }, icon: Mic, requires: "knowledge.capture" },
+  { to: "/staff/product-knowledge", label: { th: "บันทึก/สร้างความรู้", en: "Knowledge Product" }, sub: { th: "สร้างความรู้ใหม่", en: "Author knowledge" }, icon: BookMarked },
+  { to: "/staff/knowledge", label: { th: "จัดการความรู้", en: "Knowledge Management" }, sub: { th: "จัดหมวด ตรวจสอบ เชื่อมโยง", en: "Categorize & review" }, icon: Library, requires: "km.categorize" },
+  { to: "/staff/talent", label: { th: "เชื่อมความรู้กับคน", en: "Talent Mapping" }, sub: { th: "ผู้เชี่ยวชาญในองค์กร", en: "Experts directory" }, icon: Users, requires: "talent.viewAll" },
+  { to: "/staff/knowledge-translation", label: { th: "แปลงเป็นสื่อ", en: "Knowledge Translation" }, sub: { th: "แปลงเป็นเนื้อหา/สื่อ", en: "Turn into content" }, icon: GitBranch, requires: "translation.fromOwn" },
 ];
 
 const consoleNav: NavItem[] = [
-  { to: "/staff/dashboard", label: "Dashboard", labelTh: "ภาพรวม", icon: LayoutDashboard },
-  { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", icon: CalendarClock },
-  { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
-  { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
-  { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", icon: UserCog, requires: "users.manage" },
-  { to: "/staff/admin", label: "Admin", labelTh: "ตั้งค่า", icon: Settings, requires: "roles.manage" },
+  { to: "/staff/dashboard", label: { th: "แดชบอร์ด", en: "Dashboard" }, sub: { th: "ภาพรวม", en: "Overview" }, icon: LayoutDashboard },
+  { to: "/staff/trainings", label: { th: "การอบรม", en: "Trainings" }, sub: { th: "ตารางและคอร์ส", en: "Schedule & courses" }, icon: CalendarClock },
+  { to: "/staff/transfer", label: { th: "ถ่ายทอดความรู้", en: "KT Transfer" }, sub: { th: "ติดตามการถ่ายทอด", en: "Track transfers" }, icon: GitBranch },
+  { to: "/staff/products", label: { th: "ผลิตภัณฑ์", en: "Products" }, sub: { th: "ความรู้สาธารณะ", en: "Public products" }, icon: Package },
+  { to: "/staff/users", label: { th: "ผู้ใช้และสิทธิ์", en: "Users & Roles" }, sub: { th: "จัดการบัญชี", en: "Manage accounts" }, icon: UserCog, requires: "users.manage" },
+  { to: "/staff/admin", label: { th: "ตั้งค่า", en: "Admin" }, sub: { th: "ตั้งค่าระบบ", en: "System settings" }, icon: Settings, requires: "roles.manage" },
 ];
 
 type Props = {
@@ -58,6 +59,7 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const { openExport } = useStaff();
   const { role, can } = useConsoleRole();
+  const { t, lang } = useLanguage();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   const visible = (items: NavItem[]) => items.filter((i) => !i.requires || can(i.requires));
@@ -76,14 +78,14 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
               ? "bg-magenta-500 text-white"
               : "text-white/70 hover:bg-white/10 hover:text-white"
           } ${collapsed ? "lg:justify-center" : ""}`}
-          title={collapsed ? item.label : undefined}
+          title={collapsed ? t(item.label) : undefined}
           aria-current={active ? "page" : undefined}
         >
           <Icon className="h-4 w-4 shrink-0" aria-hidden />
           <span className={`flex flex-1 flex-col leading-tight ${collapsed ? "lg:hidden" : ""}`}>
-            <span>{item.label}</span>
-            <span lang="th" className="text-[11px] font-normal text-white/70">
-              {item.labelTh}
+            <span lang={lang}>{t(item.label)}</span>
+            <span className="text-[11px] font-normal text-white/70">
+              {t(item.sub)}
             </span>
           </span>
         </Link>
@@ -117,12 +119,12 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
           </span>
           <div className={`min-w-0 ${collapsed ? "lg:hidden" : ""}`}>
             <p className="truncate text-sm font-semibold leading-tight">SWING Console</p>
-            <p className="truncate text-[11px] text-white/50">Knowledge platform</p>
+            <p className="truncate text-[11px] text-white/50">{t({ th: "แพลตฟอร์มความรู้", en: "Knowledge platform" })}</p>
           </div>
           {onMobileClose && (
             <button
               onClick={onMobileClose}
-              aria-label="Close menu"
+              aria-label={t({ th: "ปิดเมนู", en: "Close menu" })}
               className="ml-auto rounded-md p-1.5 text-white/70 hover:bg-white/10 hover:text-white lg:hidden"
             >
               <X className="h-4 w-4" />
@@ -139,13 +141,13 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
             className={`flex w-full items-center gap-2 rounded-md bg-magenta-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-magenta-600 ${
               collapsed ? "lg:justify-center lg:px-2" : ""
             }`}
-            title={collapsed ? "Capture Knowledge" : undefined}
+            title={collapsed ? t({ th: "บันทึกความรู้", en: "Capture Knowledge" }) : undefined}
           >
             <Plus className="h-4 w-4 shrink-0" aria-hidden />
             <span className={`flex flex-1 flex-col text-left leading-tight ${collapsed ? "lg:hidden" : ""}`}>
-              <span>บันทึกความรู้</span>
+              <span lang={lang}>{t({ th: "บันทึกความรู้", en: "Capture Knowledge" })}</span>
               <span className="text-[11px] font-normal text-white/80">
-                Capture Knowledge
+                {t({ th: "เริ่มสร้างความรู้ใหม่", en: "Start a new entry" })}
               </span>
             </span>
           </Link>
@@ -153,12 +155,12 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
 
         <nav className="flex-1 overflow-y-auto py-3" aria-label="Primary">
           <div className={`px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
-            Knowledge Workflow
+            {t({ th: "กระบวนการความรู้", en: "Knowledge Workflow" })}
           </div>
           <ul className="space-y-0.5 px-2">{visible(knowledgeFlow).map(renderItem)}</ul>
 
           <div className={`mt-4 px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
-            Console
+            {t({ th: "คอนโซล", en: "Console" })}
           </div>
           <ul className="space-y-0.5 px-2">{visible(consoleNav).map(renderItem)}</ul>
         </nav>
@@ -166,15 +168,12 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
         <div className={`border-t border-white/10 p-3 ${collapsed ? "lg:hidden" : ""}`}>
           <div className="flex items-center gap-1.5 text-[11px] text-white/60">
             <Shield className="h-3 w-3" />
-            <span className="font-semibold uppercase tracking-wider text-white/40">Role</span>
+            <span className="font-semibold uppercase tracking-wider text-white/40">{t({ th: "สิทธิ์", en: "Role" })}</span>
             <span className="ml-auto rounded bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white">
-              {ROLE_LABEL[role].en}
+              {lang === "th" ? ROLE_LABEL[role].th : ROLE_LABEL[role].en}
             </span>
           </div>
         </div>
-
-
-
 
         <div className="border-t border-white/10 p-2">
           <button
@@ -182,20 +181,20 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
             className={`flex w-full items-center gap-3 rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 ${
               collapsed ? "lg:justify-center" : ""
             }`}
-            title={collapsed ? "Export" : undefined}
+            title={collapsed ? t({ th: "ส่งออก", en: "Export" }) : undefined}
           >
             <Download className="h-4 w-4 shrink-0" aria-hidden />
-            <span className={collapsed ? "lg:hidden" : ""}>Export</span>
+            <span className={collapsed ? "lg:hidden" : ""}>{t({ th: "ส่งออก", en: "Export" })}</span>
           </button>
           <button
             onClick={() => setCollapsed((c) => !c)}
             className={`mt-2 hidden w-full items-center gap-3 rounded-md px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white lg:flex ${
               collapsed ? "justify-center" : ""
             }`}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? t({ th: "ขยายเมนู", en: "Expand sidebar" }) : t({ th: "ย่อเมนู", en: "Collapse sidebar" })}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            {!collapsed && <span>Collapse</span>}
+            {!collapsed && <span>{t({ th: "ย่อเมนู", en: "Collapse" })}</span>}
           </button>
         </div>
       </aside>

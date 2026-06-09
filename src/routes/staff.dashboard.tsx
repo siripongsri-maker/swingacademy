@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
+import { useLanguage } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 
 export const Route = createFileRoute("/staff/dashboard")({
@@ -41,6 +42,7 @@ const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 30;
 function StaffDashboard() {
   const sc = seed.staffConsole as any;
   const { openAsset } = useStaff();
+  const { t, lang } = useLanguage();
 
   const assets = sc.knowledgeAssets as Asset[];
   const products = sc.products;
@@ -50,12 +52,10 @@ function StaffDashboard() {
 
   const personById = (id: string) => people.find((p: any) => p.id === id);
 
-  // Recent updates — last 6 by updatedAt
   const recent = [...assets]
     .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : -1))
     .slice(0, 6);
 
-  // At-risk KT journeys: any stage stuck on "doing" or "waiting" after capture is done
   const atRisk = journeys.filter((j) => {
     const apply = j.stages.find((s) => s.key === "apply");
     const transfer = j.stages.find((s) => s.key === "transfer");
@@ -65,20 +65,12 @@ function StaffDashboard() {
     );
   });
 
-  // Needs review soon: published assets past nextReview, or within 30 days
   const needsReview = assets
     .filter((a) => a.nextReview)
     .map((a) => ({ asset: a, due: new Date(a.nextReview as string).getTime() - TODAY.getTime() }))
     .filter(({ due }) => due < THIRTY_DAYS)
     .sort((a, b) => a.due - b.due);
 
-  // Pending transfer: received assets not yet in a transferred journey
-  const transferredAssetIds = new Set(
-    journeys
-      .filter((j) => j.stages.find((s) => s.key === "transfer")?.status === "done")
-      .flatMap((j) => [j.id])
-  );
-  // simpler: received assets with status draft or in_review
   const pendingTransfer = assets.filter(
     (a) => a.source === "received" && a.status !== "published"
   );
@@ -86,10 +78,10 @@ function StaffDashboard() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-6 py-8">
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Dashboard</p>
-        <h1 className="mt-1 text-3xl font-semibold text-navy-500">Knowledge program overview</h1>
+        <p className="text-xs font-bold uppercase tracking-wider text-warm-500">{t({ th: "แดชบอร์ด", en: "Dashboard" })}</p>
+        <h1 className="mt-1 text-3xl font-semibold text-navy-500">{t({ th: "ภาพรวมโปรแกรมความรู้", en: "Knowledge program overview" })}</h1>
         <p className="mt-1 text-sm text-warm-500">
-          A snapshot of what your team has captured, transferred, and shipped.
+          {t({ th: "สรุปสิ่งที่ทีมได้บันทึก ถ่ายทอด และเผยแพร่", en: "A snapshot of what your team has captured, transferred, and shipped." })}
         </p>
       </div>
 
@@ -98,38 +90,38 @@ function StaffDashboard() {
         <PillarCard
           icon={<BookOpen className="h-5 w-5" />}
           accent="#CC0099"
-          label="Knowledge assets"
+          label={t({ th: "คลังความรู้", en: "Knowledge assets" })}
           value={assets.length}
-          sub={`${assets.filter((a) => a.status === "published").length} published`}
+          sub={t({ th: `เผยแพร่แล้ว ${assets.filter((a) => a.status === "published").length} รายการ`, en: `${assets.filter((a) => a.status === "published").length} published` })}
         />
         <PillarCard
           icon={<GitBranch className="h-5 w-5" />}
           accent="#7A6FC4"
-          label="KT journeys"
+          label={t({ th: "เส้นทางถ่ายทอด", en: "KT journeys" })}
           value={journeys.length}
-          sub={`${atRisk.length} need attention`}
+          sub={t({ th: `${atRisk.length} ต้องดูแล`, en: `${atRisk.length} need attention` })}
         />
         <PillarCard
           icon={<Package className="h-5 w-5" />}
           accent="#1F8A5B"
-          label="Products"
+          label={t({ th: "ผลิตภัณฑ์", en: "Products" })}
           value={products.length}
-          sub={`${products.filter((p: any) => p.status === "published").length} live`}
+          sub={t({ th: `เปิดใช้งาน ${products.filter((p: any) => p.status === "published").length} รายการ`, en: `${products.filter((p: any) => p.status === "published").length} live` })}
         />
         <PillarCard
           icon={<Award className="h-5 w-5" />}
           accent="#C9A227"
-          label="Certificates"
+          label={t({ th: "ใบประกาศ", en: "Certificates" })}
           value={certificates.length}
-          sub="issued to staff & partners"
+          sub={t({ th: "ออกให้ทีมและพันธมิตร", en: "issued to staff & partners" })}
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent updates */}
         <Panel
-          title="Recent updates"
-          subtitle="Latest changes across the KM library"
+          title={t({ th: "อัปเดตล่าสุด", en: "Recent updates" })}
+          subtitle={t({ th: "การเปลี่ยนแปลงล่าสุดในคลังความรู้", en: "Latest changes across the KM library" })}
           className="lg:col-span-2"
         >
           <ul className="divide-y divide-warm-200">
@@ -151,7 +143,7 @@ function StaffDashboard() {
                         <ArrowRight className="h-3.5 w-3.5 shrink-0 text-warm-400 transition-transform group-hover:translate-x-0.5 group-hover:text-magenta-500" />
                       </div>
                       <p className="mt-0.5 truncate text-xs text-warm-500">
-                        {typeLabel} · {owner?.name ?? "—"} · updated {fmt(a.updatedAt)}
+                        {typeLabel} · {owner?.name ?? "—"} · {t({ th: "อัปเดต", en: "updated" })} {fmt(a.updatedAt, lang)}
                       </p>
                     </div>
                   </button>
@@ -163,13 +155,13 @@ function StaffDashboard() {
 
         {/* At-risk KT journeys */}
         <Panel
-          title="At-risk KT journeys"
-          subtitle="Transfer or apply stages stalled"
+          title={t({ th: "เส้นทางที่ต้องดูแล", en: "At-risk KT journeys" })}
+          subtitle={t({ th: "ขั้นถ่ายทอดหรือนำไปใช้หยุดชะงัก", en: "Transfer or apply stages stalled" })}
           accent="#C53030"
           icon={<AlertTriangle className="h-4 w-4" />}
         >
           {atRisk.length === 0 ? (
-            <EmptyRow text="All journeys on track." />
+            <EmptyRow text={t({ th: "ทุกเส้นทางเดินหน้าตามแผน", en: "All journeys on track." })} />
           ) : (
             <ul className="divide-y divide-warm-200">
               {atRisk.map((j) => {
@@ -179,7 +171,7 @@ function StaffDashboard() {
                   <li key={j.id} className="px-4 py-3">
                     <p className="line-clamp-2 text-sm font-semibold text-navy-500">{j.learned}</p>
                     <p className="mt-0.5 text-xs text-warm-500">
-                      {owner?.name ?? "—"} · stuck at <span className="font-medium">{stuck?.key ?? "—"}</span>
+                      {owner?.name ?? "—"} · {t({ th: "ติดที่", en: "stuck at" })} <span className="font-medium">{stuck?.key ?? "—"}</span>
                     </p>
                   </li>
                 );
@@ -190,13 +182,13 @@ function StaffDashboard() {
 
         {/* Needs review */}
         <Panel
-          title="Needs review soon"
-          subtitle="Past or within 30 days of next review"
+          title={t({ th: "ใกล้ครบกำหนดทบทวน", en: "Needs review soon" })}
+          subtitle={t({ th: "เลยกำหนดหรือภายใน 30 วัน", en: "Past or within 30 days of next review" })}
           accent="#F0A118"
           icon={<Clock className="h-4 w-4" />}
         >
           {needsReview.length === 0 ? (
-            <EmptyRow text="No reviews due." />
+            <EmptyRow text={t({ th: "ไม่มีรายการที่ต้องทบทวน", en: "No reviews due." })} />
           ) : (
             <ul className="divide-y divide-warm-200">
               {needsReview.map(({ asset, due }) => {
@@ -212,8 +204,8 @@ function StaffDashboard() {
                       </p>
                       <p className="mt-0.5 text-xs text-warm-500">
                         <span className={overdue ? "font-semibold text-danger" : ""}>
-                          {overdue ? "Overdue · " : "Due "}
-                          {fmt(asset.nextReview as string)}
+                          {overdue ? t({ th: "เลยกำหนด · ", en: "Overdue · " }) : t({ th: "ครบกำหนด ", en: "Due " })}
+                          {fmt(asset.nextReview as string, lang)}
                         </span>
                       </p>
                     </button>
@@ -226,14 +218,14 @@ function StaffDashboard() {
 
         {/* Pending transfer */}
         <Panel
-          title="Pending transfer"
-          subtitle="Received assets not yet shared with the team"
+          title={t({ th: "รอถ่ายทอด", en: "Pending transfer" })}
+          subtitle={t({ th: "ความรู้ที่รับมาแต่ยังไม่ได้แชร์กับทีม", en: "Received assets not yet shared with the team" })}
           accent="#7A6FC4"
           icon={<Inbox className="h-4 w-4" />}
           className="lg:col-span-2"
         >
           {pendingTransfer.length === 0 ? (
-            <EmptyRow text="Inbox clear." />
+            <EmptyRow text={t({ th: "กล่องขาเข้าว่างแล้ว", en: "Inbox clear." })} />
           ) : (
             <ul className="divide-y divide-warm-200">
               {pendingTransfer.map((a) => {
@@ -258,7 +250,7 @@ function StaffDashboard() {
                           </span>
                         </div>
                         <p className="mt-0.5 truncate text-xs text-warm-500">
-                          Captured by {owner?.name ?? "—"} · received
+                          {t({ th: "บันทึกโดย", en: "Captured by" })} {owner?.name ?? "—"} · {t({ th: "รับเข้า", en: "received" })}
                         </p>
                       </div>
                     </button>
@@ -348,9 +340,9 @@ function EmptyRow({ text }: { text: string }) {
   return <p className="px-4 py-6 text-center text-sm text-warm-500">{text}</p>;
 }
 
-function fmt(iso: string) {
+function fmt(iso: string, lang: "th" | "en" = "en") {
   try {
-    return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   } catch {
     return iso;
   }
