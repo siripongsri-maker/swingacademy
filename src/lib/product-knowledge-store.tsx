@@ -172,25 +172,40 @@ function seedState(): StoreState {
   return { assets: [HIVST_KNOWLEDGE_ASSET], translations: [], collections: [], talentMappings: [] };
 }
 
+function readKey(key: string): Partial<StoreState> | null {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as Partial<StoreState>;
+  } catch {
+    return null;
+  }
+}
+
 function loadInitial(): StoreState {
-  if (typeof window !== "undefined") {
-    try {
+  if (typeof window === "undefined") return seedState();
+  try {
+    // Prefer current key, then migrate (NOT delete) from legacy keys to recover any drafts.
+    let parsed = readKey(LS_KEY);
+    if (!parsed) {
       for (const k of LEGACY_LS_KEYS) {
-        try { window.localStorage.removeItem(k); } catch { /* ignore */ }
+        const legacy = readKey(k);
+        if (legacy && (legacy.assets?.length || legacy.translations?.length || legacy.collections?.length || legacy.talentMappings?.length)) {
+          parsed = legacy;
+          break;
+        }
       }
-      const raw = window.localStorage.getItem(LS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<StoreState>;
-        return {
-          assets: parsed.assets ?? [],
-          translations: parsed.translations ?? [],
-          collections: parsed.collections ?? [],
-          talentMappings: parsed.talentMappings ?? [],
-        };
-      }
-    } catch {
-      /* ignore */
     }
+    if (parsed) {
+      return {
+        assets: parsed.assets ?? [],
+        translations: parsed.translations ?? [],
+        collections: parsed.collections ?? [],
+        talentMappings: parsed.talentMappings ?? [],
+      };
+    }
+  } catch {
+    /* ignore */
   }
   return seedState();
 }
