@@ -59,6 +59,7 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const { openExport } = useStaff();
   const { role, can } = useConsoleRole();
+  const { t, lang } = useLanguage();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   const visible = (items: NavItem[]) => items.filter((i) => !i.requires || can(i.requires));
@@ -77,14 +78,14 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
               ? "bg-magenta-500 text-white"
               : "text-white/70 hover:bg-white/10 hover:text-white"
           } ${collapsed ? "lg:justify-center" : ""}`}
-          title={collapsed ? item.label : undefined}
+          title={collapsed ? t(item.label) : undefined}
           aria-current={active ? "page" : undefined}
         >
           <Icon className="h-4 w-4 shrink-0" aria-hidden />
           <span className={`flex flex-1 flex-col leading-tight ${collapsed ? "lg:hidden" : ""}`}>
-            <span>{item.label}</span>
-            <span lang="th" className="text-[11px] font-normal text-white/70">
-              {item.labelTh}
+            <span lang={lang}>{t(item.label)}</span>
+            <span className="text-[11px] font-normal text-white/70">
+              {t(item.sub)}
             </span>
           </span>
         </Link>
