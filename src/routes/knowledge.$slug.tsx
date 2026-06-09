@@ -111,7 +111,6 @@ function KnowledgeDetailPage() {
   const markComplete = (id: string) => setCompleted((c) => ({ ...c, [id]: true }));
   const goTo = (i: number) => {
     setActive(Math.max(0, Math.min(chapters.length - 1, i)));
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const completedCount = Object.values(completed).filter(Boolean).length;
@@ -292,14 +291,12 @@ function KnowledgeDetailPage() {
         </header>
 
         {asset.source && asset.sourceType === "pdf" && (
-          <section
-            id="document-preview"
-            className="mt-8 overflow-hidden rounded-2xl border border-warm-200 bg-white"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-warm-200 bg-cream px-5 py-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-navy-500">
-                <FileText className="h-4 w-4 text-magenta-500" /> ตัวอย่างเอกสาร · Document Preview
-              </div>
+          <div className="mt-6 rounded-lg border border-dashed border-warm-200 bg-cream/60 px-5 py-3 text-sm text-warm-500">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-magenta-500" />
+                มีเอกสารประกอบการเรียนรู้แบบ PDF พร้อมดาวน์โหลด
+              </span>
               <a
                 href={asset.source}
                 download
@@ -309,29 +306,18 @@ function KnowledgeDetailPage() {
               >
                 <Download className="h-3.5 w-3.5" /> ดาวน์โหลด
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setZoomScale(1);
+                  setModalOpen(true);
+                }}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-navy-500 bg-white px-3 py-1.5 text-xs font-semibold text-navy-500 hover:bg-lavender-50"
+              >
+                <Eye className="h-3.5 w-3.5" /> ดูตัวอย่าง · Preview
+              </button>
             </div>
-            <object
-              data={`${asset.source}#view=FitH`}
-              type="application/pdf"
-              className="h-[80vh] w-full bg-warm-100"
-            >
-              <div className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center text-sm text-warm-500">
-                {asset.coverUrl && (
-                  <img src={asset.coverUrl} alt="ตัวอย่างหน้าปก" className="max-h-72 w-auto rounded-md border border-warm-200" />
-                )}
-                <p>เบราว์เซอร์ของคุณไม่รองรับการแสดง PDF ในหน้าเว็บ</p>
-                <a
-                  href={asset.source}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-600"
-                >
-                  <Download className="h-4 w-4" /> ดาวน์โหลดไฟล์
-                </a>
-              </div>
-            </object>
-          </section>
+          </div>
         )}
 
         {/* Lessons layout */}
