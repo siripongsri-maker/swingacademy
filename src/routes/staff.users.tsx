@@ -1,74 +1,115 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Shield, GraduationCap, UserCog, ChevronDown, Check, MapPin, Mail, Phone } from "lucide-react";
-import seed from "@/data/seed-data.json";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Search, Shield, GraduationCap, UserCog, Crown, Loader2, Check, X, AlertCircle } from "lucide-react";
+import {
+  listAccounts,
+  grantRole,
+  revokeRole,
+  type AccountRow,
+  type ManageableRole,
+} from "@/lib/admin-users.functions";
+import { useConsoleRole } from "@/lib/console-role-context";
 
 export const Route = createFileRoute("/staff/users")({
+  beforeLoad: () => {
+    // Soft gate; the page itself will also re-check via the console-role context.
+  },
   component: UsersPage,
 });
 
-type AppRole = "admin" | "staff" | "learner";
-type Person = {
-  id: string;
-  name: string;
-  nameTh?: string;
-  role?: string;
-  roleTh?: string;
-  site?: string;
-  email?: string;
-  phone?: string;
-  avatarInitial?: string;
-};
+const ROLE_ORDER: ManageableRole[] = ["superadmin", "admin", "trainer", "staff", "learner"];
 
-const SEEDED_ADMINS = new Set<string>(["p-surang-janyam", "p-thanat-mongkholpan"]);
-const ROLE_META: Record<AppRole, { label: string; labelTh: string; tone: string; icon: typeof Shield }> = {
-  admin: { label: "Admin", labelTh: "ผู้ดูแล", tone: "bg-magenta-500 text-white", icon: Shield },
-  staff: { label: "Staff", labelTh: "เจ้าหน้าที่", tone: "bg-navy-500 text-white", icon: UserCog },
-  learner: { label: "Learner", labelTh: "ผู้เรียน", tone: "bg-warm-200 text-warm-700", icon: GraduationCap },
+const ROLE_META: Record<ManageableRole, { label: string; labelTh: string; tone: string; icon: typeof Shield; help: string }> = {
+  superadmin: { label: "Super Admin", labelTh: "ผู้ดูแลสูงสุด", tone: "bg-magenta-500 text-white", icon: Crown, help: "Full access. Can grant/revoke Super Admin." },
+  admin: { label: "Admin", labelTh: "ผู้ดูแล", tone: "bg-navy-500 text-white", icon: Shield, help: "Manage console, users (except Super Admin), and content." },
+  trainer: { label: "Trainer", labelTh: "ผู้สอน", tone: "bg-lavender-500 text-white", icon: UserCog, help: "Review, publish content, talent mapping." },
+  staff: { label: "Staff", labelTh: "เจ้าหน้าที่", tone: "bg-warm-700 text-white", icon: UserCog, help: "Create and edit own knowledge assets." },
+  learner: { label: "Learner", labelTh: "ผู้เรียน", tone: "bg-warm-200 text-warm-700", icon: GraduationCap, help: "Default access. Browse public learning." },
 };
-
-function initialRoles(people: Person[]): Record<string, AppRole> {
-  const map: Record<string, AppRole> = {};
-  for (const p of people) {
-    if (SEEDED_ADMINS.has(p.id)) map[p.id] = "admin";
-    else map[p.id] = "staff"; // SWING staff seed: default staff
-  }
-  return map;
-}
 
 function UsersPage() {
-  const people = (seed.staffConsole.people as Person[]) ?? [];
-  const [roles, setRoles] = useState<Record<string, AppRole>>(() => initialRoles(people));
-  const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<"all" | AppRole>("all");
-  const [savedId, setSavedId] = useState<string | null>(null);
+  const { can, role: myRole, currentUserId } = useConsoleRole();
+  const allowed = can("users.manage");
 
-  const stats = useMemo(() => {
-    const c = { admin: 0, staff: 0, learner: 0 };
-    Object.values(roles).forEach((r) => (c[r] += 1));
-    return c;
-  }, [roles]);
+  if (!allowed) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <div className="flex items-start gap-3 rounded-lg border border-warm-200 bg-white p-6 shadow-sm">
+          <AlertCircle className="mt-0.5 h-5 w-5 text-magenta-500" />
+          <div>
+            <h1 className="text-lg font-semibold text-navy-500">Admin access required</h1>
+            <p className="mt-1 text-sm text-warm-500">
+              You need the Admin or Super Admin role to manage user roles. Your current role is{" "}
+              <span className="font-semibold text-navy-500">{myRole}</span>.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <UsersPageInner currentUserId={currentUserId} />;
+}
+
+function UsersPageInner({ currentUserId }: { currentUserId: string }) {
+  const fetchAccounts = useServerFn(listAccounts);
+  const grant = useServerFn(grantRole);
+  const revoke = useServerFn(revokeRole);
+  const qc = useQueryClient();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin", "accounts"],
+    queryFn: () => fetchAccounts(),
+  });
+
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<"all" | ManageableRole>("all");
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const accounts = data?.accounts ?? [];
+  const isSuperadmin = useMemo(
+    () => accounts.find((a) => a.id === currentUserId)?.roles.includes("superadmin") ?? false,
+    [accounts, currentUserId],
+  );
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return people.filter((p) => {
-      const r = roles[p.id];
-      if (filter !== "all" && r !== filter) return false;
+    return accounts.filter((a) => {
+      if (filter !== "all" && !a.roles.includes(filter)) return false;
       if (!needle) return true;
       return (
-        p.name.toLowerCase().includes(needle) ||
-        (p.nameTh ?? "").toLowerCase().includes(needle) ||
-        (p.email ?? "").toLowerCase().includes(needle) ||
-        (p.role ?? "").toLowerCase().includes(needle) ||
-        (p.site ?? "").toLowerCase().includes(needle)
+        a.email.toLowerCase().includes(needle) ||
+        a.name.toLowerCase().includes(needle)
       );
     });
-  }, [people, roles, q, filter]);
+  }, [accounts, q, filter]);
 
-  const updateRole = (id: string, role: AppRole) => {
-    setRoles((prev) => ({ ...prev, [id]: role }));
-    setSavedId(id);
-    setTimeout(() => setSavedId((s) => (s === id ? null : s)), 1200);
+  const stats = useMemo(() => {
+    const c: Record<ManageableRole, number> = {
+      superadmin: 0, admin: 0, trainer: 0, staff: 0, learner: 0,
+    };
+    accounts.forEach((a) => a.roles.forEach((r) => (c[r] += 1)));
+    return c;
+  }, [accounts]);
+
+  const mutate = useMutation({
+    mutationFn: async (input: { userId: string; role: ManageableRole; action: "grant" | "revoke" }) => {
+      if (input.action === "grant") return grant({ data: { userId: input.userId, role: input.role } });
+      return revoke({ data: { userId: input.userId, role: input.role } });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "accounts"] }),
+    onError: (e: Error) => setErrorMsg(e.message),
+    onSettled: () => setPendingKey(null),
+  });
+
+  const toggle = (account: AccountRow, role: ManageableRole) => {
+    setErrorMsg(null);
+    const hasIt = account.roles.includes(role);
+    setPendingKey(`${account.id}:${role}`);
+    mutate.mutate({ userId: account.id, role, action: hasIt ? "revoke" : "grant" });
   };
 
   return (
@@ -77,19 +118,16 @@ function UsersPage() {
         <p className="text-xs font-bold uppercase tracking-wider text-warm-500">Access control</p>
         <h1 className="mt-1 text-3xl font-semibold text-navy-500">Users &amp; roles</h1>
         <p className="mt-1 text-sm text-warm-500">
-          Grant <span className="font-semibold text-navy-500">admin</span>,{" "}
-          <span className="font-semibold text-navy-500">staff</span>, or{" "}
-          <span className="font-semibold text-navy-500">learner</span> access. Mock data — wire to the
-          <code className="mx-1 rounded bg-warm-100 px-1 py-0.5 text-[11px]">user_roles</code> table when
-          ready.
+          Assign roles to any account. Only <span className="font-semibold text-navy-500">Super Admins</span>{" "}
+          can grant or revoke the Super Admin role.
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard kind="admin" count={stats.admin} total={people.length} />
-        <StatCard kind="staff" count={stats.staff} total={people.length} />
-        <StatCard kind="learner" count={stats.learner} total={people.length} />
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {ROLE_ORDER.map((r) => (
+          <StatCard key={r} role={r} count={stats[r]} />
+        ))}
       </div>
 
       {/* Toolbar */}
@@ -99,13 +137,13 @@ function UsersPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by name, email, role, or site…"
+            placeholder="Search by name or email…"
             className="w-full rounded-pill border border-warm-200 bg-warm-50 py-2.5 pl-10 pr-4 text-sm text-navy-500 placeholder:text-warm-400 focus:border-magenta-500 focus:bg-white focus:outline-none"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-warm-500">Filter</span>
-          {(["all", "admin", "staff", "learner"] as const).map((k) => (
+          {(["all", ...ROLE_ORDER] as const).map((k) => (
             <button
               key={k}
               onClick={() => setFilter(k)}
@@ -119,100 +157,122 @@ function UsersPage() {
             </button>
           ))}
           <p className="ml-auto text-xs text-warm-500">
-            Showing <span className="font-semibold text-navy-500">{filtered.length}</span> of {people.length}
+            Showing <span className="font-semibold text-navy-500">{filtered.length}</span> of {accounts.length}
           </p>
         </div>
       </div>
 
+      {errorMsg && (
+        <div className="flex items-start gap-2 rounded-lg border border-magenta-500/30 bg-magenta-500/5 px-4 py-3 text-sm text-magenta-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span className="flex-1">{errorMsg}</span>
+          <button onClick={() => setErrorMsg(null)} aria-label="Dismiss" className="text-magenta-700/70 hover:text-magenta-700">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="overflow-hidden rounded-lg border border-warm-200 bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-warm-50 text-left text-[11px] font-bold uppercase tracking-wider text-warm-500">
-            <tr>
-              <th className="px-4 py-3">Person</th>
-              <th className="px-4 py-3">Position</th>
-              <th className="hidden px-4 py-3 md:table-cell">Contact</th>
-              <th className="px-4 py-3">App role</th>
-              <th className="px-4 py-3 text-right">Saved</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-warm-100">
-            {filtered.map((p) => {
-              const role = roles[p.id];
-              const meta = ROLE_META[role];
-              return (
-                <tr key={p.id} className="hover:bg-warm-50/50">
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 py-16 text-sm text-warm-500">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading accounts…
+          </div>
+        ) : error ? (
+          <div className="px-4 py-12 text-center text-sm text-magenta-700">
+            Failed to load accounts: {(error as Error).message}
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-warm-50 text-left text-[11px] font-bold uppercase tracking-wider text-warm-500">
+              <tr>
+                <th className="px-4 py-3">Account</th>
+                {ROLE_ORDER.map((r) => (
+                  <th key={r} className="px-3 py-3 text-center">{ROLE_META[r].label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-warm-100">
+              {filtered.map((a) => (
+                <tr key={a.id} className="hover:bg-warm-50/50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-lavender-100 text-sm font-semibold text-lavender-900">
-                        {p.avatarInitial ?? p.name[0]}
+                        {(a.name[0] ?? a.email[0] ?? "?").toUpperCase()}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-navy-500">{p.name}</p>
-                        {p.nameTh && (
-                          <p lang="th" className="truncate text-[11px] text-warm-500">{p.nameTh}</p>
-                        )}
+                        <p className="truncate font-semibold text-navy-500">
+                          {a.name}
+                          {a.id === currentUserId && (
+                            <span className="ml-2 rounded bg-warm-100 px-1.5 py-0.5 text-[10px] font-semibold text-warm-700">
+                              You
+                            </span>
+                          )}
+                        </p>
+                        <p className="truncate text-[11px] text-warm-500">{a.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 align-middle">
-                    <p className="text-xs text-navy-500">{p.role ?? "—"}</p>
-                    {p.site && (
-                      <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-warm-500">
-                        <MapPin className="h-3 w-3" /> {p.site}
-                      </p>
-                    )}
-                  </td>
-                  <td className="hidden px-4 py-3 align-middle md:table-cell">
-                    {p.email && (
-                      <p className="inline-flex items-center gap-1 text-[11px] text-warm-700">
-                        <Mail className="h-3 w-3" /> <span className="truncate">{p.email}</span>
-                      </p>
-                    )}
-                    {p.phone && (
-                      <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-warm-500">
-                        <Phone className="h-3 w-3" /> {p.phone}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 align-middle">
-                    <RolePicker value={role} onChange={(r) => updateRole(p.id, r)} meta={meta} />
-                  </td>
-                  <td className="px-4 py-3 text-right align-middle">
-                    {savedId === p.id ? (
-                      <span className="inline-flex items-center gap-1 rounded-pill bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
-                        <Check className="h-3 w-3" /> Saved
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-warm-400">—</span>
-                    )}
+                  {ROLE_ORDER.map((r) => {
+                    const has = a.roles.includes(r);
+                    const key = `${a.id}:${r}`;
+                    const pending = pendingKey === key;
+                    const disabled =
+                      pending ||
+                      (r === "superadmin" && !isSuperadmin) ||
+                      (r === "superadmin" && a.id === currentUserId && has);
+                    return (
+                      <td key={r} className="px-3 py-3 text-center align-middle">
+                        <button
+                          onClick={() => toggle(a, r)}
+                          disabled={disabled}
+                          title={
+                            r === "superadmin" && !isSuperadmin
+                              ? "Only a Super Admin can change Super Admin"
+                              : ROLE_META[r].help
+                          }
+                          className={`inline-flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
+                            has
+                              ? `${ROLE_META[r].tone} border-transparent shadow-sm`
+                              : "border-warm-200 bg-white text-warm-400 hover:border-magenta-500 hover:text-magenta-500"
+                          } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+                          aria-pressed={has}
+                        >
+                          {pending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : has ? (
+                            <Check className="h-3.5 w-3.5" />
+                          ) : (
+                            <span className="text-xs">+</span>
+                          )}
+                        </button>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={ROLE_ORDER.length + 1} className="px-4 py-12 text-center text-xs text-warm-500">
+                    No accounts match the current filter.
                   </td>
                 </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-xs text-warm-500">
-                  No users match the current filter.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <p className="text-[11px] text-warm-500">
-        Note: changes are stored in memory for this preview. Persisting to the database is a one-liner once
-        you connect this list to the <code className="rounded bg-warm-100 px-1">user_roles</code> table.
+        Toggle a role to grant or revoke it. Changes apply immediately and are persisted to the database.
       </p>
     </div>
   );
 }
 
-function StatCard({ kind, count, total }: { kind: AppRole; count: number; total: number }) {
-  const meta = ROLE_META[kind];
+function StatCard({ role, count }: { role: ManageableRole; count: number }) {
+  const meta = ROLE_META[role];
   const Icon = meta.icon;
-  const pct = total ? Math.round((count / total) * 100) : 0;
   return (
     <div className="rounded-lg border border-warm-200 bg-white p-4 shadow-sm">
       <div className="flex items-center gap-3">
@@ -223,55 +283,7 @@ function StatCard({ kind, count, total }: { kind: AppRole; count: number; total:
           <p className="text-[11px] font-bold uppercase tracking-wider text-warm-500">{meta.label}</p>
           <p className="text-2xl font-semibold text-navy-500">{count}</p>
         </div>
-        <span className="ml-auto rounded-pill bg-warm-100 px-2 py-0.5 text-[11px] font-semibold text-warm-700">
-          {pct}%
-        </span>
       </div>
-    </div>
-  );
-}
-
-function RolePicker({
-  value, onChange, meta,
-}: {
-  value: AppRole;
-  onChange: (r: AppRole) => void;
-  meta: { label: string; tone: string; icon: typeof Shield };
-}) {
-  const [open, setOpen] = useState(false);
-  const Icon = meta.icon;
-  return (
-    <div className="relative inline-block">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        onBlur={() => setTimeout(() => setOpen(false), 120)}
-        className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-xs font-semibold shadow-sm ${meta.tone}`}
-      >
-        <Icon className="h-3.5 w-3.5" />
-        {meta.label}
-        <ChevronDown className="h-3 w-3 opacity-80" />
-      </button>
-      {open && (
-        <div className="absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-md border border-warm-200 bg-white shadow-lg">
-          {(Object.keys(ROLE_META) as AppRole[]).map((r) => {
-            const m = ROLE_META[r];
-            const RIcon = m.icon;
-            return (
-              <button
-                key={r}
-                onMouseDown={(e) => { e.preventDefault(); onChange(r); setOpen(false); }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-navy-500 hover:bg-warm-50 ${
-                  r === value ? "bg-warm-50" : ""
-                }`}
-              >
-                <RIcon className="h-3.5 w-3.5 text-warm-500" />
-                <span className="flex-1 text-left">{m.label}</span>
-                {r === value && <Check className="h-3.5 w-3.5 text-magenta-500" />}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
