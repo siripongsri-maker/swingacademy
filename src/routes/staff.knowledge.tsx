@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Search,
@@ -16,6 +17,8 @@ import {
   BookOpen,
   ShieldCheck,
   FileText,
+  Globe,
+  EyeOff,
 } from "lucide-react";
 import {
   useProductKnowledge,
@@ -23,6 +26,7 @@ import {
   type KnowledgeStatus,
   type QaChecklist,
 } from "@/lib/product-knowledge-store";
+import { publishKnowledgeBySlug } from "@/lib/knowledge.functions";
 import { suggestKnowledgeMeta } from "@/lib/knowledge-ai.functions";
 import { useConsoleRole } from "@/lib/console-role-context";
 
@@ -213,30 +217,94 @@ function EmptyState() {
 
 function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void }) {
   const { updateAsset, categoryLabels } = useProductKnowledge();
+  const qc = useQueryClient();
+  const syncDb = useServerFn(publishKnowledgeBySlug);
   const qa = asset.qaChecklist ?? {};
   const qaCount = QA_ITEMS.filter((i) => qa[i.key]).length;
+  const isPublic = asset.visibility === "public";
+  const isLive = isPublic && asset.status === "published";
 
-  const approve = () => {
+  const dbPayload = (overrides: { status?: "draft" | "in_review" | "published"; visibility?: "internal" | "public" }) => ({
+    slug: asset.slug,
+    titleTh: asset.titleTh || asset.titleEn || asset.slug,
+    titleEn: asset.titleEn || null,
+    summary: asset.summary || null,
+    contentMd: (asset as { contentMd?: string }).contentMd ?? "",
+    categories: asset.categories ?? [],
+    tags: asset.tags ?? [],
+    ...overrides,
+  });
+
+  const invalidatePublic = () => {
+    qc.invalidateQueries({ queryKey: ["knowledge", "public", "all"] });
+    qc.invalidateQueries({ queryKey: ["knowledge", "featured"] });
+  };
+
+  const approve = async () => {
+    updateAsset(
+      asset.id,
+      { status: "published", approvedAt: new Date().toISOString(), approvedBy: "You" },
+      "Approved & published",
+    );
+    try {
+      await syncDb({ data: dbPayload({ status: "published" }) });
+      invalidatePublic();
+      toast.success("Approved — บันทึกในฐานข้อมูลแล้ว");
+    } catch (e) {
+      toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
+    }
+  };
+
+  const sendReview = async () => {
+    updateAsset(asset.id, { status: "review" }, "Sent to review");
+    try {
+      await syncDb({ data: dbPayload({ status: "in_review" }) });
+      toast.success("ส่งให้ตรวจสอบแล้ว");
+    } catch (e) {
+      toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
+    }
+  };
+
+  const archive = async () => {
+    updateAsset(asset.id, { status: "archived" }, "Archived");
+    try {
+      await syncDb({ data: dbPayload({ status: "draft", visibility: "internal" }) });
+      invalidatePublic();
+      toast.success("Archived");
+    } catch (e) {
+      toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
+    }
+  };
+
+  const publishWeb = async () => {
     updateAsset(
       asset.id,
       {
         status: "published",
-        approvedAt: new Date().toISOString(),
-        approvedBy: "You",
+        visibility: "public",
+        approvedAt: asset.approvedAt ?? new Date().toISOString(),
+        approvedBy: asset.approvedBy ?? "You",
       },
-      "Approved & published",
+      "Published to public website",
     );
-    toast.success("Approved & published");
+    try {
+      await syncDb({ data: dbPayload({ status: "published", visibility: "public" }) });
+      invalidatePublic();
+      toast.success("ขึ้นหน้า /knowledge แล้ว");
+    } catch (e) {
+      toast.error(`เผยแพร่ไม่สำเร็จ: ${(e as Error).message}`);
+    }
   };
 
-  const sendReview = () => {
-    updateAsset(asset.id, { status: "review" }, "Sent to review");
-    toast.success("ส่งให้ตรวจสอบแล้ว");
-  };
-
-  const archive = () => {
-    updateAsset(asset.id, { status: "archived" }, "Archived");
-    toast.success("Archived");
+  const unpublishWeb = async () => {
+    updateAsset(asset.id, { visibility: "staff" }, "Unpublished from public website");
+    try {
+      await syncDb({ data: dbPayload({ visibility: "internal" }) });
+      invalidatePublic();
+      toast.success("ถอดออกจากหน้าเว็บแล้ว");
+    } catch (e) {
+      toast.error(`ถอดเผยแพร่ไม่สำเร็จ: ${(e as Error).message}`);
+    }
   };
 
   return (
@@ -251,6 +319,20 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
               >
                 {asset.status}
               </span>
+              {isLive ? (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                  <Globe className="h-3 w-3" /> Live · /knowledge
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-warm-100 px-2 py-0.5 text-[11px] font-semibold text-warm-600">
+                  <EyeOff className="h-3 w-3" /> Internal
+                </span>
+              )}
+              {asset.approvedAt && (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+                  <CheckCircle2 className="h-3 w-3" /> Approved
+                </span>
+              )}
               <span className="inline-flex items-center gap-1 rounded-pill bg-warm-100 px-2 py-0.5 text-[11px] font-semibold text-warm-700">
                 v{asset.versionHistory.at(-1)?.v ?? "1.0"}
               </span>
@@ -275,7 +357,15 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
           </div>
         </div>
       </button>
-      <AssetRowActions asset={asset} approve={approve} sendReview={sendReview} archive={archive} />
+      <AssetRowActions
+        asset={asset}
+        approve={approve}
+        sendReview={sendReview}
+        archive={archive}
+        publishWeb={publishWeb}
+        unpublishWeb={unpublishWeb}
+        isPublic={isPublic}
+      />
     </div>
   );
 }
@@ -285,11 +375,17 @@ function AssetRowActions({
   approve,
   sendReview,
   archive,
+  publishWeb,
+  unpublishWeb,
+  isPublic,
 }: {
   asset: KnowledgeAsset;
   approve: () => void;
   sendReview: () => void;
   archive: () => void;
+  publishWeb: () => void;
+  unpublishWeb: () => void;
+  isPublic: boolean;
 }) {
   const { can, canEditAsset } = useConsoleRole();
   const mayReview = can("knowledge.review");
@@ -314,6 +410,16 @@ function AssetRowActions({
           <CheckCircle2 className="h-3.5 w-3.5" /> Approve
         </button>
       )}
+      {asset.status === "published" && mayPublish && !isPublic && (
+        <button onClick={publishWeb} className="inline-flex items-center gap-1 rounded-pill bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
+          <Globe className="h-3.5 w-3.5" /> Publish ขึ้นเว็บ
+        </button>
+      )}
+      {isPublic && mayPublish && (
+        <button onClick={unpublishWeb} className="inline-flex items-center gap-1 rounded-pill border border-warm-300 bg-white px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
+          <EyeOff className="h-3.5 w-3.5" /> Unpublish
+        </button>
+      )}
       {asset.status !== "archived" && mayArchive && (
         <button onClick={archive} className="inline-flex items-center gap-1 rounded-pill border border-warm-200 px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
           <Archive className="h-3.5 w-3.5" /> Archive
@@ -322,6 +428,7 @@ function AssetRowActions({
     </div>
   );
 }
+
 
 
 function AssetDrawer({ asset, onClose }: { asset: KnowledgeAsset; onClose: () => void }) {
