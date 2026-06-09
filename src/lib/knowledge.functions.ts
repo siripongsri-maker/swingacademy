@@ -260,7 +260,7 @@ export const publishKnowledgeBySlug = createServerFn({ method: "POST" })
     };
     const { data: row, error } = await context.supabase
       .from("knowledge_products")
-      .upsert(payload, { onConflict: "slug" })
+      .upsert(payload as never, { onConflict: "slug" })
       .select(SELECT_COLS)
       .single();
     if (error) throw new Error(error.message);
