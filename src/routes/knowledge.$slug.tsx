@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   ChevronLeft,
   Download,
+  Eye,
+  FileText,
   Globe,
   ListTree,
   ShieldCheck,
@@ -120,86 +122,159 @@ function KnowledgeDetailPage() {
 
         {/* Hero */}
         <header className="mt-6 rounded-2xl border border-warm-200 bg-gradient-to-br from-cream via-white to-lavender-50 p-8 md:p-10">
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            {asset.visibility === "public" && (
-              <span className="inline-flex items-center gap-1 rounded-pill bg-lavender-100 px-2.5 py-1 font-semibold text-lavender-900">
-                <Globe className="h-3 w-3" /> Public Knowledge
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 font-semibold text-navy-500 ring-1 ring-warm-200">
-              <ShieldCheck className="h-3 w-3" />
-              {asset.status === "published" ? "เผยแพร่แล้ว" : asset.status}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 text-warm-600 ring-1 ring-warm-200">
-              <Calendar className="h-3 w-3" />
-              {new Date(asset.updatedAt).toLocaleDateString("th-TH", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-            {hasChapters && (
-              <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 text-warm-600 ring-1 ring-warm-200">
-                <BookOpen className="h-3 w-3" /> {chapters.length} บทเรียน
-              </span>
+          <div className="grid gap-8 md:grid-cols-[1fr_280px]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                {asset.visibility === "public" && (
+                  <span className="inline-flex items-center gap-1 rounded-pill bg-lavender-100 px-2.5 py-1 font-semibold text-lavender-900">
+                    <Globe className="h-3 w-3" /> Public Knowledge
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 font-semibold text-navy-500 ring-1 ring-warm-200">
+                  <ShieldCheck className="h-3 w-3" />
+                  {asset.status === "published" ? "เผยแพร่แล้ว" : asset.status}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 text-warm-600 ring-1 ring-warm-200">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(asset.updatedAt).toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+                {hasChapters && (
+                  <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 text-warm-600 ring-1 ring-warm-200">
+                    <BookOpen className="h-3 w-3" /> {chapters.length} บทเรียน
+                  </span>
+                )}
+              </div>
+
+              <h1 className="mt-4 text-3xl font-semibold text-navy-500 md:text-4xl">{asset.titleTh}</h1>
+              {asset.titleEn && <p className="mt-1 text-base italic text-warm-500">{asset.titleEn}</p>}
+              {asset.summary && (
+                <p className="mt-4 text-lg leading-relaxed text-navy-500">{asset.summary}</p>
+              )}
+
+              {asset.keyMessage && (
+                <div className="mt-6 rounded-lg border border-magenta-200 bg-magenta-50 p-4 text-sm text-navy-500">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-magenta-700">สารสำคัญ</p>
+                  <p className="leading-relaxed">{asset.keyMessage}</p>
+                </div>
+              )}
+
+              {asset.tags?.length > 0 && (
+                <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-warm-500">
+                  <Tag className="h-3.5 w-3.5" />
+                  {asset.tags.map((t) => (
+                    <span key={t} className="rounded-pill bg-white/70 px-2 py-0.5 text-navy-500 ring-1 ring-warm-200">
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {asset.source && asset.sourceType === "pdf" && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <a
+                    href={asset.source}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-600"
+                  >
+                    <Download className="h-4 w-4" /> ดาวน์โหลด PDF ฉบับเต็ม · Download Full PDF
+                  </a>
+                  <a
+                    href="#document-preview"
+                    className="inline-flex items-center gap-2 rounded-md border border-navy-500 bg-white px-4 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-lavender-50"
+                  >
+                    <Eye className="h-4 w-4" /> ดูตัวอย่างเอกสาร · Preview
+                  </a>
+                </div>
+              )}
+
+              {hasChapters && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between text-xs text-warm-500">
+                    <span>ความก้าวหน้าการเรียน</span>
+                    <span className="font-semibold text-navy-500">
+                      {completedCount}/{chapters.length} บท · {progress}%
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-warm-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-magenta-500 to-lavender-500 transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {asset.coverUrl && (
+              <div className="hidden md:block">
+                <a
+                  href={asset.source && asset.sourceType === "pdf" ? asset.source : asset.coverUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block overflow-hidden rounded-xl border border-warm-200 bg-white shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  <img
+                    src={asset.coverUrl}
+                    alt={`หน้าปก: ${asset.titleTh}`}
+                    className="aspect-[3/4] w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="flex items-center justify-center gap-1.5 border-t border-warm-200 bg-white/80 px-3 py-2 text-xs font-semibold text-navy-500 group-hover:text-magenta-600">
+                    <FileText className="h-3.5 w-3.5" /> หน้าปกเอกสาร
+                  </div>
+                </a>
+              </div>
             )}
           </div>
+        </header>
 
-          <h1 className="mt-4 text-3xl font-semibold text-navy-500 md:text-4xl">{asset.titleTh}</h1>
-          {asset.titleEn && <p className="mt-1 text-base italic text-warm-500">{asset.titleEn}</p>}
-          {asset.summary && (
-            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-navy-500">{asset.summary}</p>
-          )}
-
-          {asset.keyMessage && (
-            <div className="mt-6 rounded-lg border border-magenta-200 bg-magenta-50 p-4 text-sm text-navy-500">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-magenta-700">สารสำคัญ</p>
-              <p className="leading-relaxed">{asset.keyMessage}</p>
-            </div>
-          )}
-
-          {asset.tags?.length > 0 && (
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-warm-500">
-              <Tag className="h-3.5 w-3.5" />
-              {asset.tags.map((t) => (
-                <span key={t} className="rounded-pill bg-white/70 px-2 py-0.5 text-navy-500 ring-1 ring-warm-200">
-                  #{t}
-                </span>
-              ))}
-            </div>
-          )}
-          {asset.source && asset.sourceType === "pdf" && (
-            <div className="mt-6">
+        {asset.source && asset.sourceType === "pdf" && (
+          <section
+            id="document-preview"
+            className="mt-8 overflow-hidden rounded-2xl border border-warm-200 bg-white"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-warm-200 bg-cream px-5 py-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-navy-500">
+                <FileText className="h-4 w-4 text-magenta-500" /> ตัวอย่างเอกสาร · Document Preview
+              </div>
               <a
                 href={asset.source}
                 download
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-600"
+                className="inline-flex items-center gap-1.5 rounded-md bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-600"
               >
-                <Download className="h-4 w-4" /> ดาวน์โหลด PDF ฉบับเต็ม · Download Full PDF
+                <Download className="h-3.5 w-3.5" /> ดาวน์โหลด
               </a>
             </div>
-          )}
-
-
-          {hasChapters && (
-            <div className="mt-6">
-              <div className="flex items-center justify-between text-xs text-warm-500">
-                <span>ความก้าวหน้าการเรียน</span>
-                <span className="font-semibold text-navy-500">
-                  {completedCount}/{chapters.length} บท · {progress}%
-                </span>
+            <object
+              data={`${asset.source}#view=FitH`}
+              type="application/pdf"
+              className="h-[80vh] w-full bg-warm-100"
+            >
+              <div className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center text-sm text-warm-500">
+                {asset.coverUrl && (
+                  <img src={asset.coverUrl} alt="ตัวอย่างหน้าปก" className="max-h-72 w-auto rounded-md border border-warm-200" />
+                )}
+                <p>เบราว์เซอร์ของคุณไม่รองรับการแสดง PDF ในหน้าเว็บ</p>
+                <a
+                  href={asset.source}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-600"
+                >
+                  <Download className="h-4 w-4" /> ดาวน์โหลดไฟล์
+                </a>
               </div>
-              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-warm-100">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-magenta-500 to-lavender-500 transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </header>
+            </object>
+          </section>
+        )}
 
         {/* Lessons layout */}
         {hasChapters ? (
