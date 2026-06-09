@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Search,
@@ -25,6 +26,7 @@ import {
   type KnowledgeStatus,
   type QaChecklist,
 } from "@/lib/product-knowledge-store";
+import { publishKnowledgeBySlug } from "@/lib/knowledge.functions";
 import { suggestKnowledgeMeta } from "@/lib/knowledge-ai.functions";
 import { useConsoleRole } from "@/lib/console-role-context";
 
@@ -215,32 +217,94 @@ function EmptyState() {
 
 function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void }) {
   const { updateAsset, categoryLabels } = useProductKnowledge();
+  const qc = useQueryClient();
+  const syncDb = useServerFn(publishKnowledgeBySlug);
   const qa = asset.qaChecklist ?? {};
   const qaCount = QA_ITEMS.filter((i) => qa[i.key]).length;
   const isPublic = asset.visibility === "public";
   const isLive = isPublic && asset.status === "published";
 
-  const approve = () => {
+  const dbPayload = (overrides: { status?: "draft" | "in_review" | "published"; visibility?: "internal" | "public" }) => ({
+    slug: asset.slug,
+    titleTh: asset.titleTh || asset.titleEn || asset.slug,
+    titleEn: asset.titleEn || null,
+    summary: asset.summary || null,
+    contentMd: (asset as { contentMd?: string }).contentMd ?? "",
+    categories: asset.categories ?? [],
+    tags: asset.tags ?? [],
+    ...overrides,
+  });
+
+  const invalidatePublic = () => {
+    qc.invalidateQueries({ queryKey: ["knowledge", "public", "all"] });
+    qc.invalidateQueries({ queryKey: ["knowledge", "featured"] });
+  };
+
+  const approve = async () => {
+    updateAsset(
+      asset.id,
+      { status: "published", approvedAt: new Date().toISOString(), approvedBy: "You" },
+      "Approved & published",
+    );
+    try {
+      await syncDb({ data: dbPayload({ status: "published" }) });
+      invalidatePublic();
+      toast.success("Approved — บันทึกในฐานข้อมูลแล้ว");
+    } catch (e) {
+      toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
+    }
+  };
+
+  const sendReview = async () => {
+    updateAsset(asset.id, { status: "review" }, "Sent to review");
+    try {
+      await syncDb({ data: dbPayload({ status: "in_review" }) });
+      toast.success("ส่งให้ตรวจสอบแล้ว");
+    } catch (e) {
+      toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
+    }
+  };
+
+  const archive = async () => {
+    updateAsset(asset.id, { status: "archived" }, "Archived");
+    try {
+      await syncDb({ data: dbPayload({ status: "draft", visibility: "internal" }) });
+      invalidatePublic();
+      toast.success("Archived");
+    } catch (e) {
+      toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
+    }
+  };
+
+  const publishWeb = async () => {
     updateAsset(
       asset.id,
       {
         status: "published",
-        approvedAt: new Date().toISOString(),
-        approvedBy: "You",
+        visibility: "public",
+        approvedAt: asset.approvedAt ?? new Date().toISOString(),
+        approvedBy: asset.approvedBy ?? "You",
       },
-      "Approved & published",
+      "Published to public website",
     );
-    toast.success("Approved & published");
+    try {
+      await syncDb({ data: dbPayload({ status: "published", visibility: "public" }) });
+      invalidatePublic();
+      toast.success("ขึ้นหน้า /knowledge แล้ว");
+    } catch (e) {
+      toast.error(`เผยแพร่ไม่สำเร็จ: ${(e as Error).message}`);
+    }
   };
 
-  const sendReview = () => {
-    updateAsset(asset.id, { status: "review" }, "Sent to review");
-    toast.success("ส่งให้ตรวจสอบแล้ว");
-  };
-
-  const archive = () => {
-    updateAsset(asset.id, { status: "archived" }, "Archived");
-    toast.success("Archived");
+  const unpublishWeb = async () => {
+    updateAsset(asset.id, { visibility: "staff" }, "Unpublished from public website");
+    try {
+      await syncDb({ data: dbPayload({ visibility: "internal" }) });
+      invalidatePublic();
+      toast.success("ถอดออกจากหน้าเว็บแล้ว");
+    } catch (e) {
+      toast.error(`ถอดเผยแพร่ไม่สำเร็จ: ${(e as Error).message}`);
+    }
   };
 
   const publishWeb = () => {

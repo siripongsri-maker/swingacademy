@@ -223,3 +223,47 @@ export const deleteKnowledge = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// Upsert + set publish state by slug — used to sync local console store with DB
+const PublishBySlugSchema = z.object({
+  slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/),
+  titleTh: z.string().min(1).max(255),
+  titleEn: z.string().max(255).nullable().optional(),
+  summary: z.string().max(2000).nullable().optional(),
+  contentMd: z.string().max(200000).optional().default(""),
+  categories: z.array(z.string().max(64)).max(20).optional().default([]),
+  tags: z.array(z.string().max(64)).max(30).optional().default([]),
+  status: z.enum(["draft", "in_review", "published"]).optional(),
+  visibility: z.enum(["internal", "public"]).optional(),
+});
+
+export const publishKnowledgeBySlug = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => PublishBySlugSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    const nowIso = new Date().toISOString();
+    const setPublished = data.status === "published";
+    const payload: Record<string, unknown> = {
+      slug: data.slug,
+      title_th: data.titleTh,
+      title_en: data.titleEn ?? null,
+      summary: data.summary ?? null,
+      content_md: data.contentMd ?? "",
+      categories: data.categories,
+      tags: data.tags,
+      owner_id: context.userId,
+      ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.visibility !== undefined ? { visibility: data.visibility } : {}),
+      ...(setPublished
+        ? { published_at: nowIso, approved_at: nowIso, approved_by: context.userId }
+        : {}),
+    };
+    const { data: row, error } = await context.supabase
+      .from("knowledge_products")
+      .upsert(payload as never, { onConflict: "slug" })
+      .select(SELECT_COLS)
+      .single();
+    if (error) throw new Error(error.message);
+    return { item: mapRow(row as Record<string, unknown>) };
+  });
+
