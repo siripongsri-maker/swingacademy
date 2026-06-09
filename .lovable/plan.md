@@ -1,74 +1,64 @@
-# แผน: เชื่อม Knowledge จาก Backend → Public Front End
 
-## 1. Database (Lovable Cloud / Supabase)
+# แปลทั้งแอปเป็นไทย + ตัวสลับภาษา TH/EN
 
-สร้างตาราง `knowledge_products` เก็บข้อมูล Knowledge Asset:
-- ฟิลด์หลัก: `slug` (unique), `title_th`, `title_en`, `summary`, `key_message`, `content_md`, `language`, `categories[]`, `tags[]`, `audiences[]`, `product_service`, `source`, `source_type`, `cover_url`
-- ฟิลด์สถานะ: `status` (draft/in_review/published), `visibility` (internal/public), `is_featured` (boolean), `featured_order` (int), `published_at`, `owner_id`, `approved_by`
-- ฟิลด์ sponsor: `sponsors` (jsonb array `{name, role, logo_url}`)
-- มาตรฐาน: `id`, `created_at`, `updated_at` + trigger `update_updated_at_column`
+ตอนนี้ `LanguageProvider` มีอยู่แล้วใน `src/lib/language-context.tsx` ใช้รูปแบบ `t({th, en})` แต่ใช้แค่บางหน้า ส่วนคอนโซลเจ้าหน้าที่ (`/staff/*`) ส่วนใหญ่เขียนข้อความไว้แบบฝังในไฟล์ (ผสมไทย-อังกฤษ) ยังไม่ได้รองรับสลับภาษา
 
-**RLS / GRANT**:
-- `anon` + `authenticated` อ่านได้เฉพาะแถว `visibility='public' AND status='published'`
-- `staff` หรือ `admin` (ใช้ `has_role()`) จัดการได้ทุกแถว (insert/update/delete)
-- `service_role` ทำได้ทุกอย่าง
+ขอบเขตงานใหญ่มาก (27 หน้า + คอมโพเนนต์ รวม ~11,000 บรรทัด) จะแบ่งเป็นเฟส และเริ่มจากโครงสร้าง + หน้าสาธารณะก่อน
 
-Seed: insert HIVST Community-Led Model 1 แถว `visibility=public, status=published, is_featured=true`
+## เฟส 1 — โครงสร้าง i18n และตัวสลับภาษา
+- ขยาย `language-context.tsx`: เพิ่ม dictionary แบบ namespace `t("nav.home")` ควบคู่ของเดิม `t({th, en})` ที่ยังใช้ได้
+- สร้าง `src/lib/i18n/dictionaries.ts` แยกเป็น namespace: `common`, `nav`, `auth`, `home`, `courses`, `paths`, `trainings`, `resources`, `dashboard`, `verify`, `staff.*`
+- สร้างคอมโพเนนต์ `<LanguageToggle />` (ปุ่มสลับ TH/EN) วางไว้:
+  - หน้าสาธารณะ: `site-header.tsx` (มุมขวาบน เคียงปุ่มล็อกอิน)
+  - คอนโซลเจ้าหน้าที่: `staff-topbar.tsx`
+- ตั้งค่าเริ่มต้นเป็น **ไทย** (ปัจจุบันเป็นไทยอยู่แล้ว ✓)
+- บันทึกค่าใน `localStorage` (มีอยู่แล้ว ✓)
 
-## 2. Server Functions (TanStack Start)
+## เฟส 2 — หน้าสาธารณะ (frontend ผู้ใช้)
+แปลให้ครบทุกข้อความ + เชื่อมกับ `t()`:
+- `index.tsx` (หน้าแรก)
+- `courses.tsx`, `courses.$id.tsx`
+- `paths.tsx`, `trainings.tsx`, `resources.tsx`
+- `knowledge.index.tsx`, `knowledge.$slug.tsx`, `k.$slug.tsx`
+- `dashboard.tsx`, `verify.tsx`, `auth.tsx`
+- คอมโพเนนต์: `site-header`, `site-footer`, `sign-in-modal`, `course-card`, `placeholder-page`, `certificate-preview-modal`, `onboarding-tour`, `featured-knowledge-section`
 
-สร้างที่ `src/lib/knowledge.functions.ts`:
-- `listPublicKnowledge()` — public, ไม่ต้อง auth (ใช้ supabaseAdmin หรือ anon select) คืนเฉพาะ published+public
-- `getPublicKnowledgeBySlug(slug)` — public, 1 แถว
-- `listFeaturedKnowledge(limit)` — published+public+featured, sort by `featured_order`
-- `listAllKnowledge()` — admin/staff, ทุกแถว (auth middleware)
-- `upsertKnowledge(payload)` — admin/staff สร้าง/แก้ไข
-- `setKnowledgePublishState({id, status, visibility, is_featured, featured_order})` — toggle publish + featured
+## เฟส 3 — คอนโซลเจ้าหน้าที่ (backend)
+แปลทุกหน้า `/staff/*` พร้อมเมนู sidebar (ตอนนี้แสดง EN + คำบรรยายไทย ทั้งคู่ — จะรวมเป็นภาษาเดียวตามสวิตช์):
+- `staff.index.tsx`, `staff.dashboard.tsx`
+- `staff.knowledge-hub.tsx`, `staff.knowledge.tsx`, `staff.product-knowledge.tsx`
+- `staff.knowledge-translation.tsx`, `staff.capture.tsx`
+- `staff.talent.tsx`, `staff.trainings.tsx`, `staff.transfer.tsx`
+- `staff.products.tsx`, `staff.users.tsx`, `staff.admin.tsx`
+- คอมโพเนนต์ staff: sidebar, topbar, drawer-host, certificate-modal, funder-export-modal
 
-## 3. Staff Console (Backend UI)
+## เฟส 4 — ข้อมูลและฝั่งเซิร์ฟเวอร์
+- ข้อความใน `src/data/seed-data.json` (ชื่อคอร์ส/ความรู้/ฯลฯ): เพิ่มฟิลด์ `titleEn/title` หรือใช้รูปแบบ `{th, en}` ที่หน้าจอเลือกอ่านตามภาษา
+- ข้อความ error/return จาก server functions (`*.functions.ts`): ส่งคีย์ i18n กลับมาให้ฝั่ง client แปล แทนการส่งสตริงตายตัว
+- Toast / sonner: แปลข้อความทั้งหมด
 
-ที่ `src/routes/staff.knowledge-hub.tsx` (หรือ product knowledge editor ปัจจุบัน):
-- เพิ่ม Switch **"Publish to Public"** (เซต `visibility='public' + status='published'` พร้อม `published_at`)
-- เพิ่ม Switch **"Feature on Home"** + ช่องลำดับ `featured_order`
-- ปุ่ม Save → เรียก `upsertKnowledge` + `setKnowledgePublishState`
-- ตารางลิสต์แสดงคอลัมน์ Status / Visibility / Featured
+## เฟส 5 — ตรวจสอบและเก็บรายละเอียด
+- รันแอปสลับภาษา ตรวจหน้าสำคัญทุกหน้า
+- ตรวจ format วันที่ (ใช้ `toLocaleDateString("th-TH" | "en-GB")` ตามภาษา)
+- เพิ่ม `lang` attribute ที่ `<html>` ให้ตรง (มีอยู่แล้ว ✓)
+- บันทึก memory: "Default ไทย, มีสวิตช์ TH/EN, dictionary ที่ src/lib/i18n/"
 
-## 4. Public Front End
+## เทคนิค
+```ts
+// language-context.tsx (ขยาย)
+const t = (key: string | Localized) =>
+  typeof key === "string" ? (dict[lang][key] ?? key) : key[lang];
+```
+หน้าใช้งาน:
+```tsx
+const { t } = useLanguage();
+<h1>{t("home.hero.title")}</h1>
+```
 
-**Home (`/`)** — Section "Featured Knowledge":
-- Loader prime `listFeaturedKnowledge(3)` ผ่าน TanStack Query
-- การ์ดแสดง cover / title / summary → ลิงก์ไป `/knowledge/$slug`
-- ถ้าว่าง: hide section ทั้งบล็อก
+## ข้อสังเกต / คำถาม
+งานนี้ใหญ่มาก จะใช้หลายรอบของการแก้ไข อยากให้ผมเริ่มทำเลย หรือมีบางส่วนที่อยากให้ทำก่อน เช่น:
+- **ทำทั้งหมดเป็นชุด** — เริ่มเฟส 1+2 (โครงสร้าง + หน้าผู้ใช้) ก่อนในรอบนี้ แล้วค่อยทำคอนโซลเจ้าหน้าที่รอบถัดไป
+- **เน้นหน้าสาธารณะก่อน** — แปลและทำสวิตช์ครบเฉพาะหน้าผู้ใช้ ส่วนคอนโซลค่อยทำ
+- **เน้นคอนโซลก่อน** — ทำสวิตช์ + แปล `/staff/*` ก่อน เพราะใช้งานภายในบ่อย
 
-**Index (`/knowledge`)** — สร้างใหม่:
-- Loader prime `listPublicKnowledge()`
-- Grid list ทุกชิ้นที่ published+public พร้อม filter ตาม category/audience
-- Empty state เป็นมิตรถ้ายังไม่มี
-
-**`/knowledge/$slug`** (มีอยู่แล้ว):
-- เปลี่ยน loader จาก seed file → เรียก `getPublicKnowledgeBySlug` แทน
-- Fallback ไป HIVST seed เฉพาะตอน DB ว่าง (ช่วงเปลี่ยนผ่าน)
-- Sponsor footer อ่านจาก `sponsors` column; ถ้าว่าง → DEFAULT_SPONSORS (SWING)
-
-**`/courses` และ `/paths`**:
-- เพิ่มแถบ "Knowledge Products" ด้านบน list courses (เรียก `listPublicKnowledge()`)
-- การ์ดเล็ก ๆ ชี้ไป `/knowledge/$slug`
-
-## 5. Technical Notes
-
-- ใช้ `createServerFn` + TanStack Query (`ensureQueryData` loader + `useSuspenseQuery` component) ตามรูปแบบของโปรเจกต์
-- Public reads ใน loader → ห้ามใช้ `requireSupabaseAuth` (SSR ไม่มี bearer). ใช้ server fn ธรรมดาที่ภายใน `await import("@/integrations/supabase/client.server")` แล้ว query ด้วย service role + filter `visibility='public' AND status='published'`
-- Staff writes → ใช้ `requireSupabaseAuth` middleware + ตรวจ role ผ่าน `has_role()` ใน RLS
-- Store edit metadata ใน DB; ค่อย ๆ ลด dependency บน localStorage `swing.product-knowledge.v4` (ยังเก็บไว้ก่อนเป็น cache UI ฝั่ง staff)
-
-## 6. ลำดับการทำ
-
-1. Migration: ตาราง + RLS + GRANT + seed HIVST
-2. Server fns (`knowledge.functions.ts`)
-3. แก้ Staff editor: เพิ่ม Publish/Feature toggle + เรียก server fn
-4. แก้ `/knowledge/$slug` ให้อ่านจาก DB
-5. สร้าง `/knowledge` index + Featured section บน `/`
-6. เพิ่มแถบ Knowledge ใน `/courses` และ `/paths`
-7. ทดสอบ: สร้าง draft → toggle publish → ดูบน Public
-
-ยืนยันให้ผมเริ่มได้เลยไหมครับ?
+ผมแนะนำ **เริ่มเฟส 1+2** ก่อน (โครงสร้าง i18n + หน้าผู้ใช้แปลครบ + สวิตช์ใช้งานได้ทั้งสองฝั่ง) แล้วแปลคอนโซลในรอบถัดไป เพื่อให้แต่ละรอบจบเป็นชิ้นใช้งานได้จริง ไม่กระจัดกระจาย
