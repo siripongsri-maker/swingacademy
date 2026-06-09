@@ -119,6 +119,8 @@ function KnowledgeDetailPage() {
 
   useEffect(() => {
     if (!modalOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setModalOpen(false);
       if (e.key === "+" || e.key === "=") {
@@ -135,7 +137,10 @@ function KnowledgeDetailPage() {
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [modalOpen]);
 
   return (
