@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import {
   Heart,
   Scale,
@@ -15,12 +16,20 @@ import {
   BookOpen,
   Quote,
   HelpCircle,
+  Globe,
 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 import { pageHead } from "@/lib/seo";
+import { listPublicKnowledge } from "@/lib/knowledge.functions";
+
+const knowledgeQueryOptions = queryOptions({
+  queryKey: ["knowledge", "public", "all"],
+  queryFn: () => listPublicKnowledge(),
+  staleTime: 60_000,
+});
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -30,7 +39,20 @@ export const Route = createFileRoute("/")({
         "Free, bilingual (TH/EN) courses on sexual health, rights, and life skills from the SWING Foundation. Warm, stigma-free learning for our communities.",
       path: "/",
     }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(knowledgeQueryOptions),
   component: HomePage,
+  errorComponent: ({ error }) => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">
+        โหลดหน้าไม่สำเร็จ: {error.message}
+      </div>
+    </PublicLayout>
+  ),
+  notFoundComponent: () => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">ไม่พบเนื้อหา</div>
+    </PublicLayout>
+  ),
 });
 
 
@@ -70,6 +92,8 @@ function HomePage() {
   const paths = seed.publicPortal.paths as Path[];
   const testimonials = seed.publicPortal.testimonials as Testimonial[];
   const partners = seed.publicPortal.partners as Partner[];
+  const { data: knowledgeData } = useSuspenseQuery(knowledgeQueryOptions);
+  const knowledgeItems = knowledgeData.items.slice(0, 6);
 
   const featured = FEATURED_IDS.map((id) => courses.find((c) => c.id === id)).filter(
     Boolean,
@@ -423,6 +447,61 @@ function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* 8b. KNOWLEDGE PRODUCTS (from backend) */}
+      {knowledgeItems.length > 0 && (
+        <section className="bg-cream py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="eyebrow mb-3">
+                  {t({ th: "คลังความรู้ล่าสุด", en: "Latest knowledge" })}
+                </p>
+                <h2 lang={lang} className="text-3xl font-semibold text-navy-500 md:text-4xl">
+                  {t({
+                    th: "งานวิจัย บทเรียน และความรู้จากชุมชน",
+                    en: "Research, lessons & community knowledge",
+                  })}
+                </h2>
+              </div>
+              <Link
+                to="/knowledge"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-magenta-500 hover:text-magenta-700"
+              >
+                {t({ th: "ดูทั้งหมด", en: "See all" })}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {knowledgeItems.map((k) => (
+                <Link
+                  key={k.id}
+                  to="/knowledge/$slug"
+                  params={{ slug: k.slug }}
+                  className="group flex flex-col rounded-lg border border-warm-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <span className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-md bg-lavender-100 text-lavender-900">
+                    <BookOpen className="h-5 w-5" />
+                  </span>
+                  <h3 className="text-lg font-semibold text-navy-500 group-hover:text-magenta-500">
+                    {k.titleTh}
+                  </h3>
+                  {k.titleEn && (
+                    <p className="mt-0.5 text-xs italic text-warm-500">{k.titleEn}</p>
+                  )}
+                  {k.summary && (
+                    <p className="mt-3 line-clamp-3 flex-1 text-sm text-warm-600">{k.summary}</p>
+                  )}
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs text-warm-500">
+                    <Globe className="h-3 w-3" /> Public Knowledge
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 9. HELP CALLOUT + FINAL CTA */}
       <section className="bg-navy-500 text-white">
