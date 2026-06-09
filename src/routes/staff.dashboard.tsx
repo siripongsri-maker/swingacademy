@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
+import { useLanguage } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 
 export const Route = createFileRoute("/staff/dashboard")({
