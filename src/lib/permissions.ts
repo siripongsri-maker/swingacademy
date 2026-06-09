@@ -86,7 +86,7 @@ const ROLE_CAPS: Record<ConsoleRole, Capability[]> = {
 };
 
 export function highestRole(roles: readonly string[]): ConsoleRole {
-  if (roles.includes("admin")) return "admin";
+  if (roles.includes("superadmin") || roles.includes("admin")) return "admin";
   if (roles.includes("trainer")) return "trainer";
   return "staff";
 }
