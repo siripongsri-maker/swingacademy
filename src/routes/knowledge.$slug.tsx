@@ -111,7 +111,6 @@ function KnowledgeDetailPage() {
   const markComplete = (id: string) => setCompleted((c) => ({ ...c, [id]: true }));
   const goTo = (i: number) => {
     setActive(Math.max(0, Math.min(chapters.length - 1, i)));
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const completedCount = Object.values(completed).filter(Boolean).length;
