@@ -16,8 +16,13 @@ import {
   FileText,
   Globe,
   ListTree,
+  Maximize,
+  Minus,
+  Plus,
+  RotateCcw,
   ShieldCheck,
   Tag,
+  X,
 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { DEFAULT_SPONSORS, type Sponsor } from "@/data/knowledge-products-seed";
