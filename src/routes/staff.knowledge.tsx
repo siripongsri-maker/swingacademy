@@ -16,6 +16,8 @@ import {
   BookOpen,
   ShieldCheck,
   FileText,
+  Globe,
+  EyeOff,
 } from "lucide-react";
 import {
   useProductKnowledge,
@@ -215,6 +217,8 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
   const { updateAsset, categoryLabels } = useProductKnowledge();
   const qa = asset.qaChecklist ?? {};
   const qaCount = QA_ITEMS.filter((i) => qa[i.key]).length;
+  const isPublic = asset.visibility === "public";
+  const isLive = isPublic && asset.status === "published";
 
   const approve = () => {
     updateAsset(
@@ -239,6 +243,29 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
     toast.success("Archived");
   };
 
+  const publishWeb = () => {
+    updateAsset(
+      asset.id,
+      {
+        status: "published",
+        visibility: "public",
+        approvedAt: asset.approvedAt ?? new Date().toISOString(),
+        approvedBy: asset.approvedBy ?? "You",
+      },
+      "Published to public website",
+    );
+    toast.success("ขึ้นหน้า /knowledge แล้ว");
+  };
+
+  const unpublishWeb = () => {
+    updateAsset(
+      asset.id,
+      { visibility: "staff" },
+      "Unpublished from public website",
+    );
+    toast.success("ถอดออกจากหน้าเว็บแล้ว (ยังคงเป็น Approved ภายใน)");
+  };
+
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm md:flex-row md:items-center">
       <button onClick={onOpen} className="flex-1 text-left">
@@ -251,6 +278,20 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
               >
                 {asset.status}
               </span>
+              {isLive ? (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                  <Globe className="h-3 w-3" /> Live · /knowledge
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-warm-100 px-2 py-0.5 text-[11px] font-semibold text-warm-600">
+                  <EyeOff className="h-3 w-3" /> Internal
+                </span>
+              )}
+              {asset.approvedAt && (
+                <span className="inline-flex items-center gap-1 rounded-pill bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+                  <CheckCircle2 className="h-3 w-3" /> Approved
+                </span>
+              )}
               <span className="inline-flex items-center gap-1 rounded-pill bg-warm-100 px-2 py-0.5 text-[11px] font-semibold text-warm-700">
                 v{asset.versionHistory.at(-1)?.v ?? "1.0"}
               </span>
@@ -275,7 +316,15 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
           </div>
         </div>
       </button>
-      <AssetRowActions asset={asset} approve={approve} sendReview={sendReview} archive={archive} />
+      <AssetRowActions
+        asset={asset}
+        approve={approve}
+        sendReview={sendReview}
+        archive={archive}
+        publishWeb={publishWeb}
+        unpublishWeb={unpublishWeb}
+        isPublic={isPublic}
+      />
     </div>
   );
 }
@@ -285,11 +334,17 @@ function AssetRowActions({
   approve,
   sendReview,
   archive,
+  publishWeb,
+  unpublishWeb,
+  isPublic,
 }: {
   asset: KnowledgeAsset;
   approve: () => void;
   sendReview: () => void;
   archive: () => void;
+  publishWeb: () => void;
+  unpublishWeb: () => void;
+  isPublic: boolean;
 }) {
   const { can, canEditAsset } = useConsoleRole();
   const mayReview = can("knowledge.review");
@@ -314,6 +369,16 @@ function AssetRowActions({
           <CheckCircle2 className="h-3.5 w-3.5" /> Approve
         </button>
       )}
+      {asset.status === "published" && mayPublish && !isPublic && (
+        <button onClick={publishWeb} className="inline-flex items-center gap-1 rounded-pill bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
+          <Globe className="h-3.5 w-3.5" /> Publish ขึ้นเว็บ
+        </button>
+      )}
+      {isPublic && mayPublish && (
+        <button onClick={unpublishWeb} className="inline-flex items-center gap-1 rounded-pill border border-warm-300 bg-white px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
+          <EyeOff className="h-3.5 w-3.5" /> Unpublish
+        </button>
+      )}
       {asset.status !== "archived" && mayArchive && (
         <button onClick={archive} className="inline-flex items-center gap-1 rounded-pill border border-warm-200 px-3 py-1.5 text-xs font-semibold text-warm-700 hover:bg-warm-100">
           <Archive className="h-3.5 w-3.5" /> Archive
@@ -322,6 +387,7 @@ function AssetRowActions({
     </div>
   );
 }
+
 
 
 function AssetDrawer({ asset, onClose }: { asset: KnowledgeAsset; onClose: () => void }) {
