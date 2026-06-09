@@ -243,13 +243,18 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
   const approve = async () => {
     updateAsset(
       asset.id,
-      { status: "published", approvedAt: new Date().toISOString(), approvedBy: "You" },
-      "Approved & published",
+      {
+        status: "published",
+        visibility: "public",
+        approvedAt: new Date().toISOString(),
+        approvedBy: "You",
+      },
+      "Approved & published to /knowledge",
     );
     try {
-      await syncDb({ data: dbPayload({ status: "published" }) });
+      await syncDb({ data: dbPayload({ status: "published", visibility: "public" }) });
       invalidatePublic();
-      toast.success("Approved — บันทึกในฐานข้อมูลแล้ว");
+      toast.success("Approved — ขึ้นหน้า /knowledge แล้ว");
     } catch (e) {
       toast.error(`บันทึก DB ไม่สำเร็จ: ${(e as Error).message}`);
     }
