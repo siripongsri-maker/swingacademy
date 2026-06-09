@@ -45,7 +45,7 @@ const consoleNav: NavItem[] = [
   { to: "/staff/dashboard", label: { th: "แดชบอร์ด", en: "Dashboard" }, sub: { th: "ภาพรวม", en: "Overview" }, icon: LayoutDashboard },
   { to: "/staff/trainings", label: { th: "การอบรม", en: "Trainings" }, sub: { th: "ตารางและคอร์ส", en: "Schedule & courses" }, icon: CalendarClock },
   { to: "/staff/transfer", label: { th: "ถ่ายทอดความรู้", en: "KT Transfer" }, sub: { th: "ติดตามการถ่ายทอด", en: "Track transfers" }, icon: GitBranch },
-  { to: "/staff/products", label: { th: "ผลิตภัณฑ์", en: "Products" }, sub: { th: "ความรู้สาธารณะ", en: "Public products" }, icon: Package },
+  
   { to: "/staff/users", label: { th: "ผู้ใช้และสิทธิ์", en: "Users & Roles" }, sub: { th: "จัดการบัญชี", en: "Manage accounts" }, icon: UserCog, requires: "users.manage" },
   { to: "/staff/admin", label: { th: "ตั้งค่า", en: "Admin" }, sub: { th: "ตั้งค่าระบบ", en: "System settings" }, icon: Settings, requires: "roles.manage" },
 ];
