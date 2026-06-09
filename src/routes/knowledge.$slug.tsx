@@ -117,6 +117,27 @@ function KnowledgeDetailPage() {
   const completedCount = Object.values(completed).filter(Boolean).length;
   const progress = hasChapters ? Math.round((completedCount / chapters.length) * 100) : 0;
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModalOpen(false);
+      if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        setZoomScale((z) => Math.min(z + 0.25, 3));
+      }
+      if (e.key === "-" || e.key === "_") {
+        e.preventDefault();
+        setZoomScale((z) => Math.max(z - 0.25, 0.5));
+      }
+      if (e.key === "0") {
+        e.preventDefault();
+        setZoomScale(1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen]);
+
   return (
     <PublicLayout>
       <article className="mx-auto max-w-6xl px-6 pt-10 pb-16">
