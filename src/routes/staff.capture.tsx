@@ -191,8 +191,67 @@ function CapturePage() {
     const buf = await blob.arrayBuffer();
     const bytes = new Uint8Array(buf);
     let bin = "";
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    const CHUNK = 0x8000;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      bin += String.fromCharCode.apply(
+        null,
+        Array.from(bytes.subarray(i, i + CHUNK)) as unknown as number[],
+      );
+    }
     return btoa(bin);
+  }
+
+  // Decode any browser-recorded blob (webm/opus, mp4/aac, ...) and re-encode
+  // as a Gemini-friendly WAV (16-bit PCM, mono, 16kHz). Gemini does NOT
+  // accept "audio/webm;codecs=opus", so we must transcode in the browser.
+  async function blobToWavMono16k(blob: Blob): Promise<Blob> {
+    const arrayBuf = await blob.arrayBuffer();
+    const AudioCtx: typeof AudioContext =
+      (window.AudioContext as typeof AudioContext) ||
+      ((window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext);
+    const decodeCtx = new AudioCtx();
+    const decoded = await decodeCtx.decodeAudioData(arrayBuf.slice(0));
+    await decodeCtx.close();
+
+    const targetRate = 16000;
+    const length = Math.max(1, Math.ceil(decoded.duration * targetRate));
+    const OfflineCtx: typeof OfflineAudioContext =
+      (window.OfflineAudioContext as typeof OfflineAudioContext) ||
+      ((window as unknown as { webkitOfflineAudioContext: typeof OfflineAudioContext })
+        .webkitOfflineAudioContext);
+    const offline = new OfflineCtx(1, length, targetRate);
+    const src = offline.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offline.destination);
+    src.start(0);
+    const rendered = await offline.startRendering();
+
+    const pcm = rendered.getChannelData(0);
+    const buffer = new ArrayBuffer(44 + pcm.length * 2);
+    const view = new DataView(buffer);
+    const writeStr = (off: number, s: string) => {
+      for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i));
+    };
+    writeStr(0, "RIFF");
+    view.setUint32(4, 36 + pcm.length * 2, true);
+    writeStr(8, "WAVE");
+    writeStr(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, targetRate, true);
+    view.setUint32(28, targetRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeStr(36, "data");
+    view.setUint32(40, pcm.length * 2, true);
+    let off = 44;
+    for (let i = 0; i < pcm.length; i++, off += 2) {
+      const s = Math.max(-1, Math.min(1, pcm[i]));
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    }
+    return new Blob([buffer], { type: "audio/wav" });
   }
 
   async function process() {
@@ -206,8 +265,35 @@ function CapturePage() {
     }
     setProcessing(true);
     try {
-      const base64 = await blobToBase64(audioBlob);
-      const mediaType = audioBlob.type || "audio/webm";
+      // Gemini supports wav/mp3/ogg/flac/aac/aiff but NOT webm. Always
+      // transcode webm/mp4 recordings into 16kHz mono WAV before upload.
+      let uploadBlob = audioBlob;
+      let mediaType = audioBlob.type || "audio/webm";
+      const needsTranscode =
+        !mediaType ||
+        mediaType.includes("webm") ||
+        mediaType.includes("mp4") ||
+        mediaType.includes("x-m4a");
+      if (needsTranscode) {
+        try {
+          uploadBlob = await blobToWavMono16k(audioBlob);
+          mediaType = "audio/wav";
+        } catch (err) {
+          console.error("Audio transcode failed", err);
+          toast.error("ไม่สามารถแปลงไฟล์เสียง — ลองอัปโหลดเป็น mp3/wav แทน");
+          setProcessing(false);
+          return;
+        }
+      } else {
+        // Strip ";codecs=..." parameters that Gemini rejects.
+        mediaType = mediaType.split(";")[0].trim();
+      }
+      if (uploadBlob.size > 25 * 1024 * 1024) {
+        toast.error("ไฟล์เสียงหลังแปลงใหญ่เกิน 25MB — ลองอัดให้สั้นลง");
+        setProcessing(false);
+        return;
+      }
+      const base64 = await blobToBase64(uploadBlob);
       const res = await processFn({
         data: {
           sessionTitle,
