@@ -155,13 +155,13 @@ function StaffDashboard() {
 
         {/* At-risk KT journeys */}
         <Panel
-          title="At-risk KT journeys"
-          subtitle="Transfer or apply stages stalled"
+          title={t({ th: "เส้นทางที่ต้องดูแล", en: "At-risk KT journeys" })}
+          subtitle={t({ th: "ขั้นถ่ายทอดหรือนำไปใช้หยุดชะงัก", en: "Transfer or apply stages stalled" })}
           accent="#C53030"
           icon={<AlertTriangle className="h-4 w-4" />}
         >
           {atRisk.length === 0 ? (
-            <EmptyRow text="All journeys on track." />
+            <EmptyRow text={t({ th: "ทุกเส้นทางเดินหน้าตามแผน", en: "All journeys on track." })} />
           ) : (
             <ul className="divide-y divide-warm-200">
               {atRisk.map((j) => {
@@ -171,7 +171,7 @@ function StaffDashboard() {
                   <li key={j.id} className="px-4 py-3">
                     <p className="line-clamp-2 text-sm font-semibold text-navy-500">{j.learned}</p>
                     <p className="mt-0.5 text-xs text-warm-500">
-                      {owner?.name ?? "—"} · stuck at <span className="font-medium">{stuck?.key ?? "—"}</span>
+                      {owner?.name ?? "—"} · {t({ th: "ติดที่", en: "stuck at" })} <span className="font-medium">{stuck?.key ?? "—"}</span>
                     </p>
                   </li>
                 );
@@ -182,13 +182,13 @@ function StaffDashboard() {
 
         {/* Needs review */}
         <Panel
-          title="Needs review soon"
-          subtitle="Past or within 30 days of next review"
+          title={t({ th: "ใกล้ครบกำหนดทบทวน", en: "Needs review soon" })}
+          subtitle={t({ th: "เลยกำหนดหรือภายใน 30 วัน", en: "Past or within 30 days of next review" })}
           accent="#F0A118"
           icon={<Clock className="h-4 w-4" />}
         >
           {needsReview.length === 0 ? (
-            <EmptyRow text="No reviews due." />
+            <EmptyRow text={t({ th: "ไม่มีรายการที่ต้องทบทวน", en: "No reviews due." })} />
           ) : (
             <ul className="divide-y divide-warm-200">
               {needsReview.map(({ asset, due }) => {
@@ -204,8 +204,8 @@ function StaffDashboard() {
                       </p>
                       <p className="mt-0.5 text-xs text-warm-500">
                         <span className={overdue ? "font-semibold text-danger" : ""}>
-                          {overdue ? "Overdue · " : "Due "}
-                          {fmt(asset.nextReview as string)}
+                          {overdue ? t({ th: "เลยกำหนด · ", en: "Overdue · " }) : t({ th: "ครบกำหนด ", en: "Due " })}
+                          {fmt(asset.nextReview as string, lang)}
                         </span>
                       </p>
                     </button>
@@ -218,14 +218,14 @@ function StaffDashboard() {
 
         {/* Pending transfer */}
         <Panel
-          title="Pending transfer"
-          subtitle="Received assets not yet shared with the team"
+          title={t({ th: "รอถ่ายทอด", en: "Pending transfer" })}
+          subtitle={t({ th: "ความรู้ที่รับมาแต่ยังไม่ได้แชร์กับทีม", en: "Received assets not yet shared with the team" })}
           accent="#7A6FC4"
           icon={<Inbox className="h-4 w-4" />}
           className="lg:col-span-2"
         >
           {pendingTransfer.length === 0 ? (
-            <EmptyRow text="Inbox clear." />
+            <EmptyRow text={t({ th: "กล่องขาเข้าว่างแล้ว", en: "Inbox clear." })} />
           ) : (
             <ul className="divide-y divide-warm-200">
               {pendingTransfer.map((a) => {
@@ -250,7 +250,7 @@ function StaffDashboard() {
                           </span>
                         </div>
                         <p className="mt-0.5 truncate text-xs text-warm-500">
-                          Captured by {owner?.name ?? "—"} · received
+                          {t({ th: "บันทึกโดย", en: "Captured by" })} {owner?.name ?? "—"} · {t({ th: "รับเข้า", en: "received" })}
                         </p>
                       </div>
                     </button>
