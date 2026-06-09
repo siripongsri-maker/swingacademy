@@ -37,7 +37,11 @@ function AuthPage() {
     // Check role; staff/admin → staff dashboard, otherwise learner dashboard.
     const { data: roles } = await supabase.from("user_roles").select("role");
     const r = (roles ?? []).map((x) => x.role as string);
-    const staffish = r.includes("staff") || r.includes("admin");
+    const staffish =
+      r.includes("staff") ||
+      r.includes("trainer") ||
+      r.includes("admin") ||
+      r.includes("superadmin");
     if (isStaff && !staffish) {
       setErr(
         t({
@@ -49,7 +53,7 @@ function AuthPage() {
       setLoading(false);
       return;
     }
-    navigate({ to: staffish ? "/staff/dashboard" : "/dashboard" });
+    navigate({ to: staffish ? "/staff" : "/dashboard" });
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
