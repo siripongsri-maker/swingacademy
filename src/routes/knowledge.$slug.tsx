@@ -244,22 +244,43 @@ function KnowledgeDetailPage() {
 
             {asset.coverUrl && (
               <div className="hidden md:block">
-                <a
-                  href={asset.source && asset.sourceType === "pdf" ? asset.source : asset.coverUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block overflow-hidden rounded-xl border border-warm-200 bg-white shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  <img
-                    src={asset.coverUrl}
-                    alt={`หน้าปก: ${asset.titleTh}`}
-                    className="aspect-[3/4] w-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="flex items-center justify-center gap-1.5 border-t border-warm-200 bg-white/80 px-3 py-2 text-xs font-semibold text-navy-500 group-hover:text-magenta-600">
-                    <FileText className="h-3.5 w-3.5" /> หน้าปกเอกสาร
-                  </div>
-                </a>
+                {asset.source && asset.sourceType === "pdf" ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setZoomScale(1);
+                      setModalOpen(true);
+                    }}
+                    className="group block w-full cursor-pointer overflow-hidden rounded-xl border border-warm-200 bg-white shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <img
+                      src={asset.coverUrl}
+                      alt={`หน้าปก: ${asset.titleTh}`}
+                      className="aspect-[3/4] w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="flex items-center justify-center gap-1.5 border-t border-warm-200 bg-white/80 px-3 py-2 text-xs font-semibold text-navy-500 group-hover:text-magenta-600">
+                      <Eye className="h-3.5 w-3.5" /> คลิกเพื่อดูตัวอย่าง · Click to preview
+                    </div>
+                  </button>
+                ) : (
+                  <a
+                    href={asset.coverUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block overflow-hidden rounded-xl border border-warm-200 bg-white shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <img
+                      src={asset.coverUrl}
+                      alt={`หน้าปก: ${asset.titleTh}`}
+                      className="aspect-[3/4] w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="flex items-center justify-center gap-1.5 border-t border-warm-200 bg-white/80 px-3 py-2 text-xs font-semibold text-navy-500 group-hover:text-magenta-600">
+                      <FileText className="h-3.5 w-3.5" /> หน้าปกเอกสาร
+                    </div>
+                  </a>
+                )}
               </div>
             )}
           </div>
