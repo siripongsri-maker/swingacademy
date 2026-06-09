@@ -66,6 +66,19 @@ function KnowledgeManagementPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [collectionEditing, setCollectionEditing] = useState<string | "new" | null>(null);
 
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return km.assets.filter((a) => {
+      if (statusFilter !== "all" && a.status !== statusFilter) return false;
+      if (!needle) return true;
+      return (
+        a.titleTh.toLowerCase().includes(needle) ||
+        a.titleEn.toLowerCase().includes(needle) ||
+        a.tags.some((t) => t.toLowerCase().includes(needle))
+      );
+    });
+  }, [km.assets, q, statusFilter]);
+
   if (!can("km.categorize")) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
@@ -82,18 +95,6 @@ function KnowledgeManagementPage() {
     );
   }
 
-  const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    return km.assets.filter((a) => {
-      if (statusFilter !== "all" && a.status !== statusFilter) return false;
-      if (!needle) return true;
-      return (
-        a.titleTh.toLowerCase().includes(needle) ||
-        a.titleEn.toLowerCase().includes(needle) ||
-        a.tags.some((t) => t.toLowerCase().includes(needle))
-      );
-    });
-  }, [km.assets, q, statusFilter]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
