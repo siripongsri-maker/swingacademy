@@ -340,9 +340,9 @@ function EmptyRow({ text }: { text: string }) {
   return <p className="px-4 py-6 text-center text-sm text-warm-500">{text}</p>;
 }
 
-function fmt(iso: string) {
+function fmt(iso: string, lang: "th" | "en" = "en") {
   try {
-    return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   } catch {
     return iso;
   }
