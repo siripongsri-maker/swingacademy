@@ -211,12 +211,16 @@ function KnowledgeDetailPage() {
                   >
                     <Download className="h-4 w-4" /> ดาวน์โหลด PDF ฉบับเต็ม · Download Full PDF
                   </a>
-                  <a
-                    href="#document-preview"
-                    className="inline-flex items-center gap-2 rounded-md border border-navy-500 bg-white px-4 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-lavender-50"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setZoomScale(1);
+                      setModalOpen(true);
+                    }}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-navy-500 bg-white px-4 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-lavender-50"
                   >
                     <Eye className="h-4 w-4" /> ดูตัวอย่างเอกสาร · Preview
-                  </a>
+                  </button>
                 </div>
               )}
 
