@@ -168,6 +168,20 @@ function KnowledgeDetailPage() {
               ))}
             </div>
           )}
+          {asset.source && asset.sourceType === "pdf" && (
+            <div className="mt-6">
+              <a
+                href={asset.source}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-600"
+              >
+                <Download className="h-4 w-4" /> ดาวน์โหลด PDF ฉบับเต็ม · Download Full PDF
+              </a>
+            </div>
+          )}
+
 
           {hasChapters && (
             <div className="mt-6">
