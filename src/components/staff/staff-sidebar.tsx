@@ -21,32 +21,33 @@ import {
 import { useStaff } from "@/lib/staff-context";
 import { useConsoleRole } from "@/lib/console-role-context";
 import { ROLE_LABEL, type Capability } from "@/lib/permissions";
+import { useLanguage, type Localized } from "@/lib/language-context";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type NavItem = {
   to: string;
-  label: string;
-  labelTh: string;
+  label: Localized;
+  sub: Localized;
   icon: React.ComponentType<{ className?: string }>;
   requires?: Capability;
 };
 
 const knowledgeFlow: NavItem[] = [
-  { to: "/staff/knowledge-hub", label: "คลังความรู้", labelTh: "Knowledge Hub", icon: LayoutDashboard },
-  { to: "/staff/capture", label: "Live Capture", labelTh: "อัดเสียง / สรุปสด", icon: Mic, requires: "knowledge.capture" },
-  { to: "/staff/product-knowledge", label: "Knowledge Product", labelTh: "บันทึก/สร้างความรู้", icon: BookMarked },
-  { to: "/staff/knowledge", label: "Knowledge Management", labelTh: "จัดหมวด ตรวจสอบ เชื่อมโยง", icon: Library, requires: "km.categorize" },
-  { to: "/staff/talent", label: "Talent Mapping", labelTh: "เชื่อมความรู้กับคน", icon: Users, requires: "talent.viewAll" },
-  { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลงเป็นสื่อ/เนื้อหา", icon: GitBranch, requires: "translation.fromOwn" },
+  { to: "/staff/knowledge-hub", label: { th: "คลังความรู้", en: "Knowledge Hub" }, sub: { th: "ภาพรวมคลังความรู้", en: "Browse library" }, icon: LayoutDashboard },
+  { to: "/staff/capture", label: { th: "อัดเสียง / สรุปสด", en: "Live Capture" }, sub: { th: "บันทึกสนทนาแบบเรียลไทม์", en: "Record live notes" }, icon: Mic, requires: "knowledge.capture" },
+  { to: "/staff/product-knowledge", label: { th: "บันทึก/สร้างความรู้", en: "Knowledge Product" }, sub: { th: "สร้างความรู้ใหม่", en: "Author knowledge" }, icon: BookMarked },
+  { to: "/staff/knowledge", label: { th: "จัดการความรู้", en: "Knowledge Management" }, sub: { th: "จัดหมวด ตรวจสอบ เชื่อมโยง", en: "Categorize & review" }, icon: Library, requires: "km.categorize" },
+  { to: "/staff/talent", label: { th: "เชื่อมความรู้กับคน", en: "Talent Mapping" }, sub: { th: "ผู้เชี่ยวชาญในองค์กร", en: "Experts directory" }, icon: Users, requires: "talent.viewAll" },
+  { to: "/staff/knowledge-translation", label: { th: "แปลงเป็นสื่อ", en: "Knowledge Translation" }, sub: { th: "แปลงเป็นเนื้อหา/สื่อ", en: "Turn into content" }, icon: GitBranch, requires: "translation.fromOwn" },
 ];
 
 const consoleNav: NavItem[] = [
-  { to: "/staff/dashboard", label: "Dashboard", labelTh: "ภาพรวม", icon: LayoutDashboard },
-  { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", icon: CalendarClock },
-  { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", icon: GitBranch },
-  { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", icon: Package },
-  { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", icon: UserCog, requires: "users.manage" },
-  { to: "/staff/admin", label: "Admin", labelTh: "ตั้งค่า", icon: Settings, requires: "roles.manage" },
+  { to: "/staff/dashboard", label: { th: "แดชบอร์ด", en: "Dashboard" }, sub: { th: "ภาพรวม", en: "Overview" }, icon: LayoutDashboard },
+  { to: "/staff/trainings", label: { th: "การอบรม", en: "Trainings" }, sub: { th: "ตารางและคอร์ส", en: "Schedule & courses" }, icon: CalendarClock },
+  { to: "/staff/transfer", label: { th: "ถ่ายทอดความรู้", en: "KT Transfer" }, sub: { th: "ติดตามการถ่ายทอด", en: "Track transfers" }, icon: GitBranch },
+  { to: "/staff/products", label: { th: "ผลิตภัณฑ์", en: "Products" }, sub: { th: "ความรู้สาธารณะ", en: "Public products" }, icon: Package },
+  { to: "/staff/users", label: { th: "ผู้ใช้และสิทธิ์", en: "Users & Roles" }, sub: { th: "จัดการบัญชี", en: "Manage accounts" }, icon: UserCog, requires: "users.manage" },
+  { to: "/staff/admin", label: { th: "ตั้งค่า", en: "Admin" }, sub: { th: "ตั้งค่าระบบ", en: "System settings" }, icon: Settings, requires: "roles.manage" },
 ];
 
 type Props = {
