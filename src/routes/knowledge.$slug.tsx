@@ -103,6 +103,8 @@ function KnowledgeDetailPage() {
   const chapters = useMemo(() => splitIntoChapters(asset.contentMd), [asset.contentMd]);
   const [active, setActive] = useState(0);
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1);
   const hasChapters = chapters.length > 0;
   const current = hasChapters ? chapters[Math.min(active, chapters.length - 1)] : null;
 
