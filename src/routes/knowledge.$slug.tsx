@@ -455,6 +455,108 @@ function KnowledgeDetailPage() {
             เผยแพร่โดย SWING Academy · เนื้อหานี้เปิดให้ใช้เพื่อการศึกษาและการพัฒนาบริการของชุมชน
           </p>
         </footer>
+
+        {/* Full-screen PDF Preview Modal */}
+        {modalOpen && asset.source && asset.sourceType === "pdf" && (
+          <div className="fixed inset-0 z-[100] flex flex-col bg-black/90">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-black/70 px-4 py-3 backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                <Maximize className="h-4 w-4 text-magenta-400" />
+                <span className="truncate max-w-[200px] sm:max-w-md">{asset.titleTh}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Zoom out */}
+                <button
+                  type="button"
+                  onClick={() => setZoomScale((z) => Math.max(z - 0.25, 0.5))}
+                  disabled={zoomScale <= 0.5}
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-white/10 text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
+                  title="ซูมออก · Zoom out"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                {/* Reset zoom */}
+                <button
+                  type="button"
+                  onClick={() => setZoomScale(1)}
+                  className="inline-flex h-8 items-center gap-1 rounded-md bg-white/10 px-2.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                  title="รีเซ็ต · Reset"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>{Math.round(zoomScale * 100)}%</span>
+                </button>
+                {/* Zoom in */}
+                <button
+                  type="button"
+                  onClick={() => setZoomScale((z) => Math.min(z + 0.25, 3))}
+                  disabled={zoomScale >= 3}
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-white/10 text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
+                  title="ซูมเข้า · Zoom in"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+                <div className="mx-1 h-5 w-px bg-white/20" />
+                {/* Download */}
+                <a
+                  href={asset.source}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-md bg-navy-500 px-3 text-xs font-semibold text-white transition hover:bg-navy-600"
+                >
+                  <Download className="h-3.5 w-3.5" /> ดาวน์โหลด
+                </a>
+                {/* Close */}
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-white/10 text-white transition hover:bg-white/20"
+                  title="ปิด · Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* PDF viewport */}
+            <div className="flex-1 overflow-auto">
+              <div
+                className="flex min-h-full items-start justify-center p-6"
+                style={{ cursor: zoomScale > 1 ? "grab" : "default" }}
+              >
+                <div
+                  style={{
+                    transform: `scale(${zoomScale})`,
+                    transformOrigin: "top center",
+                    transition: "transform 0.2s ease-out",
+                    width: "100%",
+                    maxWidth: "1024px",
+                  }}
+                >
+                  <object
+                    data={`${asset.source}#view=FitH`}
+                    type="application/pdf"
+                    className="h-[85vh] w-full rounded-md bg-white shadow-2xl"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center text-white">
+                      <p className="text-sm opacity-80">เบราว์เซอร์ของคุณไม่รองรับการแสดง PDF ในหน้าเว็บ</p>
+                      <a
+                        href={asset.source}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy-600"
+                      >
+                        <Download className="h-4 w-4" /> ดาวน์โหลด PDF
+                      </a>
+                    </div>
+                  </object>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </article>
     </PublicLayout>
   );
