@@ -307,28 +307,6 @@ function AssetRow({ asset, onOpen }: { asset: KnowledgeAsset; onOpen: () => void
     }
   };
 
-  const publishWeb = () => {
-    updateAsset(
-      asset.id,
-      {
-        status: "published",
-        visibility: "public",
-        approvedAt: asset.approvedAt ?? new Date().toISOString(),
-        approvedBy: asset.approvedBy ?? "You",
-      },
-      "Published to public website",
-    );
-    toast.success("ขึ้นหน้า /knowledge แล้ว");
-  };
-
-  const unpublishWeb = () => {
-    updateAsset(
-      asset.id,
-      { visibility: "staff" },
-      "Unpublished from public website",
-    );
-    toast.success("ถอดออกจากหน้าเว็บแล้ว (ยังคงเป็น Approved ภายใน)");
-  };
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-warm-200 bg-white p-4 shadow-sm md:flex-row md:items-center">
