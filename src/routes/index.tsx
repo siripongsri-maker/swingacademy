@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Heart,
   Scale,
@@ -15,12 +17,20 @@ import {
   BookOpen,
   Quote,
   HelpCircle,
+  Globe,
 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 import { pageHead } from "@/lib/seo";
+import { listPublicKnowledge } from "@/lib/knowledge.functions";
+
+const knowledgeQueryOptions = queryOptions({
+  queryKey: ["knowledge", "public", "all"],
+  queryFn: () => listPublicKnowledge(),
+  staleTime: 60_000,
+});
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -30,7 +40,20 @@ export const Route = createFileRoute("/")({
         "Free, bilingual (TH/EN) courses on sexual health, rights, and life skills from the SWING Foundation. Warm, stigma-free learning for our communities.",
       path: "/",
     }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(knowledgeQueryOptions),
   component: HomePage,
+  errorComponent: ({ error }) => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">
+        โหลดหน้าไม่สำเร็จ: {error.message}
+      </div>
+    </PublicLayout>
+  ),
+  notFoundComponent: () => (
+    <PublicLayout>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">ไม่พบเนื้อหา</div>
+    </PublicLayout>
+  ),
 });
 
 
