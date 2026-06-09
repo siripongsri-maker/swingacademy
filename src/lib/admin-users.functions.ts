@@ -78,7 +78,7 @@ export const listAccounts = createServerFn({ method: "GET" })
         (u.email ? u.email.split("@")[0] : "Account");
       return {
         id: u.id,
-        email: u.email,
+        email: u.email ?? "",
         name: fullName,
         createdAt: u.created_at,
         lastSignInAt: u.last_sign_in_at,
