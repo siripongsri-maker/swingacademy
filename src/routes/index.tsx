@@ -93,6 +93,8 @@ function HomePage() {
   const paths = seed.publicPortal.paths as Path[];
   const testimonials = seed.publicPortal.testimonials as Testimonial[];
   const partners = seed.publicPortal.partners as Partner[];
+  const { data: knowledgeData } = useSuspenseQuery(knowledgeQueryOptions);
+  const knowledgeItems = knowledgeData.items.slice(0, 6);
 
   const featured = FEATURED_IDS.map((id) => courses.find((c) => c.id === id)).filter(
     Boolean,
