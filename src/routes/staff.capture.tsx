@@ -584,6 +584,26 @@ function CapturePage() {
             </button>
           )}
         </div>
+        {recording && (
+          <div className="mt-3 rounded-md border border-magenta-500/30 bg-magenta-50/40 p-3">
+            <div className="mb-1.5 flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-magenta-700">
+                <span className={`h-2 w-2 rounded-full bg-magenta-500 ${paused ? "" : "animate-pulse"}`} />
+                {paused ? "หยุดชั่วคราว · Paused" : "กำลังอัด · Recording"}
+              </span>
+              <span className="font-mono text-magenta-700">{formatTime(elapsed)}</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-magenta-100">
+              <div
+                className="h-full rounded-full bg-magenta-500 transition-[width] duration-75"
+                style={{ width: `${Math.round(level * 100)}%` }}
+              />
+            </div>
+            <div className="mt-1 text-[10px] text-muted-foreground">
+              ระดับเสียงไมโครโฟน · Mic input level
+            </div>
+          </div>
+        )}
         {audioUrl && (
           <div className="mt-3 space-y-1">
             <div className="text-xs text-muted-foreground">{audioName}</div>
