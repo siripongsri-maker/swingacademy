@@ -188,6 +188,7 @@ function CapturePage() {
     const r = recorderRef.current;
     if (r && r.state !== "inactive") r.stop();
     if (tickRef.current) clearInterval(tickRef.current);
+    stopLevelMeter();
     setRecording(false);
     setPaused(false);
   }
