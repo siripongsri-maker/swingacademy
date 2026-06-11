@@ -761,6 +761,78 @@ function CapturePage() {
           )}
         </section>
       )}
+
+      {processing && (
+        <ProcessingOverlay stage={stage} progress={stageProgress} />
+      )}
+    </div>
+  );
+}
+
+function ProcessingOverlay({
+  stage,
+  progress,
+}: {
+  stage: "idle" | "transcoding" | "uploading" | "transcribing" | "done" | "error";
+  progress: number;
+}) {
+  const steps: Array<{ key: typeof stage; th: string; en: string }> = [
+    { key: "transcoding", th: "กำลังแปลงไฟล์เสียง", en: "Converting audio" },
+    { key: "uploading", th: "กำลังอัปโหลด", en: "Uploading" },
+    { key: "transcribing", th: "กำลังถอดเสียงด้วย AI", en: "Transcribing with AI" },
+  ];
+  const order = ["transcoding", "uploading", "transcribing", "done"] as const;
+  const currentIdx = order.indexOf(stage as typeof order[number]);
+  const current = steps.find((s) => s.key === stage);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/60 backdrop-blur-sm">
+      <div className="w-[92%] max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-magenta-50">
+            <Loader2 className="h-5 w-5 animate-spin text-magenta-600" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              {current ? current.th : "กำลังเตรียม"} ·{" "}
+              <span className="text-muted-foreground">{current?.en ?? "Preparing"}</span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              กรุณารอสักครู่ — อย่าปิดหน้าต่างนี้
+            </p>
+          </div>
+        </div>
+        <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-warm-100">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-magenta-500 to-magenta-600 transition-[width] duration-150"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </div>
+        <ol className="space-y-2">
+          {steps.map((s, i) => {
+            const done = currentIdx > i || stage === "done";
+            const active = currentIdx === i;
+            return (
+              <li key={s.key} className="flex items-center gap-2 text-sm">
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                    done
+                      ? "bg-emerald-500 text-white"
+                      : active
+                      ? "bg-magenta-500 text-white"
+                      : "bg-warm-100 text-muted-foreground"
+                  }`}
+                >
+                  {done ? "✓" : i + 1}
+                </span>
+                <span className={active ? "font-semibold text-foreground" : done ? "text-muted-foreground line-through" : "text-muted-foreground"}>
+                  {s.th} · <span className="text-xs">{s.en}</span>
+                </span>
+                {active && <Loader2 className="ml-1 h-3 w-3 animate-spin text-magenta-500" />}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </div>
   );
 }
