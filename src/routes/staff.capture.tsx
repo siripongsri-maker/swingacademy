@@ -79,13 +79,56 @@ function CapturePage() {
   useEffect(() => {
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
+      if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+      if (levelRafRef.current) cancelAnimationFrame(levelRafRef.current);
       if (audioUrl) URL.revokeObjectURL(audioUrl);
       const r = recorderRef.current;
       if (r && r.state !== "inactive") r.stop();
       r?.stream.getTracks().forEach((t) => t.stop());
+      audioCtxRef.current?.close().catch(() => undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function startLevelMeter(stream: MediaStream) {
+    try {
+      const AC: typeof AudioContext =
+        (window.AudioContext as typeof AudioContext) ||
+        ((window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+      const ctx = new AC();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      src.connect(analyser);
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+      const buf = new Uint8Array(analyser.fftSize);
+      const tick = () => {
+        if (!analyserRef.current) return;
+        analyserRef.current.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) {
+          const v = (buf[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / buf.length);
+        setLevel(Math.min(1, rms * 2.2));
+        levelRafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      // ignore
+    }
+  }
+
+  function stopLevelMeter() {
+    if (levelRafRef.current) cancelAnimationFrame(levelRafRef.current);
+    levelRafRef.current = null;
+    analyserRef.current = null;
+    audioCtxRef.current?.close().catch(() => undefined);
+    audioCtxRef.current = null;
+    setLevel(0);
+  }
 
   async function startRecording() {
     try {
