@@ -64,20 +64,71 @@ function CapturePage() {
   const chunksRef = useRef<BlobPart[]>([]);
   const startedAtRef = useRef<number>(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const levelRafRef = useRef<number | null>(null);
+  const [level, setLevel] = useState(0);
 
+  type Stage = "idle" | "transcoding" | "uploading" | "transcribing" | "done" | "error";
   const [processing, setProcessing] = useState(false);
+  const [stage, setStage] = useState<Stage>("idle");
+  const [stageProgress, setStageProgress] = useState(0);
+  const stageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [result, setResult] = useState<CaptureResult | null>(null);
 
   useEffect(() => {
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
+      if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+      if (levelRafRef.current) cancelAnimationFrame(levelRafRef.current);
       if (audioUrl) URL.revokeObjectURL(audioUrl);
       const r = recorderRef.current;
       if (r && r.state !== "inactive") r.stop();
       r?.stream.getTracks().forEach((t) => t.stop());
+      audioCtxRef.current?.close().catch(() => undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function startLevelMeter(stream: MediaStream) {
+    try {
+      const AC: typeof AudioContext =
+        (window.AudioContext as typeof AudioContext) ||
+        ((window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+      const ctx = new AC();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      src.connect(analyser);
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+      const buf = new Uint8Array(analyser.fftSize);
+      const tick = () => {
+        if (!analyserRef.current) return;
+        analyserRef.current.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) {
+          const v = (buf[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / buf.length);
+        setLevel(Math.min(1, rms * 2.2));
+        levelRafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      // ignore
+    }
+  }
+
+  function stopLevelMeter() {
+    if (levelRafRef.current) cancelAnimationFrame(levelRafRef.current);
+    levelRafRef.current = null;
+    analyserRef.current = null;
+    audioCtxRef.current?.close().catch(() => undefined);
+    audioCtxRef.current = null;
+    setLevel(0);
+  }
 
   async function startRecording() {
     try {
@@ -107,6 +158,7 @@ function CapturePage() {
       setElapsed(0);
       setRecording(true);
       setPaused(false);
+      startLevelMeter(stream);
       tickRef.current = setInterval(() => {
         setElapsed((Date.now() - startedAtRef.current) / 1000);
       }, 250);
@@ -136,6 +188,7 @@ function CapturePage() {
     const r = recorderRef.current;
     if (r && r.state !== "inactive") r.stop();
     if (tickRef.current) clearInterval(tickRef.current);
+    stopLevelMeter();
     setRecording(false);
     setPaused(false);
   }
@@ -254,6 +307,22 @@ function CapturePage() {
     return new Blob([buffer], { type: "audio/wav" });
   }
 
+  function beginStage(s: Stage, estMs: number) {
+    setStage(s);
+    setStageProgress(0);
+    if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+    const start = Date.now();
+    stageTimerRef.current = setInterval(() => {
+      const p = Math.min(0.95, (Date.now() - start) / estMs);
+      setStageProgress(p);
+    }, 120);
+  }
+  function endStage() {
+    if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+    stageTimerRef.current = null;
+    setStageProgress(1);
+  }
+
   async function process() {
     if (!audioBlob) {
       toast.error("กรุณาอัดเสียงหรืออัปโหลดไฟล์ก่อน");
@@ -264,9 +333,8 @@ function CapturePage() {
       return;
     }
     setProcessing(true);
+    setStage("idle");
     try {
-      // Gemini supports wav/mp3/ogg/flac/aac/aiff but NOT webm. Always
-      // transcode webm/mp4 recordings into 16kHz mono WAV before upload.
       let uploadBlob = audioBlob;
       let mediaType = audioBlob.type || "audio/webm";
       const needsTranscode =
@@ -275,25 +343,31 @@ function CapturePage() {
         mediaType.includes("mp4") ||
         mediaType.includes("x-m4a");
       if (needsTranscode) {
+        beginStage("transcoding", Math.max(2000, audioBlob.size / 80));
         try {
           uploadBlob = await blobToWavMono16k(audioBlob);
           mediaType = "audio/wav";
+          endStage();
         } catch (err) {
           console.error("Audio transcode failed", err);
+          setStage("error");
           toast.error("ไม่สามารถแปลงไฟล์เสียง — ลองอัปโหลดเป็น mp3/wav แทน");
           setProcessing(false);
           return;
         }
       } else {
-        // Strip ";codecs=..." parameters that Gemini rejects.
         mediaType = mediaType.split(";")[0].trim();
       }
       if (uploadBlob.size > 25 * 1024 * 1024) {
+        setStage("error");
         toast.error("ไฟล์เสียงหลังแปลงใหญ่เกิน 25MB — ลองอัดให้สั้นลง");
         setProcessing(false);
         return;
       }
+      beginStage("uploading", Math.max(1500, uploadBlob.size / 200));
       const base64 = await blobToBase64(uploadBlob);
+      endStage();
+      beginStage("transcribing", Math.max(8000, uploadBlob.size / 30));
       const res = await processFn({
         data: {
           sessionTitle,
@@ -304,11 +378,16 @@ function CapturePage() {
           language,
         },
       });
+      endStage();
+      setStage("done");
       setResult(res);
       toast.success("ถอดเสียงและสรุปเรียบร้อย");
     } catch (e) {
+      setStage("error");
       toast.error(e instanceof Error ? e.message : "Failed to process");
     } finally {
+      if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+      stageTimerRef.current = null;
       setProcessing(false);
     }
   }
@@ -505,6 +584,26 @@ function CapturePage() {
             </button>
           )}
         </div>
+        {recording && (
+          <div className="mt-3 rounded-md border border-magenta-500/30 bg-magenta-50/40 p-3">
+            <div className="mb-1.5 flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-magenta-700">
+                <span className={`h-2 w-2 rounded-full bg-magenta-500 ${paused ? "" : "animate-pulse"}`} />
+                {paused ? "หยุดชั่วคราว · Paused" : "กำลังอัด · Recording"}
+              </span>
+              <span className="font-mono text-magenta-700">{formatTime(elapsed)}</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-magenta-100">
+              <div
+                className="h-full rounded-full bg-magenta-500 transition-[width] duration-75"
+                style={{ width: `${Math.round(level * 100)}%` }}
+              />
+            </div>
+            <div className="mt-1 text-[10px] text-muted-foreground">
+              ระดับเสียงไมโครโฟน · Mic input level
+            </div>
+          </div>
+        )}
         {audioUrl && (
           <div className="mt-3 space-y-1">
             <div className="text-xs text-muted-foreground">{audioName}</div>
@@ -662,6 +761,78 @@ function CapturePage() {
           )}
         </section>
       )}
+
+      {processing && (
+        <ProcessingOverlay stage={stage} progress={stageProgress} />
+      )}
+    </div>
+  );
+}
+
+function ProcessingOverlay({
+  stage,
+  progress,
+}: {
+  stage: "idle" | "transcoding" | "uploading" | "transcribing" | "done" | "error";
+  progress: number;
+}) {
+  const steps: Array<{ key: typeof stage; th: string; en: string }> = [
+    { key: "transcoding", th: "กำลังแปลงไฟล์เสียง", en: "Converting audio" },
+    { key: "uploading", th: "กำลังอัปโหลด", en: "Uploading" },
+    { key: "transcribing", th: "กำลังถอดเสียงด้วย AI", en: "Transcribing with AI" },
+  ];
+  const order = ["transcoding", "uploading", "transcribing", "done"] as const;
+  const currentIdx = order.indexOf(stage as typeof order[number]);
+  const current = steps.find((s) => s.key === stage);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/60 backdrop-blur-sm">
+      <div className="w-[92%] max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-magenta-50">
+            <Loader2 className="h-5 w-5 animate-spin text-magenta-600" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              {current ? current.th : "กำลังเตรียม"} ·{" "}
+              <span className="text-muted-foreground">{current?.en ?? "Preparing"}</span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              กรุณารอสักครู่ — อย่าปิดหน้าต่างนี้
+            </p>
+          </div>
+        </div>
+        <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-warm-100">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-magenta-500 to-magenta-600 transition-[width] duration-150"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </div>
+        <ol className="space-y-2">
+          {steps.map((s, i) => {
+            const done = currentIdx > i || stage === "done";
+            const active = currentIdx === i;
+            return (
+              <li key={s.key} className="flex items-center gap-2 text-sm">
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                    done
+                      ? "bg-emerald-500 text-white"
+                      : active
+                      ? "bg-magenta-500 text-white"
+                      : "bg-warm-100 text-muted-foreground"
+                  }`}
+                >
+                  {done ? "✓" : i + 1}
+                </span>
+                <span className={active ? "font-semibold text-foreground" : done ? "text-muted-foreground line-through" : "text-muted-foreground"}>
+                  {s.th} · <span className="text-xs">{s.en}</span>
+                </span>
+                {active && <Loader2 className="ml-1 h-3 w-3 animate-spin text-magenta-500" />}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </div>
   );
 }
