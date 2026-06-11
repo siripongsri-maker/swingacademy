@@ -158,6 +158,7 @@ function CapturePage() {
       setElapsed(0);
       setRecording(true);
       setPaused(false);
+      startLevelMeter(stream);
       tickRef.current = setInterval(() => {
         setElapsed((Date.now() - startedAtRef.current) / 1000);
       }, 250);
