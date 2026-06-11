@@ -307,6 +307,22 @@ function CapturePage() {
     return new Blob([buffer], { type: "audio/wav" });
   }
 
+  function beginStage(s: Stage, estMs: number) {
+    setStage(s);
+    setStageProgress(0);
+    if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+    const start = Date.now();
+    stageTimerRef.current = setInterval(() => {
+      const p = Math.min(0.95, (Date.now() - start) / estMs);
+      setStageProgress(p);
+    }, 120);
+  }
+  function endStage() {
+    if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+    stageTimerRef.current = null;
+    setStageProgress(1);
+  }
+
   async function process() {
     if (!audioBlob) {
       toast.error("กรุณาอัดเสียงหรืออัปโหลดไฟล์ก่อน");
@@ -317,9 +333,8 @@ function CapturePage() {
       return;
     }
     setProcessing(true);
+    setStage("idle");
     try {
-      // Gemini supports wav/mp3/ogg/flac/aac/aiff but NOT webm. Always
-      // transcode webm/mp4 recordings into 16kHz mono WAV before upload.
       let uploadBlob = audioBlob;
       let mediaType = audioBlob.type || "audio/webm";
       const needsTranscode =
@@ -328,25 +343,31 @@ function CapturePage() {
         mediaType.includes("mp4") ||
         mediaType.includes("x-m4a");
       if (needsTranscode) {
+        beginStage("transcoding", Math.max(2000, audioBlob.size / 80));
         try {
           uploadBlob = await blobToWavMono16k(audioBlob);
           mediaType = "audio/wav";
+          endStage();
         } catch (err) {
           console.error("Audio transcode failed", err);
+          setStage("error");
           toast.error("ไม่สามารถแปลงไฟล์เสียง — ลองอัปโหลดเป็น mp3/wav แทน");
           setProcessing(false);
           return;
         }
       } else {
-        // Strip ";codecs=..." parameters that Gemini rejects.
         mediaType = mediaType.split(";")[0].trim();
       }
       if (uploadBlob.size > 25 * 1024 * 1024) {
+        setStage("error");
         toast.error("ไฟล์เสียงหลังแปลงใหญ่เกิน 25MB — ลองอัดให้สั้นลง");
         setProcessing(false);
         return;
       }
+      beginStage("uploading", Math.max(1500, uploadBlob.size / 200));
       const base64 = await blobToBase64(uploadBlob);
+      endStage();
+      beginStage("transcribing", Math.max(8000, uploadBlob.size / 30));
       const res = await processFn({
         data: {
           sessionTitle,
@@ -357,11 +378,16 @@ function CapturePage() {
           language,
         },
       });
+      endStage();
+      setStage("done");
       setResult(res);
       toast.success("ถอดเสียงและสรุปเรียบร้อย");
     } catch (e) {
+      setStage("error");
       toast.error(e instanceof Error ? e.message : "Failed to process");
     } finally {
+      if (stageTimerRef.current) clearInterval(stageTimerRef.current);
+      stageTimerRef.current = null;
       setProcessing(false);
     }
   }
