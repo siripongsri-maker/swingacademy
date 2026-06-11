@@ -64,8 +64,16 @@ function CapturePage() {
   const chunksRef = useRef<BlobPart[]>([]);
   const startedAtRef = useRef<number>(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const levelRafRef = useRef<number | null>(null);
+  const [level, setLevel] = useState(0);
 
+  type Stage = "idle" | "transcoding" | "uploading" | "transcribing" | "done" | "error";
   const [processing, setProcessing] = useState(false);
+  const [stage, setStage] = useState<Stage>("idle");
+  const [stageProgress, setStageProgress] = useState(0);
+  const stageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [result, setResult] = useState<CaptureResult | null>(null);
 
   useEffect(() => {
