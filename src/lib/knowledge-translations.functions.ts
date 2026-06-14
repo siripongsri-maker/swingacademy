@@ -134,13 +134,13 @@ export const saveTranslation = createServerFn({ method: "POST" })
     const q = data.id
       ? context.supabase
           .from("knowledge_translations")
-          .update(payload)
+          .update(payload as never)
           .eq("id", data.id)
           .select(COLS)
           .single()
       : context.supabase
           .from("knowledge_translations")
-          .insert(payload)
+          .insert(payload as never)
           .select(COLS)
           .single();
     const { data: row, error } = await q;
