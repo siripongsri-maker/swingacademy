@@ -282,6 +282,8 @@ function TranslationEditor({
         outputMd: translation.outputMd,
         status: translation.status,
         attachments: src?.attachments ?? [],
+        contributorId: translation.contributorId ?? null,
+        title: translation.title ?? src?.titleTh ?? null,
       };
     }
     if (source) return buildPrefillFromAsset(source);
@@ -295,6 +297,8 @@ function TranslationEditor({
       outputMd: "",
       status: "draft",
       attachments: [],
+      contributorId: null,
+      title: null,
     };
   });
 
