@@ -34,6 +34,12 @@ import {
   addTalentEvidence as addTalentEvidenceFn,
   removeTalentEvidence as removeTalentEvidenceFn,
 } from "@/lib/talent-mappings.functions";
+import {
+  listTranslations as listTranslationsFn,
+  saveTranslation as saveTranslationFn,
+  removeTranslation as removeTranslationFn,
+  type TranslationRow,
+} from "@/lib/knowledge-translations.functions";
 
 export type KnowledgeType =
   | "training"
