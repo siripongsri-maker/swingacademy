@@ -81,9 +81,15 @@ function TalentPage() {
   const [domain, setDomain] = useState<string>("all");
   const [site, setSite] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<"all" | TalentRole>("all");
+  const [showAll, setShowAll] = useState(false);
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
 
   const sites = useMemo(() => Array.from(new Set(people.map((p) => p.site))).sort(), [people]);
+
+  const linkedPersonIds = useMemo(
+    () => new Set(km.talentMappings.map((m) => m.personId)),
+    [km.talentMappings],
+  );
 
   const stats = useMemo(() => {
     const map: Record<string, ReturnType<typeof computeStats>> = {};
@@ -96,6 +102,8 @@ function TalentPage() {
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return people.filter((p) => {
+      // Default: show only people who have at least one knowledge mapping.
+      if (!showAll && !linkedPersonIds.has(p.id)) return false;
       if (site !== "all" && p.site !== site) return false;
       const st = stats[p.id];
       if (domain !== "all" && !st.domains.includes(domain)) return false;
@@ -107,7 +115,7 @@ function TalentPage() {
         p.role.toLowerCase().includes(needle)
       );
     });
-  }, [people, stats, q, site, domain, roleFilter]);
+  }, [people, stats, q, site, domain, roleFilter, showAll, linkedPersonIds]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
