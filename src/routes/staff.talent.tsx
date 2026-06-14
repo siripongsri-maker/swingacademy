@@ -81,9 +81,15 @@ function TalentPage() {
   const [domain, setDomain] = useState<string>("all");
   const [site, setSite] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<"all" | TalentRole>("all");
+  const [showAll, setShowAll] = useState(false);
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
 
   const sites = useMemo(() => Array.from(new Set(people.map((p) => p.site))).sort(), [people]);
+
+  const linkedPersonIds = useMemo(
+    () => new Set(km.talentMappings.map((m) => m.personId)),
+    [km.talentMappings],
+  );
 
   const stats = useMemo(() => {
     const map: Record<string, ReturnType<typeof computeStats>> = {};
@@ -96,6 +102,8 @@ function TalentPage() {
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return people.filter((p) => {
+      // Default: show only people who have at least one knowledge mapping.
+      if (!showAll && !linkedPersonIds.has(p.id)) return false;
       if (site !== "all" && p.site !== site) return false;
       const st = stats[p.id];
       if (domain !== "all" && !st.domains.includes(domain)) return false;
@@ -107,7 +115,7 @@ function TalentPage() {
         p.role.toLowerCase().includes(needle)
       );
     });
-  }, [people, stats, q, site, domain, roleFilter]);
+  }, [people, stats, q, site, domain, roleFilter, showAll, linkedPersonIds]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
@@ -149,14 +157,27 @@ function TalentPage() {
         </FilterRow>
       </div>
 
-      <p className="text-xs text-warm-500">
-        Showing <span className="font-semibold text-navy-500">{filtered.length}</span> of {people.length}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-warm-500">
+          แสดง <span className="font-semibold text-navy-500">{filtered.length}</span> จาก{" "}
+          {showAll ? people.length : linkedPersonIds.size} คน
+          {!showAll && <span className="text-warm-400"> · เฉพาะคนที่เชื่อมความรู้แล้ว</span>}
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="rounded-pill border border-warm-200 px-3 py-1 text-xs font-semibold text-navy-500 hover:border-magenta-500 hover:text-magenta-500"
+        >
+          {showAll ? "ซ่อนคนที่ยังไม่เชื่อม" : "แสดงทุกคน (เพื่อเพิ่มการเชื่อม)"}
+        </button>
+      </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-lg border border-dashed border-warm-200 bg-white p-12 text-center">
           <UsersIcon className="mx-auto h-8 w-8 text-warm-400" />
-          <p className="mt-3 text-sm font-semibold text-navy-500">ไม่พบเจ้าหน้าที่ที่ตรงเงื่อนไข</p>
+          <p className="mt-3 text-sm font-semibold text-navy-500">
+            {showAll ? "ไม่พบเจ้าหน้าที่ที่ตรงเงื่อนไข" : "ยังไม่มีคนที่ถูกเชื่อมกับความรู้ — กด \"แสดงทุกคน\" เพื่อเริ่มเชื่อม"}
+          </p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
