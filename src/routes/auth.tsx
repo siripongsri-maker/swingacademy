@@ -30,8 +30,34 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const isStaff = tab === "staff";
+
+  // If already signed in (e.g. returned from Google OAuth), route by role.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (!data.user) {
+        setCheckingSession(false);
+        return;
+      }
+      const { data: roles } = await supabase.from("user_roles").select("role");
+      if (cancelled) return;
+      const r = (roles ?? []).map((x) => x.role as string);
+      const staffish =
+        r.includes("staff") ||
+        r.includes("trainer") ||
+        r.includes("admin") ||
+        r.includes("superadmin");
+      navigate({ to: staffish ? "/staff" : "/dashboard", replace: true });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   const routeAfterSignIn = async () => {
     // Check role; staff/admin → staff dashboard, otherwise learner dashboard.
