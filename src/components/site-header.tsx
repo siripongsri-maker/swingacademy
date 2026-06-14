@@ -4,6 +4,14 @@ import { Languages, Menu, X, LogOut, HelpCircle, ShieldCheck, ChevronDown } from
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import { BrandLogo } from "@/components/brand-logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { OnboardingTour, hasSeenTour } from "@/components/onboarding-tour";
 import { supabase } from "@/integrations/supabase/client";
 
