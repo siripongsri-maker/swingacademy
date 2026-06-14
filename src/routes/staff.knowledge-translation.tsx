@@ -28,6 +28,8 @@ import {
   type Attachment,
 } from "@/lib/product-knowledge-store";
 import { translateKnowledge, creativeAssist } from "@/lib/knowledge-ai.functions";
+import { TranslationRenderer, MarkdownToggle } from "@/components/translation-renderer";
+import seedData from "@/data/seed-data.json";
 
 const searchSchema = z.object({
   from: z.string().optional(),
