@@ -1,10 +1,62 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Languages, Menu, X, LogOut, HelpCircle } from "lucide-react";
+import { Languages, Menu, X, LogOut, HelpCircle, ShieldCheck } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import { BrandLogo } from "@/components/brand-logo";
 import { OnboardingTour, hasSeenTour } from "@/components/onboarding-tour";
+import { supabase } from "@/integrations/supabase/client";
+
+type SupaUser = { id: string; email: string; name: string; initial: string };
+
+function useSupabaseAccount() {
+  const [user, setUser] = useState<SupaUser | null>(null);
+  const [isStaff, setIsStaff] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const u = data.user;
+      if (!u) {
+        setUser(null);
+        setIsStaff(false);
+        return;
+      }
+      const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+      const name =
+        (typeof meta.full_name === "string" && meta.full_name) ||
+        (typeof meta.name === "string" && meta.name) ||
+        (u.email ? u.email.split("@")[0] : "Account");
+      const initial = (name.trim().charAt(0) || "?").toUpperCase();
+      setUser({ id: u.id, email: u.email ?? "", name, initial });
+      const { data: roles } = await supabase.from("user_roles").select("role");
+      if (cancelled) return;
+      const r = (roles ?? []).map((x) => x.role as string);
+      setIsStaff(
+        r.includes("staff") ||
+          r.includes("trainer") ||
+          r.includes("admin") ||
+          r.includes("superadmin"),
+      );
+    };
+
+    load();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        load();
+      }
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  return { user, isStaff };
+}
 
 const NAV: { to: string; label: Localized }[] = [
   { to: "/", label: { th: "หน้าแรก", en: "Home" } },
