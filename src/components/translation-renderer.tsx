@@ -137,7 +137,7 @@ function parseFaq(md: string): Array<{ q: string; a: string }> {
 
 /* --------------------------- individual renderers --------------------------- */
 
-function SocialCard({ outputMd }: RendererProps) {
+function SocialCard({ outputMd, heroImageUrl }: RendererProps) {
   const tags = useMemo(() => extractTagsFromMd(outputMd), [outputMd]);
   const body = useMemo(() => stripHashtags(outputMd), [outputMd]);
   return (
@@ -154,8 +154,11 @@ function SocialCard({ outputMd }: RendererProps) {
       <div className="prose prose-sm max-w-none px-4 py-3 text-navy-500">
         <SmartMarkdown>{body}</SmartMarkdown>
       </div>
+      {heroImageUrl && (
+        <img src={heroImageUrl} alt="" className="w-full object-cover" />
+      )}
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 px-4 pb-3 text-xs text-magenta-600">
+        <div className="flex flex-wrap gap-1 px-4 pb-3 pt-3 text-xs text-magenta-600">
           {tags.map((t) => (
             <span key={t}>{t}</span>
           ))}
