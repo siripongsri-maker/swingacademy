@@ -463,43 +463,107 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     setLocal((s) => ({ ...s, collections: s.collections.filter((c) => c.id !== id) }));
   }, []);
 
-  const upsertTalentMapping: StoreCtx["upsertTalentMapping"] = useCallback((personId, assetId, role) => {
-    const now = new Date().toISOString();
-    let result!: TalentMapping;
-    setLocal((s) => {
-      const existing = s.talentMappings.find((m) => m.personId === personId && m.assetId === assetId);
-      if (existing) {
-        result = { ...existing, role, updatedAt: now };
-        return { ...s, talentMappings: s.talentMappings.map((m) => (m.id === existing.id ? result : m)) };
+  // ---- Talent mappings: DB-backed via server fns ----
+  const fetchMappings = useServerFn(listTalentMappings);
+  const upsertMappingFn = useServerFn(upsertTalentMappingFn);
+  const removeMappingFn = useServerFn(removeTalentMappingFn);
+  const addEvidenceFn = useServerFn(addTalentEvidenceFn);
+  const removeEvidenceFn = useServerFn(removeTalentEvidenceFn);
+
+  const { data: mappingsData } = useQuery({
+    queryKey: ["talent-mappings", "all"],
+    queryFn: async () => {
+      try {
+        return await fetchMappings();
+      } catch {
+        return { items: [] as TalentMapping[] };
       }
-      result = { id: uid("tm"), personId, assetId, role, evidence: [], createdAt: now, updatedAt: now };
-      return { ...s, talentMappings: [result, ...s.talentMappings] };
-    });
-    return result;
-  }, []);
-  const removeTalentMapping: StoreCtx["removeTalentMapping"] = useCallback((id) => {
-    setLocal((s) => ({ ...s, talentMappings: s.talentMappings.filter((m) => m.id !== id) }));
-  }, []);
-  const addTalentEvidence: StoreCtx["addTalentEvidence"] = useCallback((mappingId, e) => {
-    setLocal((s) => ({
-      ...s,
-      talentMappings: s.talentMappings.map((m) =>
-        m.id === mappingId
-          ? { ...m, evidence: [{ ...e, id: uid("ev") }, ...m.evidence], updatedAt: new Date().toISOString() }
-          : m,
-      ),
-    }));
-  }, []);
-  const removeTalentEvidence: StoreCtx["removeTalentEvidence"] = useCallback((mappingId, evidenceId) => {
-    setLocal((s) => ({
-      ...s,
-      talentMappings: s.talentMappings.map((m) =>
-        m.id === mappingId
-          ? { ...m, evidence: m.evidence.filter((ev) => ev.id !== evidenceId), updatedAt: new Date().toISOString() }
-          : m,
-      ),
-    }));
-  }, []);
+    },
+    staleTime: 30_000,
+  });
+  const talentMappings: TalentMapping[] = useMemo(
+    () => ((mappingsData?.items ?? []) as TalentMapping[]),
+    [mappingsData],
+  );
+
+  const invalidateMappings = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["talent-mappings"] });
+  }, [qc]);
+
+  const upsertTalentMapping: StoreCtx["upsertTalentMapping"] = useCallback(
+    (personId, assetId, role) => {
+      const now = new Date().toISOString();
+      const existing = talentMappings.find((m) => m.personId === personId && m.assetId === assetId);
+      const optimistic: TalentMapping = existing
+        ? { ...existing, role, updatedAt: now }
+        : { id: uid("tm"), personId, assetId, role, evidence: [], createdAt: now, updatedAt: now };
+      // Optimistic cache update
+      qc.setQueryData(["talent-mappings", "all"], (prev: { items: TalentMapping[] } | undefined) => {
+        const items = prev?.items ?? [];
+        const next = existing
+          ? items.map((m) => (m.id === existing.id ? optimistic : m))
+          : [optimistic, ...items];
+        return { items: next };
+      });
+      void (async () => {
+        try {
+          await upsertMappingFn({ data: { personId, assetId, role } });
+          invalidateMappings();
+        } catch (e) {
+          console.error("[talent] upsert failed", e);
+          invalidateMappings();
+        }
+      })();
+      return optimistic;
+    },
+    [talentMappings, qc, upsertMappingFn, invalidateMappings],
+  );
+
+  const removeTalentMapping: StoreCtx["removeTalentMapping"] = useCallback(
+    (id) => {
+      qc.setQueryData(["talent-mappings", "all"], (prev: { items: TalentMapping[] } | undefined) =>
+        prev ? { items: prev.items.filter((m) => m.id !== id) } : prev,
+      );
+      void (async () => {
+        try {
+          await removeMappingFn({ data: { id } });
+          invalidateMappings();
+        } catch (e) {
+          console.error("[talent] remove failed", e);
+          invalidateMappings();
+        }
+      })();
+    },
+    [qc, removeMappingFn, invalidateMappings],
+  );
+
+  const addTalentEvidence: StoreCtx["addTalentEvidence"] = useCallback(
+    (mappingId, e) => {
+      void (async () => {
+        try {
+          await addEvidenceFn({ data: { mappingId, evidence: e } });
+          invalidateMappings();
+        } catch (err) {
+          console.error("[talent] addEvidence failed", err);
+        }
+      })();
+    },
+    [addEvidenceFn, invalidateMappings],
+  );
+
+  const removeTalentEvidence: StoreCtx["removeTalentEvidence"] = useCallback(
+    (mappingId, evidenceId) => {
+      void (async () => {
+        try {
+          await removeEvidenceFn({ data: { mappingId, evidenceId } });
+          invalidateMappings();
+        } catch (err) {
+          console.error("[talent] removeEvidence failed", err);
+        }
+      })();
+    },
+    [removeEvidenceFn, invalidateMappings],
+  );
 
   const value = useMemo<StoreCtx>(
     () => ({
