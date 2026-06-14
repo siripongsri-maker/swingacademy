@@ -410,6 +410,10 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
           invalidateAll();
         } catch (e) {
           console.error("[knowledge] updateAsset failed", e);
+          toast.error(
+            "บันทึกการแก้ไขไม่สำเร็จ: " +
+              (e instanceof Error ? e.message : "unknown error"),
+          );
           invalidateAll();
         }
       })();
