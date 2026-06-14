@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
+import { KNOWLEDGE_SLUG_ALIASES } from "@/lib/knowledge-slug-aliases";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
@@ -30,6 +31,16 @@ import { getPublicKnowledgeBySlug } from "@/lib/knowledge.functions";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/knowledge/$slug")({
+  beforeLoad: ({ params }) => {
+    const target = KNOWLEDGE_SLUG_ALIASES[params.slug];
+    if (target && target !== params.slug) {
+      throw redirect({
+        to: "/knowledge/$slug",
+        params: { slug: target },
+        replace: true,
+      });
+    }
+  },
   head: ({ params }) =>
     pageHead({
       title: `Knowledge — ${params.slug} | SWING Academy`,
