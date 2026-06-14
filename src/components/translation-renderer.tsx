@@ -286,10 +286,13 @@ function FaqAccordion({ outputMd }: RendererProps) {
   );
 }
 
-function Infographic({ outputMd, title }: RendererProps) {
+function Infographic({ outputMd, title, heroImageUrl }: RendererProps) {
   const sections = useMemo(() => splitH2(outputMd), [outputMd]);
   return (
     <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-gradient-to-b from-magenta-500 via-magenta-600 to-lavender-700 p-6 text-white shadow-lg">
+      {heroImageUrl && (
+        <img src={heroImageUrl} alt="" className="mb-4 w-full rounded-xl object-cover" />
+      )}
       {title && <h3 className="mb-4 text-center text-xl font-bold">{title}</h3>}
       <div className="space-y-4">
         {sections.map((s, i) => (
