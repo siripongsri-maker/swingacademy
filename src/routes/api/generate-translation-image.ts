@@ -19,33 +19,62 @@ export const Route = createFileRoute("/api/generate-translation-image")({
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
-        const upstream = await fetch(
-          "https://ai.gateway.lovable.dev/v1/images/generations",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${key}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: body.model || "google/gemini-2.5-flash-image",
+        const model = body.model || "google/gemini-2.5-flash-image";
+        const isGemini = model.startsWith("google/");
+        const reqBody = isGemini
+          ? {
+              model,
+              messages: [{ role: "user", content: prompt }],
+              modalities: ["image", "text"],
+            }
+          : {
+              model,
               prompt,
               size: "1024x1024",
               n: 1,
-            }),
-          },
-        );
+              quality: "low",
+            };
 
-        if (!upstream.ok) {
-          const text = await upstream.text().catch(() => "");
-          return new Response(text || "Upstream error", { status: upstream.status });
+        try {
+          const upstream = await fetch(
+            "https://ai.gateway.lovable.dev/v1/images/generations",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${key}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(reqBody),
+            },
+          );
+
+          if (!upstream.ok) {
+            const text = await upstream.text().catch(() => "");
+            console.error("[generate-translation-image] upstream error", upstream.status, text);
+            return Response.json(
+              { error: text || "Upstream error", status: upstream.status, fallback: true },
+              { status: 200 },
+            );
+          }
+          const json = (await upstream.json()) as {
+            data?: Array<{ b64_json?: string }>;
+          };
+          const b64 = json.data?.[0]?.b64_json;
+          if (!b64) {
+            console.error("[generate-translation-image] no image in response", JSON.stringify(json).slice(0, 500));
+            return Response.json(
+              { error: "No image returned", fallback: true },
+              { status: 200 },
+            );
+          }
+          return Response.json({ dataUrl: `data:image/png;base64,${b64}` });
+        } catch (err) {
+          console.error("[generate-translation-image] fetch failed", err);
+          return Response.json(
+            { error: (err as Error)?.message || "Service failed", fallback: true },
+            { status: 200 },
+          );
         }
-        const json = (await upstream.json()) as {
-          data?: Array<{ b64_json?: string }>;
-        };
-        const b64 = json.data?.[0]?.b64_json;
-        if (!b64) return new Response("No image returned", { status: 502 });
-        return Response.json({ dataUrl: `data:image/png;base64,${b64}` });
       },
     },
   },
