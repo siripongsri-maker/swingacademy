@@ -604,6 +604,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       assets,
       local,
       isLoading,
+      talentMappings,
       createAsset,
       updateAsset,
       removeAsset,
