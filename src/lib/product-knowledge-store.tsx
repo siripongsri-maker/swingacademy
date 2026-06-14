@@ -687,7 +687,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
   const value = useMemo<StoreCtx>(
     () => ({
       assets,
-      translations: local.translations,
+      translations,
       collections: local.collections,
       talentMappings,
       isLoading,
@@ -704,7 +704,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       createTranslation,
       updateTranslation,
       removeTranslation,
-      getTranslation: (id) => local.translations.find((t) => t.id === id),
+      getTranslation: (id) => translations.find((t) => t.id === id),
       createCollection,
       updateCollection,
       removeCollection,
@@ -715,7 +715,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       slugify,
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setLocal({ translations: [], collections: [] });
+        setLocal({ collections: [] });
         invalidateAll();
       },
     }),
