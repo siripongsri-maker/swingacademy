@@ -139,28 +139,41 @@ export function SiteHeader() {
 
             {supaUser ? (
               <div className="hidden items-center gap-2 md:flex">
-                {isStaff && (
-                  <Link
-                    to="/staff"
-                    className="inline-flex items-center gap-1.5 rounded-pill bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-navy-500/90"
-                  >
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
-                  </Link>
-                )}
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-pill bg-lavender-300 text-navy-500 font-semibold">
-                  {supaUser.initial}
-                </span>
-                <span className="hidden text-sm font-medium text-navy-500 lg:inline">
-                  {supaUser.name}
-                </span>
-                <button
-                  onClick={handleSupaSignOut}
-                  aria-label="Sign out"
-                  className="rounded-pill p-1.5 text-warm-500 transition-colors hover:bg-warm-100 hover:text-navy-500"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="inline-flex items-center gap-2 rounded-pill border border-warm-300 bg-white px-3 py-1.5 text-sm font-medium text-navy-500 transition-all hover:border-magenta-500 hover:text-magenta-500">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-lavender-300 text-navy-500 font-semibold text-xs">
+                        {supaUser.initial}
+                      </span>
+                      <span className="hidden text-sm font-medium lg:inline">
+                        {supaUser.name}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[10rem]">
+                    <DropdownMenuLabel>{supaUser.name}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {isStaff && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/staff"
+                          className="cursor-pointer gap-2"
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                          {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={handleSupaSignOut}
+                      className="cursor-pointer gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t({ th: "ออกจากระบบ", en: "Sign out" })}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : signedIn ? (
               <div className="hidden items-center gap-2 md:flex">
