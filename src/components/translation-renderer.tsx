@@ -2,7 +2,7 @@
 // (social card, carousel, slide deck, FAQ, etc.) so staff and the public
 // can see exactly what the published artifact looks like.
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -20,13 +20,58 @@ import {
   Code2,
   Eye,
 } from "lucide-react";
+import { MermaidBlock } from "@/components/mermaid-block";
 
 export type RendererProps = {
   format: string;
   outputMd: string;
   title?: string | null;
   language?: string;
+  heroImageUrl?: string | null;
 };
+
+/* ----------------------- markdown with mermaid + images ----------------------- */
+function SmartMarkdown({ children }: { children: string }) {
+  const components: ComponentProps<typeof ReactMarkdown>["components"] = {
+    code({ className, children, ...props }) {
+      const lang = /language-(\w+)/.exec(className || "")?.[1];
+      const text = String(children ?? "");
+      if (lang === "mermaid") return <MermaidBlock code={text} />;
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
+    img({ src, alt }) {
+      if (!src) return null;
+      return (
+        <img
+          src={src as string}
+          alt={alt || ""}
+          loading="lazy"
+          className="my-3 rounded-lg border border-warm-200"
+        />
+      );
+    },
+  };
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      {children}
+    </ReactMarkdown>
+  );
+}
+
+function HeroImage({ url, alt }: { url?: string | null; alt?: string | null }) {
+  if (!url) return null;
+  return (
+    <img
+      src={url}
+      alt={alt || "hero"}
+      className="mb-4 w-full rounded-xl border border-warm-200 object-cover"
+    />
+  );
+}
 
 /* ------------------------- markdown utilities ------------------------- */
 
@@ -92,7 +137,7 @@ function parseFaq(md: string): Array<{ q: string; a: string }> {
 
 /* --------------------------- individual renderers --------------------------- */
 
-function SocialCard({ outputMd }: RendererProps) {
+function SocialCard({ outputMd, heroImageUrl }: RendererProps) {
   const tags = useMemo(() => extractTagsFromMd(outputMd), [outputMd]);
   const body = useMemo(() => stripHashtags(outputMd), [outputMd]);
   return (
@@ -107,10 +152,13 @@ function SocialCard({ outputMd }: RendererProps) {
         </div>
       </div>
       <div className="prose prose-sm max-w-none px-4 py-3 text-navy-500">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+        <SmartMarkdown>{body}</SmartMarkdown>
       </div>
+      {heroImageUrl && (
+        <img src={heroImageUrl} alt="" className="w-full object-cover" />
+      )}
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 px-4 pb-3 text-xs text-magenta-600">
+        <div className="flex flex-wrap gap-1 px-4 pb-3 pt-3 text-xs text-magenta-600">
           {tags.map((t) => (
             <span key={t}>{t}</span>
           ))}
@@ -131,34 +179,39 @@ function SocialCard({ outputMd }: RendererProps) {
   );
 }
 
-function CarouselDeck({ outputMd }: RendererProps) {
+function CarouselDeck({ outputMd, heroImageUrl }: RendererProps) {
   const slides = useMemo(() => {
     const s = splitH2(outputMd);
     return s.length > 0 ? s : [{ title: "", body: outputMd }];
   }, [outputMd]);
   return (
-    <Carousel className="mx-auto w-full max-w-md">
-      <CarouselContent>
-        {slides.map((s, i) => (
-          <CarouselItem key={i}>
-            <div className="flex aspect-square flex-col justify-between rounded-2xl bg-gradient-to-br from-magenta-500 via-magenta-600 to-lavender-600 p-6 text-white shadow-lg">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
-                {i + 1} / {slides.length}
-              </div>
-              <div>
-                {s.title && <h3 className="text-2xl font-bold leading-tight">{s.title}</h3>}
-                <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/95">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.body}</ReactMarkdown>
+    <div className="mx-auto w-full max-w-md space-y-2">
+      {heroImageUrl && (
+        <img src={heroImageUrl} alt="" className="aspect-square w-full rounded-2xl border border-warm-200 object-cover" />
+      )}
+      <Carousel className="w-full">
+        <CarouselContent>
+          {slides.map((s, i) => (
+            <CarouselItem key={i}>
+              <div className="flex aspect-square flex-col justify-between rounded-2xl bg-gradient-to-br from-magenta-500 via-magenta-600 to-lavender-600 p-6 text-white shadow-lg">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
+                  {i + 1} / {slides.length}
                 </div>
+                <div>
+                  {s.title && <h3 className="text-2xl font-bold leading-tight">{s.title}</h3>}
+                  <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/95">
+                    <SmartMarkdown>{s.body}</SmartMarkdown>
+                  </div>
+                </div>
+                <div className="text-[11px] text-white/70">SWING Academy</div>
               </div>
-              <div className="text-[11px] text-white/70">SWING Academy</div>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
   );
 }
 
@@ -176,7 +229,7 @@ function SlideDeck({ outputMd }: RendererProps) {
           </div>
           <h3 className="mt-2 text-2xl font-bold text-navy-500 md:text-3xl">{cur.title}</h3>
           <div className="prose prose-slate mt-4 max-w-none flex-1 overflow-auto text-base">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{cur.body}</ReactMarkdown>
+            <SmartMarkdown>{cur.body}</SmartMarkdown>
           </div>
         </div>
       </div>
@@ -228,7 +281,7 @@ function FaqAccordion({ outputMd }: RendererProps) {
             </button>
             {isOpen && (
               <div className="prose prose-sm max-w-none px-5 pb-4 text-warm-700">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{it.a}</ReactMarkdown>
+                <SmartMarkdown>{it.a}</SmartMarkdown>
               </div>
             )}
           </div>
@@ -238,10 +291,13 @@ function FaqAccordion({ outputMd }: RendererProps) {
   );
 }
 
-function Infographic({ outputMd, title }: RendererProps) {
+function Infographic({ outputMd, title, heroImageUrl }: RendererProps) {
   const sections = useMemo(() => splitH2(outputMd), [outputMd]);
   return (
     <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-gradient-to-b from-magenta-500 via-magenta-600 to-lavender-700 p-6 text-white shadow-lg">
+      {heroImageUrl && (
+        <img src={heroImageUrl} alt="" className="mb-4 w-full rounded-xl object-cover" />
+      )}
       {title && <h3 className="mb-4 text-center text-xl font-bold">{title}</h3>}
       <div className="space-y-4">
         {sections.map((s, i) => (
@@ -255,7 +311,7 @@ function Infographic({ outputMd, title }: RendererProps) {
               </div>
             )}
             <div className="prose prose-invert prose-sm max-w-none text-white/95">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.body}</ReactMarkdown>
+              <SmartMarkdown>{s.body}</SmartMarkdown>
             </div>
           </div>
         ))}
@@ -283,12 +339,12 @@ function LearningCard({ outputMd, title }: RendererProps) {
           {!flipped ? (
             <>
               {front.title && <h3 className="text-navy-500">{front.title}</h3>}
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{front.body}</ReactMarkdown>
+              <SmartMarkdown>{front.body}</SmartMarkdown>
             </>
           ) : back ? (
             <>
               {back.title && <h3 className="text-navy-500">{back.title}</h3>}
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{back.body}</ReactMarkdown>
+              <SmartMarkdown>{back.body}</SmartMarkdown>
             </>
           ) : (
             <p className="italic text-warm-500">เพิ่ม section ที่สอง (## ...) เพื่อใส่คำตอบ</p>
@@ -397,7 +453,7 @@ function VideoScript({ outputMd }: RendererProps) {
             </div>
           </div>
           <div className="prose prose-sm max-w-none p-4 text-navy-500">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.body}</ReactMarkdown>
+            <SmartMarkdown>{s.body}</SmartMarkdown>
           </div>
         </div>
       ))}
@@ -405,17 +461,28 @@ function VideoScript({ outputMd }: RendererProps) {
   );
 }
 
-function Poster({ outputMd, title }: RendererProps) {
+function Poster({ outputMd, title, heroImageUrl }: RendererProps) {
   return (
-    <div className="mx-auto w-full max-w-sm aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-navy-600 via-magenta-700 to-lavender-700 p-8 text-white shadow-xl">
-      <div className="flex h-full flex-col justify-between">
+    <div
+      className="mx-auto w-full max-w-sm aspect-[3/4] overflow-hidden rounded-2xl text-white shadow-xl relative"
+      style={
+        heroImageUrl
+          ? {
+              backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%), url(${heroImageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
+    >
+      <div className={`flex h-full flex-col justify-between p-8 ${heroImageUrl ? "" : "bg-gradient-to-br from-navy-600 via-magenta-700 to-lavender-700"}`}>
         <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">
           SWING · Campaign
         </div>
         <div>
           {title && <h3 className="text-3xl font-extrabold leading-tight">{title}</h3>}
           <div className="prose prose-invert prose-sm mt-4 max-w-none text-white/95">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{outputMd}</ReactMarkdown>
+            <SmartMarkdown>{outputMd}</SmartMarkdown>
           </div>
         </div>
         <div className="text-[10px] text-white/70">swingacademy.life</div>
@@ -424,12 +491,13 @@ function Poster({ outputMd, title }: RendererProps) {
   );
 }
 
-function Article({ outputMd, title }: RendererProps) {
+function Article({ outputMd, title, heroImageUrl }: RendererProps) {
   return (
     <div className="mx-auto w-full max-w-3xl rounded-xl border border-warm-200 bg-white p-6 md:p-8">
+      <HeroImage url={heroImageUrl} alt={title} />
       {title && <h3 className="mb-4 text-2xl font-bold text-navy-500">{title}</h3>}
       <div className="prose prose-slate max-w-none prose-headings:text-navy-500 prose-a:text-magenta-600">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{outputMd}</ReactMarkdown>
+        <SmartMarkdown>{outputMd}</SmartMarkdown>
       </div>
     </div>
   );

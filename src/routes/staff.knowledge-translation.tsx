@@ -234,6 +234,7 @@ type EditorForm = {
   attachments: Attachment[];
   contributorId: string | null;
   title: string | null;
+  heroImageUrl: string | null;
 };
 
 function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
@@ -249,6 +250,7 @@ function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
     attachments: a.attachments,
     contributorId: null,
     title: a.titleTh || a.titleEn || null,
+    heroImageUrl: null,
   };
 }
 
@@ -284,6 +286,7 @@ function TranslationEditor({
         attachments: src?.attachments ?? [],
         contributorId: translation.contributorId ?? null,
         title: translation.title ?? src?.titleTh ?? null,
+        heroImageUrl: translation.heroImageUrl ?? null,
       };
     }
     if (source) return buildPrefillFromAsset(source);
@@ -299,6 +302,7 @@ function TranslationEditor({
       attachments: [],
       contributorId: null,
       title: null,
+      heroImageUrl: null,
     };
   });
 
@@ -391,6 +395,7 @@ function TranslationEditor({
       ownerId: "current-user",
       contributorId: form.contributorId,
       title: form.title,
+      heroImageUrl: form.heroImageUrl,
     };
     if (translation) {
       pk.updateTranslation(translation.id, payload);
@@ -400,6 +405,37 @@ function TranslationEditor({
       toast.success(targetStatus === "published" ? "Published" : "Draft saved");
     }
     onClose();
+  }
+
+  const [imageGenerating, setImageGenerating] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+
+  async function generateImage() {
+    const sourceTxt = (form.outputMd || form.instruction || form.title || currentSource?.keyMessage || "").slice(0, 1200);
+    const userPrompt = imagePrompt.trim();
+    const prompt =
+      userPrompt
+        ? userPrompt
+        : `Create a clean, modern hero illustration suitable for a "${pk.formats.find((f) => f.id === form.format)?.en ?? form.format}" piece about: ${form.title ?? "the topic"}. Audience: ${pk.audiences.find((a) => a.id === form.audience)?.en ?? form.audience}. Tone: ${pk.tones.find((t) => t.id === form.tone)?.en ?? form.tone}. Style: editorial, warm, inclusive, no text/lettering, soft gradient background. Key context: ${sourceTxt}`;
+    setImageGenerating(true);
+    try {
+      const res = await fetch("/api/generate-translation-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(t || `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as { dataUrl: string };
+      update("heroImageUrl", data.dataUrl);
+      toast.success("สร้างภาพประกอบเรียบร้อย — แก้ไขหรือลบได้ก่อน Publish");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "ไม่สามารถสร้างภาพ");
+    } finally {
+      setImageGenerating(false);
+    }
   }
 
   if (picking) {
@@ -614,13 +650,69 @@ function TranslationEditor({
             />
           </Field>
 
+          <Field label="🎨 ภาพประกอบ (AI Hero Image)" className="md:col-span-4">
+            <div className="space-y-2 rounded-lg border border-dashed border-magenta-200 bg-magenta-50/40 p-3">
+              {form.heroImageUrl ? (
+                <div className="space-y-2">
+                  <img
+                    src={form.heroImageUrl}
+                    alt="hero"
+                    className="max-h-64 w-full rounded-md border border-warm-200 object-cover"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={generateImage}
+                      disabled={imageGenerating}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-magenta-300 bg-white px-3 py-1.5 text-xs font-medium text-magenta-700 hover:bg-magenta-50 disabled:opacity-50"
+                    >
+                      {imageGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      สร้างใหม่
+                    </button>
+                    <button
+                      onClick={() => update("heroImageUrl", null)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:bg-warm-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> ลบภาพ
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    placeholder="(ทางเลือก) prompt ภาษาอังกฤษ — ปล่อยว่างเพื่อให้ AI สร้างจากเนื้อหา"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <button
+                    onClick={generateImage}
+                    disabled={imageGenerating}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-magenta-500 to-magenta-600 px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                  >
+                    {imageGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {imageGenerating ? "กำลังสร้างภาพ…" : "สร้างภาพประกอบด้วย AI"}
+                  </button>
+                </div>
+              )}
+              <p className="text-[11px] text-warm-500">
+                ใช้ Lovable AI (Gemini Image) · ภาพจะแสดงในการ์ด preview ด้านล่างและในหน้าที่ Publish · แก้ไข/ลบได้ก่อน Publish
+              </p>
+            </div>
+          </Field>
+
           <Field label="Visualize Preview (เห็นเหมือนตอน Publish จริง)" className="md:col-span-4">
             <div className="rounded-lg border border-warm-200 bg-warm-50/40 p-4">
               <MarkdownToggle outputMd={form.outputMd}>
-                <TranslationRenderer format={form.format} outputMd={form.outputMd} title={form.title ?? null} language={form.language} />
+                <TranslationRenderer
+                  format={form.format}
+                  outputMd={form.outputMd}
+                  title={form.title ?? null}
+                  language={form.language}
+                  heroImageUrl={form.heroImageUrl}
+                />
               </MarkdownToggle>
               <p className="mt-3 text-[11px] text-warm-500">
-                เมื่อกด Publish, การ์ดนี้จะไปแสดงในส่วน "รูปแบบเผยแพร่" ของหน้าความรู้ พร้อมแสดงผู้สร้างเป็น contributor
+                เมื่อกด Publish, การ์ดนี้จะไปแสดงในส่วน "รูปแบบเผยแพร่" ของหน้าความรู้ พร้อมแสดงผู้สร้างเป็น contributor · ใช้ <code>```mermaid</code> ใน output เพื่อแสดงแผนภูมิอัตโนมัติ
               </p>
             </div>
           </Field>

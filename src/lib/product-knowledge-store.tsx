@@ -132,6 +132,7 @@ export type KnowledgeTranslation = {
   outputMd: string;
   title?: string | null;
   contributorId?: string | null;
+  heroImageUrl?: string | null;
   status: TranslationStatus;
   ownerId: string;
   publishedAt?: string | null;
@@ -461,6 +462,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
         outputMd: r.outputMd,
         title: r.title,
         contributorId: r.contributorId,
+        heroImageUrl: r.heroImageUrl,
         status: r.status,
         ownerId: r.ownerId ?? "",
         publishedAt: r.publishedAt,
@@ -498,6 +500,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
               title: t.title ?? null,
               status: t.status,
               contributorId: t.contributorId ?? null,
+              heroImageUrl: t.heroImageUrl ?? null,
             },
           });
           invalidateTranslations();
@@ -531,6 +534,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
               title: merged.title ?? null,
               status: merged.status,
               contributorId: merged.contributorId ?? null,
+              heroImageUrl: merged.heroImageUrl ?? null,
             },
           });
           invalidateTranslations();

@@ -21,13 +21,14 @@ export type TranslationRow = {
   status: TranslationStatus;
   contributorId: string | null;
   ownerId: string | null;
+  heroImageUrl: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
 const COLS =
-  "id, asset_id, audience, format, tone, language, instruction, output_md, title, status, contributor_id, owner_id, published_at, created_at, updated_at";
+  "id, asset_id, audience, format, tone, language, instruction, output_md, title, status, contributor_id, owner_id, hero_image_url, published_at, created_at, updated_at";
 
 function fromDb(r: Record<string, any>): TranslationRow {
   return {
@@ -43,6 +44,7 @@ function fromDb(r: Record<string, any>): TranslationRow {
     status: (r.status as TranslationStatus) ?? "draft",
     contributorId: (r.contributor_id as string | null) ?? null,
     ownerId: (r.owner_id as string | null) ?? null,
+    heroImageUrl: (r.hero_image_url as string | null) ?? null,
     publishedAt: (r.published_at as string | null) ?? null,
     createdAt: String(r.created_at ?? ""),
     updatedAt: String(r.updated_at ?? ""),
@@ -97,6 +99,7 @@ const SaveSchema = z.object({
   title: z.string().max(255).nullable().optional(),
   status: z.enum(["draft", "ready", "published"]).default("draft"),
   contributorId: z.string().max(128).nullable().optional(),
+  heroImageUrl: z.string().max(5_000_000).nullable().optional(),
 });
 
 async function assertStaff(context: { supabase: any; userId: string }) {
@@ -128,6 +131,7 @@ export const saveTranslation = createServerFn({ method: "POST" })
       title: data.title ?? null,
       status: data.status,
       contributor_id: data.contributorId ?? null,
+      hero_image_url: data.heroImageUrl ?? null,
       owner_id: context.userId,
       ...(data.status === "published" ? { published_at: nowIso } : {}),
     };
