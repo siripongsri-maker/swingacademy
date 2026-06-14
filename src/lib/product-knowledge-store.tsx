@@ -596,7 +596,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       slugify,
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setLocal({ translations: [], collections: [], talentMappings: [] });
+        setLocal({ translations: [], collections: [] });
         invalidateAll();
       },
     }),
