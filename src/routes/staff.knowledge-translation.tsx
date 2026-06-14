@@ -428,7 +428,10 @@ function TranslationEditor({
         const t = await res.text().catch(() => "");
         throw new Error(t || `HTTP ${res.status}`);
       }
-      const data = (await res.json()) as { dataUrl: string };
+      const data = (await res.json()) as { dataUrl?: string; error?: string; fallback?: boolean };
+      if (!data.dataUrl) {
+        throw new Error(data.error || "ไม่ได้รับภาพจากเซิร์ฟเวอร์");
+      }
       update("heroImageUrl", data.dataUrl);
       toast.success("สร้างภาพประกอบเรียบร้อย — แก้ไขหรือลบได้ก่อน Publish");
     } catch (err) {
