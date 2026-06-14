@@ -149,6 +149,7 @@ export type Database = {
           contributor_id: string | null
           created_at: string
           format: string
+          hero_image_url: string | null
           id: string
           instruction: string
           language: string
@@ -166,6 +167,7 @@ export type Database = {
           contributor_id?: string | null
           created_at?: string
           format?: string
+          hero_image_url?: string | null
           id?: string
           instruction?: string
           language?: string
@@ -183,6 +185,7 @@ export type Database = {
           contributor_id?: string | null
           created_at?: string
           format?: string
+          hero_image_url?: string | null
           id?: string
           instruction?: string
           language?: string

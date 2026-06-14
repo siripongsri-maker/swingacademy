@@ -34,6 +34,7 @@ import { Route as StaffAdminRouteImport } from './routes/staff.admin'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as KSlugRouteImport } from './routes/k.$slug'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
+import { Route as ApiGenerateTranslationImageRouteImport } from './routes/api/generate-translation-image'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
@@ -161,6 +162,12 @@ const CoursesIdRoute = CoursesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => CoursesRoute,
 } as any)
+const ApiGenerateTranslationImageRoute =
+  ApiGenerateTranslationImageRouteImport.update({
+    id: '/api/generate-translation-image',
+    path: '/api/generate-translation-image',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
+  '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -198,6 +206,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -226,6 +235,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
+  '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/staff'
     | '/verify'
+    | '/api/generate-translation-image'
     | '/courses/$id'
     | '/k/$slug'
     | '/knowledge/$slug'
@@ -281,6 +292,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/generate-translation-image'
     | '/courses/$id'
     | '/k/$slug'
     | '/knowledge/$slug'
@@ -308,6 +320,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/staff'
     | '/verify'
+    | '/api/generate-translation-image'
     | '/courses/$id'
     | '/k/$slug'
     | '/knowledge/$slug'
@@ -336,6 +349,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StaffRoute: typeof StaffRouteWithChildren
   VerifyRoute: typeof VerifyRoute
+  ApiGenerateTranslationImageRoute: typeof ApiGenerateTranslationImageRoute
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
   KnowledgeIndexRoute: typeof KnowledgeIndexRoute
@@ -518,6 +532,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesIdRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/api/generate-translation-image': {
+      id: '/api/generate-translation-image'
+      path: '/api/generate-translation-image'
+      fullPath: '/api/generate-translation-image'
+      preLoaderRoute: typeof ApiGenerateTranslationImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -574,6 +595,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StaffRoute: StaffRouteWithChildren,
   VerifyRoute: VerifyRoute,
+  ApiGenerateTranslationImageRoute: ApiGenerateTranslationImageRoute,
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
   KnowledgeIndexRoute: KnowledgeIndexRoute,
@@ -581,3 +603,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
