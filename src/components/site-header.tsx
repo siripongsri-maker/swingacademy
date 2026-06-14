@@ -69,9 +69,15 @@ const NAV: { to: string; label: Localized }[] = [
 export function SiteHeader() {
   const { lang, toggle, t } = useLanguage();
   const { signedIn, learner, signOut } = useAccount();
+  const { user: supaUser, isStaff } = useSupabaseAccount();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+
+  const handleSupaSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined" && !hasSeenTour("learner")) {
