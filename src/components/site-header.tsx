@@ -1,10 +1,62 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Languages, Menu, X, LogOut, HelpCircle } from "lucide-react";
+import { Languages, Menu, X, LogOut, HelpCircle, ShieldCheck } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import { BrandLogo } from "@/components/brand-logo";
 import { OnboardingTour, hasSeenTour } from "@/components/onboarding-tour";
+import { supabase } from "@/integrations/supabase/client";
+
+type SupaUser = { id: string; email: string; name: string; initial: string };
+
+function useSupabaseAccount() {
+  const [user, setUser] = useState<SupaUser | null>(null);
+  const [isStaff, setIsStaff] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const u = data.user;
+      if (!u) {
+        setUser(null);
+        setIsStaff(false);
+        return;
+      }
+      const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+      const name =
+        (typeof meta.full_name === "string" && meta.full_name) ||
+        (typeof meta.name === "string" && meta.name) ||
+        (u.email ? u.email.split("@")[0] : "Account");
+      const initial = (name.trim().charAt(0) || "?").toUpperCase();
+      setUser({ id: u.id, email: u.email ?? "", name, initial });
+      const { data: roles } = await supabase.from("user_roles").select("role");
+      if (cancelled) return;
+      const r = (roles ?? []).map((x) => x.role as string);
+      setIsStaff(
+        r.includes("staff") ||
+          r.includes("trainer") ||
+          r.includes("admin") ||
+          r.includes("superadmin"),
+      );
+    };
+
+    load();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        load();
+      }
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  return { user, isStaff };
+}
 
 const NAV: { to: string; label: Localized }[] = [
   { to: "/", label: { th: "หน้าแรก", en: "Home" } },
@@ -17,9 +69,15 @@ const NAV: { to: string; label: Localized }[] = [
 export function SiteHeader() {
   const { lang, toggle, t } = useLanguage();
   const { signedIn, learner, signOut } = useAccount();
+  const { user: supaUser, isStaff } = useSupabaseAccount();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+
+  const handleSupaSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined" && !hasSeenTour("learner")) {
@@ -71,7 +129,32 @@ export function SiteHeader() {
               <span className={lang === "en" ? "text-magenta-500" : ""}>EN</span>
             </button>
 
-            {signedIn ? (
+            {supaUser ? (
+              <div className="hidden items-center gap-2 md:flex">
+                {isStaff && (
+                  <Link
+                    to="/staff"
+                    className="inline-flex items-center gap-1.5 rounded-pill bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-navy-500/90"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
+                  </Link>
+                )}
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-pill bg-lavender-300 text-navy-500 font-semibold">
+                  {supaUser.initial}
+                </span>
+                <span className="hidden text-sm font-medium text-navy-500 lg:inline">
+                  {supaUser.name}
+                </span>
+                <button
+                  onClick={handleSupaSignOut}
+                  aria-label="Sign out"
+                  className="rounded-pill p-1.5 text-warm-500 transition-colors hover:bg-warm-100 hover:text-navy-500"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            ) : signedIn ? (
               <div className="hidden items-center gap-2 md:flex">
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-pill bg-lavender-300 text-navy-500 font-semibold">
                   {learner.initial}
@@ -132,8 +215,30 @@ export function SiteHeader() {
                   {t(item.label)}
                 </Link>
               ))}
-              <div className="mt-2 border-t border-warm-200 pt-3">
-                {signedIn ? (
+              <div className="mt-2 flex flex-col gap-2 border-t border-warm-200 pt-3">
+                {supaUser ? (
+                  <>
+                    {isStaff && (
+                      <Link
+                        to="/staff"
+                        onClick={() => setOpen(false)}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-pill bg-navy-500 px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        void handleSupaSignOut();
+                      }}
+                      className="w-full rounded-pill border border-warm-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500"
+                    >
+                      {t({ th: "ออกจากระบบ", en: "Sign out" })} ({supaUser.name})
+                    </button>
+                  </>
+                ) : signedIn ? (
                   <button
                     onClick={() => {
                       signOut();

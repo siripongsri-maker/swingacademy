@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GraduationCap, ShieldCheck, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { useLanguage } from "@/lib/language-context";
@@ -30,8 +30,34 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const isStaff = tab === "staff";
+
+  // If already signed in (e.g. returned from Google OAuth), route by role.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (!data.user) {
+        setCheckingSession(false);
+        return;
+      }
+      const { data: roles } = await supabase.from("user_roles").select("role");
+      if (cancelled) return;
+      const r = (roles ?? []).map((x) => x.role as string);
+      const staffish =
+        r.includes("staff") ||
+        r.includes("trainer") ||
+        r.includes("admin") ||
+        r.includes("superadmin");
+      navigate({ to: staffish ? "/staff" : "/dashboard", replace: true });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   const routeAfterSignIn = async () => {
     // Check role; staff/admin → staff dashboard, otherwise learner dashboard.
@@ -101,9 +127,23 @@ function AuthPage() {
     await routeAfterSignIn();
   };
 
+  if (checkingSession) {
+    return (
+      <PublicLayout>
+        <section className="mx-auto flex max-w-md flex-col items-center px-6 py-24">
+          <Loader2 className="h-6 w-6 animate-spin text-magenta-500" />
+          <p className="mt-3 text-sm text-warm-500">
+            {t({ th: "กำลังตรวจสอบการเข้าสู่ระบบ…", en: "Checking your session…" })}
+          </p>
+        </section>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       <section className="mx-auto flex max-w-md flex-col items-center px-6 py-12">
+
         <h1 lang={lang} className="text-3xl font-semibold text-navy-500">
           {t({ th: "เข้าสู่ระบบ", en: "Welcome back" })}
         </h1>
