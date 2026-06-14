@@ -104,6 +104,44 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_talent_mappings: {
+        Row: {
+          asset_id: string
+          created_at: string
+          evidence: Json
+          id: string
+          person_id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          evidence?: Json
+          id?: string
+          person_id: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          evidence?: Json
+          id?: string
+          person_id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_talent_mappings_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_attachments: {
         Row: {
           course_id: string
