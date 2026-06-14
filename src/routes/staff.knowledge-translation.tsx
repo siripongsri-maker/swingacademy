@@ -29,6 +29,7 @@ import {
 } from "@/lib/product-knowledge-store";
 import { translateKnowledge, creativeAssist } from "@/lib/knowledge-ai.functions";
 import { TranslationRenderer, MarkdownToggle } from "@/components/translation-renderer";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import seedData from "@/data/seed-data.json";
 
 const searchSchema = z.object({
