@@ -1,62 +1,82 @@
 
-## ปัญหาที่เจอจริงในโค้ด
+# Visualize & Publish Knowledge Translation
 
-1. **"เชื่อมแล้วหายอยู่เรื่อยๆ"** — `talentMappings` ในไฟล์ `src/lib/product-knowledge-store.tsx` เก็บใน **localStorage** เท่านั้น (key `swing.product-knowledge.local.v1`) ไม่ได้อยู่ใน DB จึง:
-   - หายเมื่อล้าง cache / เปลี่ยน browser / ใช้ device อื่น
-   - คนละเครื่องเห็นไม่ตรงกัน
-   - หน้าบ้าน/หลังบ้านไม่ sync เพราะ mapping ผูกกับเครื่องผู้ใช้
-2. **ลิงก์ `/k/community-led-health-work-swing`** มี alias redirect ไป `hivst-community-led-model` (มีจริงใน DB) อยู่แล้ว → ใช้ได้ แต่ยังไม่มีการผูกความรู้ตัวนี้กับ Sakda (`p-sakda-unkarnkamol`)
-3. **หน้า `/staff/talent` โชว์ทุกคนใน `seed.staffConsole.people`** (รวมคนที่ไม่มี mapping เลย) — ผู้ใช้อยากให้โชว์เฉพาะคนที่มีการเชื่อมความรู้/อบรมจริง
+ทำให้หน้า `/staff/knowledge-translation` แสดงผล "ตามรูปแบบจริง" (Social Caption, Carousel, Infographic, FAQ, Flow Chart, Poster, Slide, HTML, Learning Card, Video Script ฯลฯ) มี **Preview** ก่อน Publish และพอ Publish จะไป **แสดงบนหน้าเว็บความรู้จริง** (`/k/<slug>` / `/knowledge/<slug>`) เป็นส่วนหนึ่งของเนื้อหา พร้อม **ระบุผู้สร้างเป็น Contributor**
 
 ## สิ่งที่จะทำ
 
-### 1) สร้างตารางใน DB (1 migration)
+### 1) Format renderers (Visualize)
+สร้าง `src/components/translation-renderers/` แต่ละไฟล์รับ markdown + meta แล้ว render เป็น UI จริง:
+- **social_caption / campaign_message** → การ์ดโพสต์โซเชียล (avatar SWING, ข้อความ, hashtag)
+- **carousel** → สไลด์เลื่อนซ้าย-ขวา (1 ## = 1 สไลด์)
+- **infographic_text / poster_concept** → กรอบโปสเตอร์แนวตั้ง gradient + bullets
+- **short_article / training_handout / micro_learning** → บทความ prose
+- **learning_card** → flip card หน้า/หลัง
+- **faq** → accordion (Q: / A: คู่)
+- **chatbot_script / script / short_video_script** → bubble chat / scene blocks
+- **slide_outline** → 16:9 slide deck (## = title, bullets = body)
+- **flow_chart** → ถ้า output มี mermaid block → render mermaid, ไม่มีก็ ordered steps
+- **html_page** → iframe sandbox preview ของ HTML block
+- fallback → ReactMarkdown
 
-`public.knowledge_talent_mappings`
-- `id uuid pk`
-- `person_id text not null` — อ้างอิง id ของคนใน `seed-data.json` (เช่น `p-sakda-unkarnkamol`)
-- `asset_id uuid not null references knowledge_products(id) on delete cascade`
-- `role text not null check in ('contributor','reviewer','trainer','practitioner','expert')`
-- `evidence jsonb not null default '[]'` — เก็บ array ของ {id, type, note, date}
-- `created_at`, `updated_at` (trigger `update_updated_at_column`)
-- `unique (person_id, asset_id)`
+ทุก renderer มีปุ่ม "ดูเป็น Markdown" toggle
 
-RLS + GRANT:
-- `GRANT SELECT ON ... TO anon` (สำหรับโชว์บนหน้าบ้านในอนาคต/หน้า talent map สาธารณะ)
-- `GRANT ALL TO authenticated, service_role`
-- Policy: SELECT public, INSERT/UPDATE/DELETE เฉพาะ staff/admin (`has_role`)
+### 2) Preview ในหน้า Editor
+- เพิ่ม Tabs: **Edit / Preview** (default Preview หลัง generate)
+- Preview เรียก renderer ตาม `format` ที่เลือก เห็นหน้าตาเหมือนตอน publish จริง
+- ปุ่ม "Preview on site" เปิด modal เต็มจอจำลองหน้า `/knowledge/<slug>` พร้อม section translation นี้
 
-### 2) Server functions ใหม่ — `src/lib/talent-mappings.functions.ts`
-- `listTalentMappings()` — SELECT ทั้งหมด (public read)
-- `upsertTalentMapping({ personId, assetId, role })` — staff guard
-- `removeTalentMapping({ id })` — staff guard
-- `addTalentEvidence({ mappingId, evidence })` / `removeTalentEvidence({ mappingId, evidenceId })` — staff guard, แก้ jsonb
+### 3) Publish → ขึ้นหน้าเว็บจริง
+ตอนนี้ translations เก็บใน localStorage เท่านั้น จึงไม่มีทางขึ้นหน้า public ต้องย้ายเป็น DB-backed:
 
-### 3) แก้ `src/lib/product-knowledge-store.tsx`
-- ย้าย `talentMappings` ออกจาก `LocalState` (localStorage)
-- เปลี่ยนเป็น `useQuery(['talent-mappings'])` + `useServerFn`
-- mutation ทั้งหมด invalidate query → sync ทุก surface ทันที
-- Translations/Collections ยังอยู่ใน localStorage เหมือนเดิม (ไม่ใช่ scope ครั้งนี้)
+**Migration** `knowledge_translations`:
+```
+id uuid pk, asset_id uuid fk knowledge_products(id) on delete cascade,
+audience text, format text, tone text, language text,
+instruction text, output_md text, status text check (draft|ready|published),
+title text null, contributor_id text null (person id ใน seed),
+owner_id uuid references auth.users, published_at timestamptz,
+created_at, updated_at
+```
+- GRANT SELECT to anon (เฉพาะ published), GRANT ALL to authenticated/service_role
+- RLS: anon อ่าน `status='published'` + asset.visibility='public'; staff/admin เขียน
 
-### 4) เชื่อม Sakda กับความรู้ "HIVST Community-led Model" (seed ผ่าน migration)
-- INSERT mapping: `person_id='p-sakda-unkarnkamol'`, `asset_id=eb37dbe4-c78e-4f1c-810a-c35261f96157`, `role='practitioner'`
-- (ผู้ใช้ปรับ role/เพิ่ม evidence ผ่าน UI ภายหลังได้)
+**Server functions** `src/lib/knowledge-translations.functions.ts`:
+- `listTranslations({assetId?})` — staff
+- `saveTranslation({id?, patch})` — staff/admin
+- `removeTranslation({id})` — staff/admin
+- `listPublishedTranslationsForAsset({slug})` — public (admin client + filter)
 
-### 5) หน้า `/staff/talent` — โชว์เฉพาะคนที่ "ถูกเชื่อม/เคยอบรม"
-- คำนวณ `linkedPersonIds = Set(km.talentMappings.map(m => m.personId))`
-- เพิ่ม union กับ trainings: ดึง `trainings` ที่มี `person_id` ใน participants (ถ้ามี field นี้) — *ต้องเช็คโครงสร้าง `trainings` ก่อนใน implementation; ถ้ายังไม่มีการผูกคน ให้ใช้เฉพาะ mapping ก่อน*
-- เปลี่ยน `people` base list → `people.filter(p => linkedPersonIds.has(p.id))`
-- เพิ่ม toggle "แสดงทุกคน" (default ปิด) เพื่อให้ staff ยังเพิ่มคนใหม่เข้ามาผูกได้
-- ใน Drawer ของแต่ละคน: ปุ่ม "เพิ่มการเชื่อมความรู้" ยังทำงานปกติ (เรียก server fn)
+**Store** `product-knowledge-store.tsx`: ย้าย translations จาก localStorage ไป useQuery + server fn (รูปแบบเดียวกับ talent mappings ที่เพิ่งทำ) — optimistic update เพื่อความลื่น
 
-### 6) Verify
-- เปิด `/k/community-led-health-work-swing` → redirect → เห็น Sakda ใน "ผู้รู้/practitioner" (ถ้าหน้า detail แสดง linked people — ตรวจดู ถ้าไม่มีจะเพิ่มภายหลังตามขอ)
-- เปิด `/staff/talent` → เห็น Sakda card (เพราะมี mapping) ไม่เห็นคนที่ไม่มี mapping
-- เพิ่ม mapping ใหม่ → reload หน้า → ยังอยู่ (ไม่หาย)
-- เปิดอีก browser / incognito → เห็นเหมือนกัน
+### 4) แสดงบนหน้า Public
+ใน `src/routes/knowledge.$slug.tsx` (และ `k.$slug.tsx` ที่ render เดียวกัน) หลัง section บทเรียน เพิ่ม:
 
-## หมายเหตุเทคนิค
+**"📣 รูปแบบเผยแพร่ · Published Formats"** — แสดง translations ที่ `status='published'` ของ asset นี้ เป็นการ์ดเรียง grid โดย render ด้วย renderer เดียวกับ Preview (social card, carousel, slide ฯลฯ) ผู้ใช้กดเปิดดูเต็มได้
 
-- ตอนนี้ `people` ยังเป็น seed JSON ฝั่ง client — ใช้ `person_id text` ในตารางใหม่จึงไม่ผูก FK กับ DB (ยืดหยุ่นพอ); ถ้าต้องการย้าย people เข้า DB ค่อยทำเป็นรอบถัดไป
-- ไม่แก้ไฟล์ auto-gen (`types.ts`, `routeTree.gen.ts`) — TanStack/Supabase regen เอง
-- ไม่กระทบ knowledge sync ที่เพิ่งแก้ไป
+**Contributor**: แต่ละการ์ดมี chip "โดย <ชื่อคน>" ดึงจาก:
+1. `contributor_id` ถ้าเลือกใน editor (จาก seed people เช่น Sakda)
+2. ถ้าไม่เลือก → fallback เป็น owner ของ translation (จาก auth user / profile) หรือ owner ของ asset
+
+ในหน้า editor เพิ่ม dropdown "Contributor" เลือก person จาก `seed.staffConsole.people` (เลือกหลายคนได้ในรอบต่อไป รอบนี้เอา 1 คน)
+
+### 5) UX เล็กน้อย
+- การ์ดในลิสต์ `/staff/knowledge-translation` แสดง thumbnail mini ตาม format แทนที่จะเป็นข้อความล้วน
+- ปุ่ม Publish เปลี่ยนเป็น disabled เมื่อ output ว่าง + toast บอก "เผยแพร่ไปที่ /knowledge/<slug> แล้ว" พร้อม link
+
+## รายละเอียดเทคนิค
+
+- Mermaid: ใช้ `mermaid` package (lazy import, client-only ผ่าน `<ClientOnly>` หรือ effect) ถ้าไม่มีก็ install
+- HTML preview: `<iframe sandbox srcDoc={html} />` ดึง code block ` ```html ` ตัวแรก
+- Carousel: ใช้ `@/components/ui/carousel` ที่มีอยู่แล้ว
+- Renderer dispatcher: `<TranslationRenderer format=... outputMd=... />` map id → component
+- Public read: server fn ใช้ `supabaseAdmin` + filter `status='published'` และ asset.visibility='public' (เหมือน pattern ที่มีอยู่)
+- localStorage cleanup: ลบ translations ออกจาก LS_KEY หลัง migrate
+
+## ที่จะแก้/สร้าง
+- **New**: `supabase/migrations/<ts>_knowledge_translations.sql`, `src/lib/knowledge-translations.functions.ts`, `src/components/translation-renderers/{index.tsx, social-card.tsx, carousel-deck.tsx, slide-deck.tsx, faq-accordion.tsx, infographic.tsx, learning-card.tsx, chat-script.tsx, html-preview.tsx, flow-chart.tsx}`
+- **Edit**: `src/lib/product-knowledge-store.tsx` (translations → DB), `src/routes/staff.knowledge-translation.tsx` (tabs Edit/Preview, contributor select, thumbnails), `src/routes/knowledge.$slug.tsx` + `src/routes/k.$slug.tsx` (section "Published Formats"), `src/lib/knowledge.functions.ts` (publicGetBySlug รวม translations หรือเพิ่ม fn แยก)
+
+## คำถามก่อนเริ่ม
+1. ฟิลด์ **Contributor** ให้เลือกได้กี่คน — 1 คน (เริ่มต้น) หรือหลายคน?
+2. Translation ที่ publish แล้วให้แสดง "ในหน้าความรู้เดิม" (รวมเป็น section ใหม่ใต้บทเรียน) หรือ "หน้าย่อยใหม่" `/knowledge/<slug>/formats/<translation-id>` ด้วย?
