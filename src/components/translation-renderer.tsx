@@ -179,34 +179,39 @@ function SocialCard({ outputMd, heroImageUrl }: RendererProps) {
   );
 }
 
-function CarouselDeck({ outputMd }: RendererProps) {
+function CarouselDeck({ outputMd, heroImageUrl }: RendererProps) {
   const slides = useMemo(() => {
     const s = splitH2(outputMd);
     return s.length > 0 ? s : [{ title: "", body: outputMd }];
   }, [outputMd]);
   return (
-    <Carousel className="mx-auto w-full max-w-md">
-      <CarouselContent>
-        {slides.map((s, i) => (
-          <CarouselItem key={i}>
-            <div className="flex aspect-square flex-col justify-between rounded-2xl bg-gradient-to-br from-magenta-500 via-magenta-600 to-lavender-600 p-6 text-white shadow-lg">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
-                {i + 1} / {slides.length}
-              </div>
-              <div>
-                {s.title && <h3 className="text-2xl font-bold leading-tight">{s.title}</h3>}
-                <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/95">
-                  <SmartMarkdown>{s.body}</SmartMarkdown>
+    <div className="mx-auto w-full max-w-md space-y-2">
+      {heroImageUrl && (
+        <img src={heroImageUrl} alt="" className="aspect-square w-full rounded-2xl border border-warm-200 object-cover" />
+      )}
+      <Carousel className="w-full">
+        <CarouselContent>
+          {slides.map((s, i) => (
+            <CarouselItem key={i}>
+              <div className="flex aspect-square flex-col justify-between rounded-2xl bg-gradient-to-br from-magenta-500 via-magenta-600 to-lavender-600 p-6 text-white shadow-lg">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
+                  {i + 1} / {slides.length}
                 </div>
+                <div>
+                  {s.title && <h3 className="text-2xl font-bold leading-tight">{s.title}</h3>}
+                  <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/95">
+                    <SmartMarkdown>{s.body}</SmartMarkdown>
+                  </div>
+                </div>
+                <div className="text-[11px] text-white/70">SWING Academy</div>
               </div>
-              <div className="text-[11px] text-white/70">SWING Academy</div>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
   );
 }
 
