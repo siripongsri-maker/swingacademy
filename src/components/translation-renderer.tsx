@@ -58,7 +58,7 @@ function SmartMarkdown({ children }: { children: string }) {
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
       {children}
-    </SmartMarkdown>
+    </ReactMarkdown>
   );
 }
 
