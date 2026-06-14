@@ -2,7 +2,7 @@
 // (social card, carousel, slide deck, FAQ, etc.) so staff and the public
 // can see exactly what the published artifact looks like.
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -20,13 +20,58 @@ import {
   Code2,
   Eye,
 } from "lucide-react";
+import { MermaidBlock } from "@/components/mermaid-block";
 
 export type RendererProps = {
   format: string;
   outputMd: string;
   title?: string | null;
   language?: string;
+  heroImageUrl?: string | null;
 };
+
+/* ----------------------- markdown with mermaid + images ----------------------- */
+function SmartMarkdown({ children }: { children: string }) {
+  const components: ComponentProps<typeof ReactMarkdown>["components"] = {
+    code({ className, children, ...props }) {
+      const lang = /language-(\w+)/.exec(className || "")?.[1];
+      const text = String(children ?? "");
+      if (lang === "mermaid") return <MermaidBlock code={text} />;
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
+    img({ src, alt }) {
+      if (!src) return null;
+      return (
+        <img
+          src={src as string}
+          alt={alt || ""}
+          loading="lazy"
+          className="my-3 rounded-lg border border-warm-200"
+        />
+      );
+    },
+  };
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      {children}
+    </ReactMarkdown>
+  );
+}
+
+function HeroImage({ url, alt }: { url?: string | null; alt?: string | null }) {
+  if (!url) return null;
+  return (
+    <img
+      src={url}
+      alt={alt || "hero"}
+      className="mb-4 w-full rounded-xl border border-warm-200 object-cover"
+    />
+  );
+}
 
 /* ------------------------- markdown utilities ------------------------- */
 
