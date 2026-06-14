@@ -335,8 +335,12 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
           invalidateAll();
         } catch (e) {
           console.error("[knowledge] createAsset failed", e);
+          toast.error(
+            "บันทึกลงฐานข้อมูลไม่สำเร็จ: " +
+              (e instanceof Error ? e.message : "unknown error"),
+          );
+          invalidateAll();
         }
-      })();
       return optimistic;
     },
     [saveFn, invalidateAll],
