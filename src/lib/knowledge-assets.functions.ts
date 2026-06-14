@@ -252,7 +252,7 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
     if (id) {
       const { data: row, error } = await context.supabase
         .from("knowledge_products")
-        .update(cols)
+        .update(cols as never)
         .eq("id", id)
         .select(SELECT_COLS)
         .single();
@@ -264,7 +264,7 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
       cols.owner_id = context.userId;
       const { data: row, error } = await context.supabase
         .from("knowledge_products")
-        .insert(cols)
+        .insert(cols as never)
         .select(SELECT_COLS)
         .single();
       if (error) throw new Error(error.message);
