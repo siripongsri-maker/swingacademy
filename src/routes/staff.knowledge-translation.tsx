@@ -234,6 +234,7 @@ type EditorForm = {
   attachments: Attachment[];
   contributorId: string | null;
   title: string | null;
+  heroImageUrl: string | null;
 };
 
 function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
@@ -249,6 +250,7 @@ function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
     attachments: a.attachments,
     contributorId: null,
     title: a.titleTh || a.titleEn || null,
+    heroImageUrl: null,
   };
 }
 
@@ -284,6 +286,7 @@ function TranslationEditor({
         attachments: src?.attachments ?? [],
         contributorId: translation.contributorId ?? null,
         title: translation.title ?? src?.titleTh ?? null,
+        heroImageUrl: translation.heroImageUrl ?? null,
       };
     }
     if (source) return buildPrefillFromAsset(source);
@@ -299,6 +302,7 @@ function TranslationEditor({
       attachments: [],
       contributorId: null,
       title: null,
+      heroImageUrl: null,
     };
   });
 
