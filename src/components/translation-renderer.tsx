@@ -5,6 +5,7 @@
 import { useMemo, useState, type ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import {
   Carousel,
   CarouselContent,
@@ -55,9 +56,20 @@ function SmartMarkdown({ children }: { children: string }) {
       );
     },
   };
+  // Support ==highlight== syntax → <mark>
+  const processed = children.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-      {children}
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw]}
+      components={{
+        ...components,
+        mark: ({ children }) => (
+          <mark className="rounded bg-gold/30 px-0.5 text-foreground">{children}</mark>
+        ),
+      } as ComponentProps<typeof ReactMarkdown>["components"]}
+    >
+      {processed}
     </ReactMarkdown>
   );
 }
