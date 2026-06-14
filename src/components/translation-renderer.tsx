@@ -61,6 +61,7 @@ function SmartMarkdown({ children }: { children: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw]}
       components={{
         ...components,
         mark: ({ children }) => (
