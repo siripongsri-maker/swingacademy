@@ -219,20 +219,19 @@ export function slugify(input: string): string {
 }
 
 function loadLocal(): LocalState {
-  if (typeof window === "undefined") return { translations: [], collections: [] };
+  if (typeof window === "undefined") return { collections: [] };
   try {
     const raw = window.localStorage.getItem(LS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<LocalState>;
       return {
-        translations: parsed.translations ?? [],
         collections: parsed.collections ?? [],
       };
     }
   } catch {
     /* ignore */
   }
-  return { translations: [], collections: [] };
+  return { collections: [] };
 }
 
 function asKnowledgeAsset(a: unknown): KnowledgeAsset {
