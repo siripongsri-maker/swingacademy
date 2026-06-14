@@ -158,7 +158,6 @@ type CreateAssetInput = Omit<
 type LocalState = {
   translations: KnowledgeTranslation[];
   collections: KnowledgeCollection[];
-  talentMappings: TalentMapping[];
 };
 
 type StoreCtx = {
