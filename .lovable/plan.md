@@ -1,64 +1,62 @@
 
-# แปลทั้งแอปเป็นไทย + ตัวสลับภาษา TH/EN
+## ปัญหาที่ตรวจพบ
 
-ตอนนี้ `LanguageProvider` มีอยู่แล้วใน `src/lib/language-context.tsx` ใช้รูปแบบ `t({th, en})` แต่ใช้แค่บางหน้า ส่วนคอนโซลเจ้าหน้าที่ (`/staff/*`) ส่วนใหญ่เขียนข้อความไว้แบบฝังในไฟล์ (ผสมไทย-อังกฤษ) ยังไม่ได้รองรับสลับภาษา
+ระบบความรู้ตอนนี้มี **2 แหล่งข้อมูลแยกกันโดยสิ้นเชิง** ไม่ sync กัน:
 
-ขอบเขตงานใหญ่มาก (27 หน้า + คอมโพเนนต์ รวม ~11,000 บรรทัด) จะแบ่งเป็นเฟส และเริ่มจากโครงสร้าง + หน้าสาธารณะก่อน
+### แหล่งที่ 1 — Database (Supabase `knowledge_products`)
+- หน้าบ้านอ่านจากตรงนี้ทั้งหมด: `/knowledge`, `/knowledge/$slug`, FeaturedKnowledgeSection (ใช้ `listPublicKnowledge`, `getPublicKnowledgeBySlug`, `listFeaturedKnowledge`)
+- ปัจจุบันมีแค่ 2 รายการ: `thailand-gender-justice-hiv-tb-2025`, `hivst-community-led-model`
 
-## เฟส 1 — โครงสร้าง i18n และตัวสลับภาษา
-- ขยาย `language-context.tsx`: เพิ่ม dictionary แบบ namespace `t("nav.home")` ควบคู่ของเดิม `t({th, en})` ที่ยังใช้ได้
-- สร้าง `src/lib/i18n/dictionaries.ts` แยกเป็น namespace: `common`, `nav`, `auth`, `home`, `courses`, `paths`, `trainings`, `resources`, `dashboard`, `verify`, `staff.*`
-- สร้างคอมโพเนนต์ `<LanguageToggle />` (ปุ่มสลับ TH/EN) วางไว้:
-  - หน้าสาธารณะ: `site-header.tsx` (มุมขวาบน เคียงปุ่มล็อกอิน)
-  - คอนโซลเจ้าหน้าที่: `staff-topbar.tsx`
-- ตั้งค่าเริ่มต้นเป็น **ไทย** (ปัจจุบันเป็นไทยอยู่แล้ว ✓)
-- บันทึกค่าใน `localStorage` (มีอยู่แล้ว ✓)
+### แหล่งที่ 2 — localStorage (`swing.product-knowledge.v4`)
+- หลังบ้านอ่าน/เขียนจากตรงนี้: `/staff/knowledge`, `/staff/product-knowledge`, `/staff/capture`, `/staff/knowledge-hub` ทั้งหมดใช้ `useProductKnowledge()` ซึ่งเป็น React context + localStorage
+- เริ่มต้นด้วย seed `HIVST_KNOWLEDGE_ASSET` ตัวเดียว
+- **เก็บแยกตามเครื่อง/เบราว์เซอร์** — staff คนละเครื่องเห็นข้อมูลคนละชุด
 
-## เฟส 2 — หน้าสาธารณะ (frontend ผู้ใช้)
-แปลให้ครบทุกข้อความ + เชื่อมกับ `t()`:
-- `index.tsx` (หน้าแรก)
-- `courses.tsx`, `courses.$id.tsx`
-- `paths.tsx`, `trainings.tsx`, `resources.tsx`
-- `knowledge.index.tsx`, `knowledge.$slug.tsx`, `k.$slug.tsx`
-- `dashboard.tsx`, `verify.tsx`, `auth.tsx`
-- คอมโพเนนต์: `site-header`, `site-footer`, `sign-in-modal`, `course-card`, `placeholder-page`, `certificate-preview-modal`, `onboarding-tour`, `featured-knowledge-section`
+### จุดที่ "พยายาม" sync (แต่ไม่ครบ)
+มีเฉพาะใน `src/routes/staff.knowledge.tsx` ตอนกด Approve / Publish / Unpublish ที่เรียก `publishKnowledgeBySlug` ส่งขึ้น DB
 
-## เฟส 3 — คอนโซลเจ้าหน้าที่ (backend)
-แปลทุกหน้า `/staff/*` พร้อมเมนู sidebar (ตอนนี้แสดง EN + คำบรรยายไทย ทั้งคู่ — จะรวมเป็นภาษาเดียวตามสวิตช์):
-- `staff.index.tsx`, `staff.dashboard.tsx`
-- `staff.knowledge-hub.tsx`, `staff.knowledge.tsx`, `staff.product-knowledge.tsx`
-- `staff.knowledge-translation.tsx`, `staff.capture.tsx`
-- `staff.talent.tsx`, `staff.trainings.tsx`, `staff.transfer.tsx`
-- `staff.products.tsx`, `staff.users.tsx`, `staff.admin.tsx`
-- คอมโพเนนต์ staff: sidebar, topbar, drawer-host, certificate-modal, funder-export-modal
+### ผลกระทบจริง
+1. ความรู้ที่เพิ่มผ่าน `/staff/product-knowledge` หรือ `/staff/capture` → ถูกเก็บแค่ใน localStorage ของเครื่องนั้น **ไม่มีทางขึ้นหน้าบ้าน** เว้นแต่จะเปิดหน้า `/staff/knowledge` แล้วกด Approve/Publish ด้วยตัวเอง (ซึ่งหลายคนไม่รู้)
+2. ความรู้ที่อยู่ใน DB (เช่น `thailand-gender-justice-hiv-tb-2025`) → หลังบ้านไม่เห็น เพราะหลังบ้านไม่เคยอ่าน DB เลย เห็นแค่ HIVST seed ในเครื่องตัวเอง
+3. Staff คนละเครื่อง → เห็น draft คนละชุด รีวิวกันไม่ได้
+4. เคลียร์ cache เบราว์เซอร์ = ข้อมูลหายหมด
 
-## เฟส 4 — ข้อมูลและฝั่งเซิร์ฟเวอร์
-- ข้อความใน `src/data/seed-data.json` (ชื่อคอร์ส/ความรู้/ฯลฯ): เพิ่มฟิลด์ `titleEn/title` หรือใช้รูปแบบ `{th, en}` ที่หน้าจอเลือกอ่านตามภาษา
-- ข้อความ error/return จาก server functions (`*.functions.ts`): ส่งคีย์ i18n กลับมาให้ฝั่ง client แปล แทนการส่งสตริงตายตัว
-- Toast / sonner: แปลข้อความทั้งหมด
+---
 
-## เฟส 5 — ตรวจสอบและเก็บรายละเอียด
-- รันแอปสลับภาษา ตรวจหน้าสำคัญทุกหน้า
-- ตรวจ format วันที่ (ใช้ `toLocaleDateString("th-TH" | "en-GB")` ตามภาษา)
-- เพิ่ม `lang` attribute ที่ `<html>` ให้ตรง (มีอยู่แล้ว ✓)
-- บันทึก memory: "Default ไทย, มีสวิตช์ TH/EN, dictionary ที่ src/lib/i18n/"
+## แผนแก้: ใช้ DB เป็น Single Source of Truth
 
-## เทคนิค
-```ts
-// language-context.tsx (ขยาย)
-const t = (key: string | Localized) =>
-  typeof key === "string" ? (dict[lang][key] ?? key) : key[lang];
-```
-หน้าใช้งาน:
-```tsx
-const { t } = useLanguage();
-<h1>{t("home.hero.title")}</h1>
-```
+### A. ฝั่ง Server (server functions)
+1. ขยาย `src/lib/knowledge.functions.ts`:
+   - ปรับ `listAllKnowledge` ให้คืน field ครบสำหรับ staff view (มี contentMd, sponsors, audiences, source ฯลฯ อยู่แล้ว — ตรวจให้ครบ)
+   - เพิ่ม `createKnowledgeDraft` — สร้าง row ใหม่ใน DB จากหน้า `/staff/product-knowledge` และ `/staff/capture` (status=`draft`, visibility=`internal`)
+   - เพิ่ม `updateKnowledgeContent` — อัปเดต field ทั่วไป (titleTh, summary, contentMd, categories, tags, audiences ฯลฯ) โดยไม่แตะ status/visibility
+   - ใช้ `requireSupabaseAuth` ทุก write; `owner_id = context.userId`
+2. ตรวจ RLS / GRANT บน `knowledge_products` ว่ารองรับ insert/update ของ role `authenticated` ที่เป็น staff (ถ้ายังไม่มี policy ให้เพิ่ม migration)
 
-## ข้อสังเกต / คำถาม
-งานนี้ใหญ่มาก จะใช้หลายรอบของการแก้ไข อยากให้ผมเริ่มทำเลย หรือมีบางส่วนที่อยากให้ทำก่อน เช่น:
-- **ทำทั้งหมดเป็นชุด** — เริ่มเฟส 1+2 (โครงสร้าง + หน้าผู้ใช้) ก่อนในรอบนี้ แล้วค่อยทำคอนโซลเจ้าหน้าที่รอบถัดไป
-- **เน้นหน้าสาธารณะก่อน** — แปลและทำสวิตช์ครบเฉพาะหน้าผู้ใช้ ส่วนคอนโซลค่อยทำ
-- **เน้นคอนโซลก่อน** — ทำสวิตช์ + แปล `/staff/*` ก่อน เพราะใช้งานภายในบ่อย
+### B. ฝั่ง Client (เลิกใช้ localStorage เป็นแหล่งหลัก)
+1. แปลง `useProductKnowledge()` ให้เป็น wrapper รอบ **TanStack Query** ที่:
+   - `assets` มาจาก `listAllKnowledge` (queryKey `["knowledge","staff","all"]`)
+   - `createAsset` → เรียก `createKnowledgeDraft` แล้ว invalidate ทั้ง staff list และ public list
+   - `updateAsset` → เรียก `updateKnowledgeContent` / `setKnowledgePublishState` ตามฟิลด์ที่เปลี่ยน
+   - `removeAsset` → เรียก `deleteKnowledge`
+   - ส่วน `translations` / `collections` / `talentMappings` (ที่ยังไม่มีตาราง DB) คงไว้ที่ localStorage ชั่วคราว และทำ TODO note
+2. ใน mutation success ทุกตัว → invalidate `["knowledge","public","all"]`, `["knowledge","featured"]`, `["knowledge","public",slug]`, `["knowledge","staff","all"]` พร้อมกัน เพื่อให้หน้าบ้าน/หลังบ้านเห็นทันทีโดยไม่ต้อง refresh
+3. ลบ logic seed `HIVST_KNOWLEDGE_ASSET` ออกจาก initial state (ตัวจริงอยู่ใน DB แล้ว) แต่คงไฟล์ seed ไว้สำหรับ fallback content
 
-ผมแนะนำ **เริ่มเฟส 1+2** ก่อน (โครงสร้าง i18n + หน้าผู้ใช้แปลครบ + สวิตช์ใช้งานได้ทั้งสองฝั่ง) แล้วแปลคอนโซลในรอบถัดไป เพื่อให้แต่ละรอบจบเป็นชิ้นใช้งานได้จริง ไม่กระจัดกระจาย
+### C. Migration ข้อมูลเก่า (one-time, optional)
+- เพิ่มปุ่มเล็กๆ ใน `/staff/knowledge` "นำเข้า draft จากเครื่องนี้ขึ้น cloud" — อ่าน localStorage เก่า เรียก `createKnowledgeDraft` ทีละรายการ แล้วล้าง key เพื่อไม่ให้ขัดกับ DB ในอนาคต
+
+### D. ตรวจสอบหลังทำ
+- เพิ่มความรู้ใหม่ที่ `/staff/product-knowledge` → ต้องเห็นใน `/staff/knowledge` ทันที (ทั้งบนเครื่องอื่นด้วย)
+- กด Approve → เห็นใน `/knowledge` ภายในวินาที (ไม่ต้อง reload)
+- ความรู้ใน DB ที่ไม่ได้เพิ่มผ่าน UI ก็เห็นในหลังบ้าน
+
+---
+
+## รายละเอียดทางเทคนิค
+
+- ตาราง `knowledge_products` มี field ครบสำหรับทุก use case ใน staff store แล้ว ยกเว้น: `type`, `learningObjectives`, `competencyTags`, `relatedServices`, `relatedCourses`, `linkedCurriculum`, `qaChecklist`, `attachments`, `versionHistory` — แนะนำเพิ่ม column `metadata jsonb` ใน migration เดียวเพื่อเก็บส่วน "Phase 4 KM" โดยไม่ต้องสร้างหลายคอลัมน์ (และไม่กระทบ schema สาธารณะ)
+- เลิก export `slugify` จาก store แล้วใช้ slug validation ฝั่ง server เป็นหลัก (มี regex ใน UpsertSchema อยู่แล้ว)
+- ระวัง: ถ้า role policies ของ `knowledge_products` ปัจจุบันอนุญาตเฉพาะ admin เขียน → ต้องเพิ่ม policy ให้ staff/trainer สร้าง draft ของตัวเองได้ (ใช้ `has_role` + `owner_id = auth.uid()`)
+
+ผลลัพธ์: หน้าบ้านและหลังบ้านอ่าน/เขียนตารางเดียวกัน, real-time consistency, ไม่มีข้อมูลซ่อนอยู่ใน localStorage อีกต่อไป
