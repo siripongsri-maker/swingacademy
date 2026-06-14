@@ -37,7 +37,7 @@ export type StoreAsset = {
   createdAt: string;
   updatedAt: string;
   versionHistory: Array<{ v: string; at: string; by: string; note: string }>;
-  attachments: Array<Record<string, unknown>>;
+  attachments: Array<Record<string, any>>;
   learningObjectives?: string[];
   competencyTags?: string[];
   relatedServices?: string[];
@@ -47,7 +47,7 @@ export type StoreAsset = {
   approvedAt?: string;
   approvedBy?: string;
   coverUrl?: string | null;
-  sponsors?: Array<Record<string, unknown>>;
+  sponsors?: Array<Record<string, any>>;
   isFeatured?: boolean;
   featuredOrder?: number;
 };
@@ -68,8 +68,8 @@ function toDbVisibility(v: StoreAsset["visibility"] | undefined): { db: DbVisibi
   return { db: "internal", store: "staff" };
 }
 
-function fromDb(row: Record<string, unknown>): StoreAsset {
-  const meta = ((row.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+function fromDb(row: Record<string, any>): StoreAsset {
+  const meta = ((row.metadata as Record<string, any>) ?? {}) as Record<string, any>;
   const dbStatus = String(row.status ?? "draft") as DbStatus;
   const dbVis = String(row.visibility ?? "internal") as DbVisibility;
   const archived = Boolean(meta.archived);
@@ -115,7 +115,7 @@ function fromDb(row: Record<string, unknown>): StoreAsset {
     approvedAt: (row.approved_at as string | null) ?? undefined,
     approvedBy: (row.approved_by as string | null) ?? undefined,
     coverUrl: (row.cover_url as string | null) ?? null,
-    sponsors: (row.sponsors as Array<Record<string, unknown>>) ?? [],
+    sponsors: (row.sponsors as Array<Record<string, any>>) ?? [],
     isFeatured: Boolean(row.is_featured),
     featuredOrder: Number(row.featured_order ?? 0),
   };
@@ -131,7 +131,7 @@ export const listStaffKnowledgeAssets = createServerFn({ method: "GET" })
       .select(SELECT_COLS)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { items: (data ?? []).map((r) => fromDb(r as Record<string, unknown>)) };
+    return { items: (data ?? []).map((r) => fromDb(r as Record<string, any>)) };
   });
 
 // ---------- Save (insert or update) ----------
@@ -180,7 +180,7 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
     const { id, patch } = data;
 
     // Read existing row to merge metadata when updating
-    let existing: Record<string, unknown> | null = null;
+    let existing: Record<string, any> | null = null;
     if (id) {
       const { data: row, error } = await context.supabase
         .from("knowledge_products")
@@ -188,13 +188,13 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
         .eq("id", id)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      existing = row as Record<string, unknown> | null;
+      existing = row as Record<string, any> | null;
     }
 
-    const existingMeta = ((existing?.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+    const existingMeta = ((existing?.metadata as Record<string, any>) ?? {}) as Record<string, any>;
 
     // Build patch payload (only fields present in patch get written)
-    const cols: Record<string, unknown> = {};
+    const cols: Record<string, any> = {};
     if (patch.slug !== undefined) cols.slug = patch.slug;
     if (patch.titleTh !== undefined) cols.title_th = patch.titleTh || patch.titleEn || patch.slug || "untitled";
     if (patch.titleEn !== undefined) cols.title_en = patch.titleEn || null;
@@ -257,7 +257,7 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
         .select(SELECT_COLS)
         .single();
       if (error) throw new Error(error.message);
-      return { item: fromDb(row as Record<string, unknown>) };
+      return { item: fromDb(row as Record<string, any>) };
     } else {
       // Insert — slug & titleTh are required
       if (!cols.slug) throw new Error("slug is required to create knowledge");
@@ -268,7 +268,7 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
         .select(SELECT_COLS)
         .single();
       if (error) throw new Error(error.message);
-      return { item: fromDb(row as Record<string, unknown>) };
+      return { item: fromDb(row as Record<string, any>) };
     }
   });
 
