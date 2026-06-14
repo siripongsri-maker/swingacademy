@@ -453,10 +453,21 @@ function VideoScript({ outputMd }: RendererProps) {
   );
 }
 
-function Poster({ outputMd, title }: RendererProps) {
+function Poster({ outputMd, title, heroImageUrl }: RendererProps) {
   return (
-    <div className="mx-auto w-full max-w-sm aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-navy-600 via-magenta-700 to-lavender-700 p-8 text-white shadow-xl">
-      <div className="flex h-full flex-col justify-between">
+    <div
+      className="mx-auto w-full max-w-sm aspect-[3/4] overflow-hidden rounded-2xl text-white shadow-xl relative"
+      style={
+        heroImageUrl
+          ? {
+              backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%), url(${heroImageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
+    >
+      <div className={`flex h-full flex-col justify-between p-8 ${heroImageUrl ? "" : "bg-gradient-to-br from-navy-600 via-magenta-700 to-lavender-700"}`}>
         <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">
           SWING · Campaign
         </div>
