@@ -341,6 +341,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
           );
           invalidateAll();
         }
+      })();
       return optimistic;
     },
     [saveFn, invalidateAll],
