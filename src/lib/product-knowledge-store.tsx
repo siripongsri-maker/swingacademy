@@ -165,7 +165,6 @@ type CreateAssetInput = Omit<
 > & { slug?: string };
 
 type LocalState = {
-  translations: KnowledgeTranslation[];
   collections: KnowledgeCollection[];
 };
 
