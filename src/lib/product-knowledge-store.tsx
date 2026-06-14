@@ -21,6 +21,7 @@ import {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import seed from "@/data/product-knowledge-seed.json";
 import {
   listStaffKnowledgeAssets,
@@ -334,6 +335,11 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
           invalidateAll();
         } catch (e) {
           console.error("[knowledge] createAsset failed", e);
+          toast.error(
+            "บันทึกลงฐานข้อมูลไม่สำเร็จ: " +
+              (e instanceof Error ? e.message : "unknown error"),
+          );
+          invalidateAll();
         }
       })();
       return optimistic;
@@ -404,6 +410,10 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
           invalidateAll();
         } catch (e) {
           console.error("[knowledge] updateAsset failed", e);
+          toast.error(
+            "บันทึกการแก้ไขไม่สำเร็จ: " +
+              (e instanceof Error ? e.message : "unknown error"),
+          );
           invalidateAll();
         }
       })();
