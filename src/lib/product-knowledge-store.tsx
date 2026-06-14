@@ -256,7 +256,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     [data],
   );
 
-  const [local, setLocal] = useState<LocalState>(() => ({ translations: [], collections: [], talentMappings: [] }));
+  const [local, setLocal] = useState<LocalState>(() => ({ translations: [], collections: [] }));
   useEffect(() => setLocal(loadLocal()), []);
   useEffect(() => {
     if (typeof window === "undefined") return;
