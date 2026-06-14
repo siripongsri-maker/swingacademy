@@ -215,8 +215,30 @@ export function SiteHeader() {
                   {t(item.label)}
                 </Link>
               ))}
-              <div className="mt-2 border-t border-warm-200 pt-3">
-                {signedIn ? (
+              <div className="mt-2 flex flex-col gap-2 border-t border-warm-200 pt-3">
+                {supaUser ? (
+                  <>
+                    {isStaff && (
+                      <Link
+                        to="/staff"
+                        onClick={() => setOpen(false)}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-pill bg-navy-500 px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        void handleSupaSignOut();
+                      }}
+                      className="w-full rounded-pill border border-warm-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500"
+                    >
+                      {t({ th: "ออกจากระบบ", en: "Sign out" })} ({supaUser.name})
+                    </button>
+                  </>
+                ) : signedIn ? (
                   <button
                     onClick={() => {
                       signOut();
