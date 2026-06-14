@@ -389,6 +389,8 @@ function TranslationEditor({
       outputMd: form.outputMd,
       status: targetStatus ?? form.status,
       ownerId: "current-user",
+      contributorId: form.contributorId,
+      title: form.title,
     };
     if (translation) {
       pk.updateTranslation(translation.id, payload);
