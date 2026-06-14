@@ -472,9 +472,10 @@ function Poster({ outputMd, title }: RendererProps) {
   );
 }
 
-function Article({ outputMd, title }: RendererProps) {
+function Article({ outputMd, title, heroImageUrl }: RendererProps) {
   return (
     <div className="mx-auto w-full max-w-3xl rounded-xl border border-warm-200 bg-white p-6 md:p-8">
+      <HeroImage url={heroImageUrl} alt={title} />
       {title && <h3 className="mb-4 text-2xl font-bold text-navy-500">{title}</h3>}
       <div className="prose prose-slate max-w-none prose-headings:text-navy-500 prose-a:text-magenta-600">
         <SmartMarkdown>{outputMd}</SmartMarkdown>
