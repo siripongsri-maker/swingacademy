@@ -30,7 +30,6 @@ const crumbMap: Record<string, Localized> = {
   "/staff/knowledge-translation": { th: "แปลงเป็นสื่อ", en: "Knowledge Translation" },
   "/staff/capture": { th: "อัดเสียง/สรุปสด", en: "Live Capture" },
   "/staff/transfer": { th: "ถ่ายทอดความรู้", en: "KT Transfer" },
-  "/staff/products": { th: "ผลิตภัณฑ์", en: "Products" },
   "/staff/talent": { th: "เชื่อมความรู้กับคน", en: "Talent Map" },
   "/staff/trainings": { th: "การอบรม", en: "Trainings" },
   "/staff/users": { th: "ผู้ใช้และสิทธิ์", en: "Users & Roles" },

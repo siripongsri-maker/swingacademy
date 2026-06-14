@@ -175,7 +175,7 @@ function AssetDrawer({ id, onClose }: { id: string; onClose: () => void }) {
 
   const goToProduct = (productId: string) => {
     onClose();
-    navigate({ to: "/staff/products" });
+    navigate({ to: "/staff/knowledge" });
     // also open the product drawer for context
     setTimeout(() => openProduct(productId), 50);
   };

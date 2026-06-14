@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
-import { Route as TrainingsRouteImport } from './routes/trainings'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -25,7 +24,6 @@ import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
 import { Route as StaffTalentRouteImport } from './routes/staff.talent'
-import { Route as StaffProductsRouteImport } from './routes/staff.products'
 import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
 import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
 import { Route as StaffKnowledgeHubRouteImport } from './routes/staff.knowledge-hub'
@@ -40,11 +38,6 @@ import { Route as CoursesIdRouteImport } from './routes/courses.$id'
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TrainingsRoute = TrainingsRouteImport.update({
-  id: '/trainings',
-  path: '/trainings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -117,11 +110,6 @@ const StaffTalentRoute = StaffTalentRouteImport.update({
   path: '/talent',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffProductsRoute = StaffProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => StaffRoute,
-} as any)
 const StaffProductKnowledgeRoute = StaffProductKnowledgeRouteImport.update({
   id: '/product-knowledge',
   path: '/product-knowledge',
@@ -183,7 +171,6 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/staff': typeof StaffRouteWithChildren
-  '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
@@ -195,7 +182,6 @@ export interface FileRoutesByFullPath {
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
-  '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
@@ -211,7 +197,6 @@ export interface FileRoutesByTo {
   '/paths': typeof PathsRoute
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
@@ -223,7 +208,6 @@ export interface FileRoutesByTo {
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
-  '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
@@ -241,7 +225,6 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/staff': typeof StaffRouteWithChildren
-  '/trainings': typeof TrainingsRoute
   '/verify': typeof VerifyRoute
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
@@ -253,7 +236,6 @@ export interface FileRoutesById {
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
-  '/staff/products': typeof StaffProductsRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
@@ -272,7 +254,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/sitemap.xml'
     | '/staff'
-    | '/trainings'
     | '/verify'
     | '/courses/$id'
     | '/k/$slug'
@@ -284,7 +265,6 @@ export interface FileRouteTypes {
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
     | '/staff/product-knowledge'
-    | '/staff/products'
     | '/staff/talent'
     | '/staff/trainings'
     | '/staff/transfer'
@@ -300,7 +280,6 @@ export interface FileRouteTypes {
     | '/paths'
     | '/resources'
     | '/sitemap.xml'
-    | '/trainings'
     | '/verify'
     | '/courses/$id'
     | '/k/$slug'
@@ -312,7 +291,6 @@ export interface FileRouteTypes {
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
     | '/staff/product-knowledge'
-    | '/staff/products'
     | '/staff/talent'
     | '/staff/trainings'
     | '/staff/transfer'
@@ -329,7 +307,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/sitemap.xml'
     | '/staff'
-    | '/trainings'
     | '/verify'
     | '/courses/$id'
     | '/k/$slug'
@@ -341,7 +318,6 @@ export interface FileRouteTypes {
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
     | '/staff/product-knowledge'
-    | '/staff/products'
     | '/staff/talent'
     | '/staff/trainings'
     | '/staff/transfer'
@@ -359,7 +335,6 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StaffRoute: typeof StaffRouteWithChildren
-  TrainingsRoute: typeof TrainingsRoute
   VerifyRoute: typeof VerifyRoute
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
@@ -373,13 +348,6 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify'
       preLoaderRoute: typeof VerifyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/trainings': {
-      id: '/trainings'
-      path: '/trainings'
-      fullPath: '/trainings'
-      preLoaderRoute: typeof TrainingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -480,13 +448,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffTalentRouteImport
       parentRoute: typeof StaffRoute
     }
-    '/staff/products': {
-      id: '/staff/products'
-      path: '/products'
-      fullPath: '/staff/products'
-      preLoaderRoute: typeof StaffProductsRouteImport
-      parentRoute: typeof StaffRoute
-    }
     '/staff/product-knowledge': {
       id: '/staff/product-knowledge'
       path: '/product-knowledge'
@@ -579,7 +540,6 @@ interface StaffRouteChildren {
   StaffKnowledgeHubRoute: typeof StaffKnowledgeHubRoute
   StaffKnowledgeTranslationRoute: typeof StaffKnowledgeTranslationRoute
   StaffProductKnowledgeRoute: typeof StaffProductKnowledgeRoute
-  StaffProductsRoute: typeof StaffProductsRoute
   StaffTalentRoute: typeof StaffTalentRoute
   StaffTrainingsRoute: typeof StaffTrainingsRoute
   StaffTransferRoute: typeof StaffTransferRoute
@@ -595,7 +555,6 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffKnowledgeHubRoute: StaffKnowledgeHubRoute,
   StaffKnowledgeTranslationRoute: StaffKnowledgeTranslationRoute,
   StaffProductKnowledgeRoute: StaffProductKnowledgeRoute,
-  StaffProductsRoute: StaffProductsRoute,
   StaffTalentRoute: StaffTalentRoute,
   StaffTrainingsRoute: StaffTrainingsRoute,
   StaffTransferRoute: StaffTransferRoute,
@@ -614,7 +573,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StaffRoute: StaffRouteWithChildren,
-  TrainingsRoute: TrainingsRoute,
   VerifyRoute: VerifyRoute,
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
