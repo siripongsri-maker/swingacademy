@@ -27,6 +27,13 @@ import {
   saveKnowledgeAsset,
   deleteKnowledgeAsset,
 } from "@/lib/knowledge-assets.functions";
+import {
+  listTalentMappings,
+  upsertTalentMapping as upsertTalentMappingFn,
+  removeTalentMapping as removeTalentMappingFn,
+  addTalentEvidence as addTalentEvidenceFn,
+  removeTalentEvidence as removeTalentEvidenceFn,
+} from "@/lib/talent-mappings.functions";
 
 export type KnowledgeType =
   | "training"
