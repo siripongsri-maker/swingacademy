@@ -142,6 +142,68 @@ export type Database = {
           },
         ]
       }
+      knowledge_translations: {
+        Row: {
+          asset_id: string
+          audience: string
+          contributor_id: string | null
+          created_at: string
+          format: string
+          id: string
+          instruction: string
+          language: string
+          output_md: string
+          owner_id: string | null
+          published_at: string | null
+          status: string
+          title: string | null
+          tone: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id: string
+          audience?: string
+          contributor_id?: string | null
+          created_at?: string
+          format?: string
+          id?: string
+          instruction?: string
+          language?: string
+          output_md?: string
+          owner_id?: string | null
+          published_at?: string | null
+          status?: string
+          title?: string | null
+          tone?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string
+          audience?: string
+          contributor_id?: string | null
+          created_at?: string
+          format?: string
+          id?: string
+          instruction?: string
+          language?: string
+          output_md?: string
+          owner_id?: string | null
+          published_at?: string | null
+          status?: string
+          title?: string | null
+          tone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_translations_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_attachments: {
         Row: {
           course_id: string
