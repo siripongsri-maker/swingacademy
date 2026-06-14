@@ -232,6 +232,8 @@ type EditorForm = {
   outputMd: string;
   status: TranslationStatus;
   attachments: Attachment[];
+  contributorId: string | null;
+  title: string | null;
 };
 
 function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
@@ -245,6 +247,8 @@ function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
     outputMd: "",
     status: "draft",
     attachments: a.attachments,
+    contributorId: null,
+    title: a.titleTh || a.titleEn || null,
   };
 }
 
