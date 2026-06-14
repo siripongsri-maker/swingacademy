@@ -28,6 +28,7 @@ export type Database = {
           is_featured: boolean
           key_message: string | null
           language: string
+          metadata: Json
           owner_id: string | null
           product_service: string | null
           published_at: string | null
@@ -56,6 +57,7 @@ export type Database = {
           is_featured?: boolean
           key_message?: string | null
           language?: string
+          metadata?: Json
           owner_id?: string | null
           product_service?: string | null
           published_at?: string | null
@@ -84,6 +86,7 @@ export type Database = {
           is_featured?: boolean
           key_message?: string | null
           language?: string
+          metadata?: Json
           owner_id?: string | null
           product_service?: string | null
           published_at?: string | null
