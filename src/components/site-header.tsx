@@ -129,7 +129,32 @@ export function SiteHeader() {
               <span className={lang === "en" ? "text-magenta-500" : ""}>EN</span>
             </button>
 
-            {signedIn ? (
+            {supaUser ? (
+              <div className="hidden items-center gap-2 md:flex">
+                {isStaff && (
+                  <Link
+                    to="/staff"
+                    className="inline-flex items-center gap-1.5 rounded-pill bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-navy-500/90"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
+                  </Link>
+                )}
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-pill bg-lavender-300 text-navy-500 font-semibold">
+                  {supaUser.initial}
+                </span>
+                <span className="hidden text-sm font-medium text-navy-500 lg:inline">
+                  {supaUser.name}
+                </span>
+                <button
+                  onClick={handleSupaSignOut}
+                  aria-label="Sign out"
+                  className="rounded-pill p-1.5 text-warm-500 transition-colors hover:bg-warm-100 hover:text-navy-500"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            ) : signedIn ? (
               <div className="hidden items-center gap-2 md:flex">
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-pill bg-lavender-300 text-navy-500 font-semibold">
                   {learner.initial}
