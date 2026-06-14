@@ -236,11 +236,18 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
 
   const { data, isLoading } = useQuery({
     queryKey: ["knowledge", "staff", "all"],
-    queryFn: () => fetchAll(),
+    queryFn: async () => {
+      try {
+        return await fetchAll();
+      } catch {
+        // Provider runs on public pages too; 401 just means "not signed in".
+        return { items: [] as unknown[] };
+      }
+    },
     staleTime: 30_000,
   });
   const assets: KnowledgeAsset[] = useMemo(
-    () => (data?.items ?? []).map(asKnowledgeAsset),
+    () => ((data?.items ?? []) as unknown[]).map(asKnowledgeAsset),
     [data],
   );
 
