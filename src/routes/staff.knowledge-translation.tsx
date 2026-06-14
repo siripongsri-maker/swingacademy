@@ -28,6 +28,8 @@ import {
   type Attachment,
 } from "@/lib/product-knowledge-store";
 import { translateKnowledge, creativeAssist } from "@/lib/knowledge-ai.functions";
+import { TranslationRenderer, MarkdownToggle } from "@/components/translation-renderer";
+import seedData from "@/data/seed-data.json";
 
 const searchSchema = z.object({
   from: z.string().optional(),
@@ -230,6 +232,8 @@ type EditorForm = {
   outputMd: string;
   status: TranslationStatus;
   attachments: Attachment[];
+  contributorId: string | null;
+  title: string | null;
 };
 
 function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
@@ -243,6 +247,8 @@ function buildPrefillFromAsset(a: KnowledgeAsset): EditorForm {
     outputMd: "",
     status: "draft",
     attachments: a.attachments,
+    contributorId: null,
+    title: a.titleTh || a.titleEn || null,
   };
 }
 
@@ -276,6 +282,8 @@ function TranslationEditor({
         outputMd: translation.outputMd,
         status: translation.status,
         attachments: src?.attachments ?? [],
+        contributorId: translation.contributorId ?? null,
+        title: translation.title ?? src?.titleTh ?? null,
       };
     }
     if (source) return buildPrefillFromAsset(source);
@@ -289,6 +297,8 @@ function TranslationEditor({
       outputMd: "",
       status: "draft",
       attachments: [],
+      contributorId: null,
+      title: null,
     };
   });
 
@@ -379,6 +389,8 @@ function TranslationEditor({
       outputMd: form.outputMd,
       status: targetStatus ?? form.status,
       ownerId: "current-user",
+      contributorId: form.contributorId,
+      title: form.title,
     };
     if (translation) {
       pk.updateTranslation(translation.id, payload);
@@ -579,14 +591,38 @@ function TranslationEditor({
           </div>
 
 
+          <Field label="Contributor (ผู้สร้าง · แสดงเป็น contributor บนหน้าเว็บ)" className="md:col-span-4">
+            <select
+              value={form.contributorId ?? ""}
+              onChange={(e) => update("contributorId", e.target.value || null)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="">— ไม่ระบุ —</option>
+              {(seedData.staffConsole.people as Array<{ id: string; name: string; nameTh: string }>).map((p) => (
+                <option key={p.id} value={p.id}>{p.nameTh} · {p.name}</option>
+              ))}
+            </select>
+          </Field>
+
           <Field label="Output (Markdown)" className="md:col-span-4">
             <textarea
               value={form.outputMd}
               onChange={(e) => update("outputMd", e.target.value)}
-              rows={12}
+              rows={10}
               className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm"
               placeholder="ผลลัพธ์จะถูกใส่ที่นี่ หรือพิมพ์เองได้"
             />
+          </Field>
+
+          <Field label="Visualize Preview (เห็นเหมือนตอน Publish จริง)" className="md:col-span-4">
+            <div className="rounded-lg border border-warm-200 bg-warm-50/40 p-4">
+              <MarkdownToggle outputMd={form.outputMd}>
+                <TranslationRenderer format={form.format} outputMd={form.outputMd} title={form.title ?? null} language={form.language} />
+              </MarkdownToggle>
+              <p className="mt-3 text-[11px] text-warm-500">
+                เมื่อกด Publish, การ์ดนี้จะไปแสดงในส่วน "รูปแบบเผยแพร่" ของหน้าความรู้ พร้อมแสดงผู้สร้างเป็น contributor
+              </p>
+            </div>
           </Field>
         </div>
 

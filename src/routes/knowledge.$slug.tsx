@@ -28,6 +28,10 @@ import {
 import { PublicLayout } from "@/components/public-layout";
 import { DEFAULT_SPONSORS, type Sponsor } from "@/data/knowledge-products-seed";
 import { getPublicKnowledgeBySlug } from "@/lib/knowledge.functions";
+import { listPublishedTranslationsBySlug } from "@/lib/knowledge-translations.functions";
+import { TranslationRenderer } from "@/components/translation-renderer";
+import seedData from "@/data/seed-data.json";
+import { useQuery } from "@tanstack/react-query";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/knowledge/$slug")({
@@ -102,13 +106,22 @@ function splitIntoChapters(md: string): Chapter[] {
 function KnowledgeDetailPage() {
   const { slug } = Route.useParams();
   const fetchOne = useServerFn(getPublicKnowledgeBySlug);
+  const fetchTrans = useServerFn(listPublishedTranslationsBySlug);
   const { data } = useSuspenseQuery({
     queryKey: ["knowledge", "public", slug],
     queryFn: () => fetchOne({ data: { slug } }),
     staleTime: 60_000,
   });
+  const { data: transData } = useQuery({
+    queryKey: ["knowledge", "public", "translations", slug],
+    queryFn: () => fetchTrans({ data: { slug } }),
+    staleTime: 60_000,
+  });
   const asset = data.item;
   if (!asset) throw notFound();
+  const publishedTranslations = transData?.items ?? [];
+  const people = seedData.staffConsole.people as Array<{ id: string; name: string; nameTh: string; role?: string }>;
+  const personById = (id: string | null) => people.find((p) => p.id === id);
 
   const sponsors: Sponsor[] = asset.sponsors.length > 0 ? asset.sponsors : DEFAULT_SPONSORS;
   const chapters = useMemo(() => splitIntoChapters(asset.contentMd), [asset.contentMd]);
