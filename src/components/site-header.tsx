@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Languages, Menu, X, LogOut, HelpCircle, ShieldCheck } from "lucide-react";
+import { Languages, Menu, X, LogOut, HelpCircle, ShieldCheck, ChevronDown } from "lucide-react";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import { useAccount } from "@/lib/account-context";
 import { BrandLogo } from "@/components/brand-logo";
