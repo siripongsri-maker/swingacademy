@@ -127,9 +127,23 @@ function AuthPage() {
     await routeAfterSignIn();
   };
 
+  if (checkingSession) {
+    return (
+      <PublicLayout>
+        <section className="mx-auto flex max-w-md flex-col items-center px-6 py-24">
+          <Loader2 className="h-6 w-6 animate-spin text-magenta-500" />
+          <p className="mt-3 text-sm text-warm-500">
+            {t({ th: "กำลังตรวจสอบการเข้าสู่ระบบ…", en: "Checking your session…" })}
+          </p>
+        </section>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       <section className="mx-auto flex max-w-md flex-col items-center px-6 py-12">
+
         <h1 lang={lang} className="text-3xl font-semibold text-navy-500">
           {t({ th: "เข้าสู่ระบบ", en: "Welcome back" })}
         </h1>
