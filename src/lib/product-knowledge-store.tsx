@@ -1,3 +1,15 @@
+// DB-backed knowledge store.
+//
+// `assets` is the single source of truth for both /staff/knowledge
+// (and friends) AND the public /knowledge pages. Reads go through
+// `listStaffKnowledgeAssets` (staff RLS) on the staff side and through
+// `listPublicKnowledge` on the public side; writes go through
+// `saveKnowledgeAsset` and `deleteKnowledgeAsset`, which invalidate both
+// staff and public caches so the two surfaces stay in sync.
+//
+// Translations / collections / talent mappings still live in localStorage
+// because there are no DB tables for them yet (TODO: migrate).
+
 import {
   createContext,
   useCallback,
@@ -7,8 +19,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import seed from "@/data/product-knowledge-seed.json";
-import { HIVST_KNOWLEDGE_ASSET } from "@/data/knowledge-products-seed";
+import {
+  listStaffKnowledgeAssets,
+  saveKnowledgeAsset,
+  deleteKnowledgeAsset,
+} from "@/lib/knowledge-assets.functions";
 
 export type KnowledgeType =
   | "training"
@@ -69,7 +87,6 @@ export type KnowledgeAsset = {
   updatedAt: string;
   versionHistory: VersionEntry[];
   attachments: Attachment[];
-  // Phase 4 — Knowledge Management
   learningObjectives?: string[];
   competencyTags?: string[];
   relatedServices?: string[];
@@ -126,19 +143,23 @@ export type TalentMapping = {
   updatedAt: string;
 };
 
-type StoreState = {
-  assets: KnowledgeAsset[];
-  translations: KnowledgeTranslation[];
-  collections: KnowledgeCollection[];
-  talentMappings: TalentMapping[];
-};
-
 type CreateAssetInput = Omit<
   KnowledgeAsset,
   "id" | "slug" | "createdAt" | "updatedAt" | "versionHistory"
 > & { slug?: string };
 
-type StoreCtx = StoreState & {
+type LocalState = {
+  translations: KnowledgeTranslation[];
+  collections: KnowledgeCollection[];
+  talentMappings: TalentMapping[];
+};
+
+type StoreCtx = {
+  assets: KnowledgeAsset[];
+  translations: KnowledgeTranslation[];
+  collections: KnowledgeCollection[];
+  talentMappings: TalentMapping[];
+  isLoading: boolean;
   audiences: Array<{ id: string; th: string; en: string }>;
   formats: Array<{ id: string; th: string; en: string }>;
   tones: Array<{ id: string; th: string; en: string }>;
@@ -165,50 +186,7 @@ type StoreCtx = StoreState & {
 };
 
 const Ctx = createContext<StoreCtx | null>(null);
-const LS_KEY = "swing.product-knowledge.v4";
-const LEGACY_LS_KEYS = ["swing.product-knowledge.v1", "swing.product-knowledge.v2", "swing.product-knowledge.v3"];
-
-function seedState(): StoreState {
-  return { assets: [HIVST_KNOWLEDGE_ASSET], translations: [], collections: [], talentMappings: [] };
-}
-
-function readKey(key: string): Partial<StoreState> | null {
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw) as Partial<StoreState>;
-  } catch {
-    return null;
-  }
-}
-
-function loadInitial(): StoreState {
-  if (typeof window === "undefined") return seedState();
-  try {
-    // Prefer current key, then migrate (NOT delete) from legacy keys to recover any drafts.
-    let parsed = readKey(LS_KEY);
-    if (!parsed) {
-      for (const k of LEGACY_LS_KEYS) {
-        const legacy = readKey(k);
-        if (legacy && (legacy.assets?.length || legacy.translations?.length || legacy.collections?.length || legacy.talentMappings?.length)) {
-          parsed = legacy;
-          break;
-        }
-      }
-    }
-    if (parsed) {
-      return {
-        assets: parsed.assets ?? [],
-        translations: parsed.translations ?? [],
-        collections: parsed.collections ?? [],
-        talentMappings: parsed.talentMappings ?? [],
-      };
-    }
-  } catch {
-    /* ignore */
-  }
-  return seedState();
-}
+const LS_KEY = "swing.product-knowledge.local.v1";
 
 const uid = (prefix: string) =>
   `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -226,39 +204,72 @@ export function slugify(input: string): string {
   return base || `k-${Date.now().toString(36)}`;
 }
 
-function ensureUniqueSlug(slug: string, assets: KnowledgeAsset[], ignoreId?: string): string {
-  let candidate = slug;
-  let i = 2;
-  const taken = new Set(assets.filter((a) => a.id !== ignoreId).map((a) => a.slug));
-  while (taken.has(candidate)) {
-    candidate = `${slug}-${i++}`;
+function loadLocal(): LocalState {
+  if (typeof window === "undefined") return { translations: [], collections: [], talentMappings: [] };
+  try {
+    const raw = window.localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<LocalState>;
+      return {
+        translations: parsed.translations ?? [],
+        collections: parsed.collections ?? [],
+        talentMappings: parsed.talentMappings ?? [],
+      };
+    }
+  } catch {
+    /* ignore */
   }
-  return candidate;
+  return { translations: [], collections: [], talentMappings: [] };
+}
+
+function asKnowledgeAsset(a: unknown): KnowledgeAsset {
+  // Server returns a structurally-compatible shape (string status/visibility,
+  // attachments as plain records). Cast through unknown to KnowledgeAsset.
+  return a as KnowledgeAsset;
 }
 
 export function ProductKnowledgeProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoreState>(() => ({ assets: [], translations: [], collections: [], talentMappings: [] }));
+  const qc = useQueryClient();
+  const fetchAll = useServerFn(listStaffKnowledgeAssets);
+  const saveFn = useServerFn(saveKnowledgeAsset);
+  const removeFn = useServerFn(deleteKnowledgeAsset);
 
-  useEffect(() => {
-    setState(loadInitial());
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["knowledge", "staff", "all"],
+    queryFn: () => fetchAll(),
+    staleTime: 30_000,
+  });
+  const assets: KnowledgeAsset[] = useMemo(
+    () => (data?.items ?? []).map(asKnowledgeAsset),
+    [data],
+  );
 
+  const [local, setLocal] = useState<LocalState>(() => ({ translations: [], collections: [], talentMappings: [] }));
+  useEffect(() => setLocal(loadLocal()), []);
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(LS_KEY, JSON.stringify(state));
+      window.localStorage.setItem(LS_KEY, JSON.stringify(local));
     } catch {
       /* ignore */
     }
-  }, [state]);
+  }, [local]);
 
-  const createAsset: StoreCtx["createAsset"] = useCallback((a) => {
-    const now = new Date().toISOString();
-    let created!: KnowledgeAsset;
-    setState((s) => {
-      const baseSlug = slugify(a.slug || a.titleEn || a.titleTh || "knowledge");
-      const slug = ensureUniqueSlug(baseSlug, s.assets);
-      created = {
+  const invalidateAll = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["knowledge", "staff", "all"] });
+    qc.invalidateQueries({ queryKey: ["knowledge", "public", "all"] });
+    qc.invalidateQueries({ queryKey: ["knowledge", "featured"] });
+    qc.invalidateQueries({ queryKey: ["knowledge", "public"] });
+  }, [qc]);
+
+  // ---- Asset mutations: fire-and-forget; cache updates via invalidate. ----
+
+  const createAsset: StoreCtx["createAsset"] = useCallback(
+    (a) => {
+      const now = new Date().toISOString();
+      const slug = slugify(a.slug || a.titleEn || a.titleTh || "knowledge");
+      // Optimistic placeholder so callers that read the return value still get something.
+      const optimistic: KnowledgeAsset = {
         ...a,
         slug,
         id: uid("pk"),
@@ -266,134 +277,209 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
         updatedAt: now,
         versionHistory: [{ v: "1.0", at: now, by: "You", note: "Created" }],
       };
-      return { ...s, assets: [created, ...s.assets] };
-    });
-    return created;
-  }, []);
-
-  const updateAsset: StoreCtx["updateAsset"] = useCallback((id, patch, note) => {
-    setState((s) => ({
-      ...s,
-      assets: s.assets.map((a) => {
-        if (a.id !== id) return a;
-        const now = new Date().toISOString();
-        const lastV = parseFloat(a.versionHistory.at(-1)?.v ?? "1.0");
-        const nextV = (lastV + 0.1).toFixed(1);
-        let nextSlug = a.slug;
-        if (patch.slug && patch.slug !== a.slug) {
-          nextSlug = ensureUniqueSlug(slugify(patch.slug), s.assets, a.id);
+      // Fire DB insert in the background
+      void (async () => {
+        try {
+          await saveFn({
+            data: {
+              patch: {
+                slug,
+                titleTh: a.titleTh,
+                titleEn: a.titleEn,
+                summary: a.summary,
+                keyMessage: a.keyMessage,
+                contentMd: a.contentMd,
+                type: a.type,
+                categories: a.categories,
+                productService: a.productService,
+                audiences: a.audiences,
+                source: a.source,
+                sourceType: a.sourceType,
+                sourceUrl: a.sourceUrl,
+                tags: a.tags,
+                language: a.language,
+                status: a.status,
+                visibility: a.visibility,
+                learningObjectives: a.learningObjectives,
+                competencyTags: a.competencyTags,
+                relatedServices: a.relatedServices,
+                relatedCourses: a.relatedCourses,
+                linkedCurriculum: a.linkedCurriculum,
+                qaChecklist: a.qaChecklist,
+                attachments: a.attachments,
+                versionHistory: optimistic.versionHistory,
+              },
+            },
+          });
+          invalidateAll();
+        } catch (e) {
+          console.error("[knowledge] createAsset failed", e);
         }
-        return {
-          ...a,
-          ...patch,
-          slug: nextSlug,
-          updatedAt: now,
-          versionHistory: note
-            ? [...a.versionHistory, { v: nextV, at: now, by: "You", note }]
-            : a.versionHistory,
-        };
-      }),
-    }));
-  }, []);
+      })();
+      return optimistic;
+    },
+    [saveFn, invalidateAll],
+  );
 
-  const removeAsset: StoreCtx["removeAsset"] = useCallback((id) => {
-    setState((s) => ({
-      ...s,
-      assets: s.assets.filter((a) => a.id !== id),
-      collections: s.collections.map((c) => ({ ...c, assetIds: c.assetIds.filter((x) => x !== id) })),
-    }));
-  }, []);
+  const updateAsset: StoreCtx["updateAsset"] = useCallback(
+    (id, patch, note) => {
+      const existing = assets.find((a) => a.id === id);
+      const lastV = parseFloat(existing?.versionHistory.at(-1)?.v ?? "1.0");
+      const nextV = (lastV + 0.1).toFixed(1);
+      const nextHistory = note && existing
+        ? [...existing.versionHistory, { v: nextV, at: new Date().toISOString(), by: "You", note }]
+        : undefined;
+      // Optimistically update cache so UI reflects immediately
+      qc.setQueryData(["knowledge", "staff", "all"], (prev: { items: KnowledgeAsset[] } | undefined) => {
+        if (!prev) return prev;
+        return {
+          items: prev.items.map((a) =>
+            a.id === id
+              ? {
+                  ...a,
+                  ...patch,
+                  updatedAt: new Date().toISOString(),
+                  versionHistory: nextHistory ?? a.versionHistory,
+                }
+              : a,
+          ),
+        };
+      });
+      void (async () => {
+        try {
+          await saveFn({
+            data: {
+              id,
+              patch: {
+                ...(patch.slug !== undefined ? { slug: slugify(patch.slug) } : {}),
+                ...(patch.titleTh !== undefined ? { titleTh: patch.titleTh } : {}),
+                ...(patch.titleEn !== undefined ? { titleEn: patch.titleEn } : {}),
+                ...(patch.summary !== undefined ? { summary: patch.summary } : {}),
+                ...(patch.keyMessage !== undefined ? { keyMessage: patch.keyMessage } : {}),
+                ...(patch.contentMd !== undefined ? { contentMd: patch.contentMd } : {}),
+                ...(patch.type !== undefined ? { type: patch.type } : {}),
+                ...(patch.categories !== undefined ? { categories: patch.categories } : {}),
+                ...(patch.productService !== undefined ? { productService: patch.productService } : {}),
+                ...(patch.audiences !== undefined ? { audiences: patch.audiences } : {}),
+                ...(patch.source !== undefined ? { source: patch.source } : {}),
+                ...(patch.sourceType !== undefined ? { sourceType: patch.sourceType } : {}),
+                ...(patch.sourceUrl !== undefined ? { sourceUrl: patch.sourceUrl } : {}),
+                ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
+                ...(patch.language !== undefined ? { language: patch.language } : {}),
+                ...(patch.status !== undefined ? { status: patch.status } : {}),
+                ...(patch.visibility !== undefined ? { visibility: patch.visibility } : {}),
+                ...(patch.learningObjectives !== undefined ? { learningObjectives: patch.learningObjectives } : {}),
+                ...(patch.competencyTags !== undefined ? { competencyTags: patch.competencyTags } : {}),
+                ...(patch.relatedServices !== undefined ? { relatedServices: patch.relatedServices } : {}),
+                ...(patch.relatedCourses !== undefined ? { relatedCourses: patch.relatedCourses } : {}),
+                ...(patch.linkedCurriculum !== undefined ? { linkedCurriculum: patch.linkedCurriculum } : {}),
+                ...(patch.qaChecklist !== undefined ? { qaChecklist: patch.qaChecklist } : {}),
+                ...(patch.attachments !== undefined ? { attachments: patch.attachments } : {}),
+                ...(patch.approvedAt !== undefined ? { approvedAt: patch.approvedAt } : {}),
+                ...(patch.approvedBy !== undefined ? { approvedBy: patch.approvedBy } : {}),
+                ...(nextHistory ? { versionHistory: nextHistory } : {}),
+              },
+            },
+          });
+          invalidateAll();
+        } catch (e) {
+          console.error("[knowledge] updateAsset failed", e);
+          invalidateAll();
+        }
+      })();
+    },
+    [assets, qc, saveFn, invalidateAll],
+  );
+
+  const removeAsset: StoreCtx["removeAsset"] = useCallback(
+    (id) => {
+      qc.setQueryData(["knowledge", "staff", "all"], (prev: { items: KnowledgeAsset[] } | undefined) =>
+        prev ? { items: prev.items.filter((a) => a.id !== id) } : prev,
+      );
+      setLocal((s) => ({
+        ...s,
+        collections: s.collections.map((c) => ({ ...c, assetIds: c.assetIds.filter((x) => x !== id) })),
+      }));
+      void (async () => {
+        try {
+          await removeFn({ data: { id } });
+          invalidateAll();
+        } catch (e) {
+          console.error("[knowledge] removeAsset failed", e);
+          invalidateAll();
+        }
+      })();
+    },
+    [qc, removeFn, invalidateAll],
+  );
+
+  // ---- Local-only entities (translations/collections/talent) ----
 
   const createTranslation: StoreCtx["createTranslation"] = useCallback((t) => {
     const now = new Date().toISOString();
     const tr: KnowledgeTranslation = { ...t, id: uid("kt"), createdAt: now, updatedAt: now };
-    setState((s) => ({ ...s, translations: [tr, ...s.translations] }));
+    setLocal((s) => ({ ...s, translations: [tr, ...s.translations] }));
     return tr;
   }, []);
-
   const updateTranslation: StoreCtx["updateTranslation"] = useCallback((id, patch) => {
-    setState((s) => ({
+    setLocal((s) => ({
       ...s,
       translations: s.translations.map((t) =>
         t.id === id ? { ...t, ...patch, updatedAt: new Date().toISOString() } : t,
       ),
     }));
   }, []);
-
   const removeTranslation: StoreCtx["removeTranslation"] = useCallback((id) => {
-    setState((s) => ({ ...s, translations: s.translations.filter((t) => t.id !== id) }));
+    setLocal((s) => ({ ...s, translations: s.translations.filter((t) => t.id !== id) }));
   }, []);
 
   const createCollection: StoreCtx["createCollection"] = useCallback((c) => {
     const now = new Date().toISOString();
-    let created!: KnowledgeCollection;
-    setState((s) => {
-      created = { ...c, id: uid("col"), createdAt: now, updatedAt: now };
-      return { ...s, collections: [created, ...s.collections] };
-    });
+    const created: KnowledgeCollection = { ...c, id: uid("col"), createdAt: now, updatedAt: now };
+    setLocal((s) => ({ ...s, collections: [created, ...s.collections] }));
     return created;
   }, []);
-
   const updateCollection: StoreCtx["updateCollection"] = useCallback((id, patch) => {
-    setState((s) => ({
+    setLocal((s) => ({
       ...s,
       collections: s.collections.map((c) =>
         c.id === id ? { ...c, ...patch, updatedAt: new Date().toISOString() } : c,
       ),
     }));
   }, []);
-
   const removeCollection: StoreCtx["removeCollection"] = useCallback((id) => {
-    setState((s) => ({ ...s, collections: s.collections.filter((c) => c.id !== id) }));
+    setLocal((s) => ({ ...s, collections: s.collections.filter((c) => c.id !== id) }));
   }, []);
 
   const upsertTalentMapping: StoreCtx["upsertTalentMapping"] = useCallback((personId, assetId, role) => {
     const now = new Date().toISOString();
     let result!: TalentMapping;
-    setState((s) => {
+    setLocal((s) => {
       const existing = s.talentMappings.find((m) => m.personId === personId && m.assetId === assetId);
       if (existing) {
         result = { ...existing, role, updatedAt: now };
-        return {
-          ...s,
-          talentMappings: s.talentMappings.map((m) => (m.id === existing.id ? result : m)),
-        };
+        return { ...s, talentMappings: s.talentMappings.map((m) => (m.id === existing.id ? result : m)) };
       }
-      result = {
-        id: uid("tm"),
-        personId,
-        assetId,
-        role,
-        evidence: [],
-        createdAt: now,
-        updatedAt: now,
-      };
+      result = { id: uid("tm"), personId, assetId, role, evidence: [], createdAt: now, updatedAt: now };
       return { ...s, talentMappings: [result, ...s.talentMappings] };
     });
     return result;
   }, []);
-
   const removeTalentMapping: StoreCtx["removeTalentMapping"] = useCallback((id) => {
-    setState((s) => ({ ...s, talentMappings: s.talentMappings.filter((m) => m.id !== id) }));
+    setLocal((s) => ({ ...s, talentMappings: s.talentMappings.filter((m) => m.id !== id) }));
   }, []);
-
   const addTalentEvidence: StoreCtx["addTalentEvidence"] = useCallback((mappingId, e) => {
-    setState((s) => ({
+    setLocal((s) => ({
       ...s,
       talentMappings: s.talentMappings.map((m) =>
         m.id === mappingId
-          ? {
-              ...m,
-              evidence: [{ ...e, id: uid("ev") }, ...m.evidence],
-              updatedAt: new Date().toISOString(),
-            }
+          ? { ...m, evidence: [{ ...e, id: uid("ev") }, ...m.evidence], updatedAt: new Date().toISOString() }
           : m,
       ),
     }));
   }, []);
-
   const removeTalentEvidence: StoreCtx["removeTalentEvidence"] = useCallback((mappingId, evidenceId) => {
-    setState((s) => ({
+    setLocal((s) => ({
       ...s,
       talentMappings: s.talentMappings.map((m) =>
         m.id === mappingId
@@ -405,7 +491,11 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
 
   const value = useMemo<StoreCtx>(
     () => ({
-      ...state,
+      assets,
+      translations: local.translations,
+      collections: local.collections,
+      talentMappings: local.talentMappings,
+      isLoading,
       audiences: seed.audiences,
       formats: seed.formats,
       tones: seed.tones,
@@ -414,12 +504,12 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       createAsset,
       updateAsset,
       removeAsset,
-      getAsset: (id) => state.assets.find((a) => a.id === id),
-      getAssetBySlug: (slug) => state.assets.find((a) => a.slug === slug),
+      getAsset: (id) => assets.find((a) => a.id === id),
+      getAssetBySlug: (slug) => assets.find((a) => a.slug === slug),
       createTranslation,
       updateTranslation,
       removeTranslation,
-      getTranslation: (id) => state.translations.find((t) => t.id === id),
+      getTranslation: (id) => local.translations.find((t) => t.id === id),
       createCollection,
       updateCollection,
       removeCollection,
@@ -430,10 +520,29 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
       slugify,
       reset: () => {
         if (typeof window !== "undefined") window.localStorage.removeItem(LS_KEY);
-        setState({ assets: [], translations: [], collections: [], talentMappings: [] });
+        setLocal({ translations: [], collections: [], talentMappings: [] });
+        invalidateAll();
       },
     }),
-    [state, createAsset, updateAsset, removeAsset, createTranslation, updateTranslation, removeTranslation, createCollection, updateCollection, removeCollection, upsertTalentMapping, removeTalentMapping, addTalentEvidence, removeTalentEvidence],
+    [
+      assets,
+      local,
+      isLoading,
+      createAsset,
+      updateAsset,
+      removeAsset,
+      createTranslation,
+      updateTranslation,
+      removeTranslation,
+      createCollection,
+      updateCollection,
+      removeCollection,
+      upsertTalentMapping,
+      removeTalentMapping,
+      addTalentEvidence,
+      removeTalentEvidence,
+      invalidateAll,
+    ],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
