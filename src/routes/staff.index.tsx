@@ -6,7 +6,6 @@ import {
   Users,
   GitBranch,
   CalendarClock,
-  Package,
   UserCog,
   Mic,
   ArrowRight,
@@ -47,7 +46,6 @@ const SHORTCUTS: Shortcut[] = [
   { to: "/staff/knowledge-translation", label: "Knowledge Translation", labelTh: "แปลงเป็นสื่อ", desc: "แปลงความรู้เป็นเนื้อหาและสื่อการเรียน", icon: GitBranch, accent: "#0EA5E9", requires: "translation.fromOwn" },
   { to: "/staff/trainings", label: "Trainings", labelTh: "การอบรม", desc: "จัดการตารางและคอร์สอบรม", icon: CalendarClock, accent: "#F0A118" },
   { to: "/staff/transfer", label: "KT Transfer", labelTh: "ถ่ายทอดความรู้", desc: "ติดตามการถ่ายทอดความรู้ระหว่างทีม", icon: GitBranch, accent: "#7A6FC4" },
-  { to: "/staff/products", label: "Products", labelTh: "ผลิตภัณฑ์", desc: "จัดการผลิตภัณฑ์ความรู้ที่เปิดให้สาธารณะ", icon: Package, accent: "#1F8A5B" },
   { to: "/staff/users", label: "Users & Roles", labelTh: "ผู้ใช้และสิทธิ์", desc: "จัดการบัญชีและสิทธิ์การเข้าถึง", icon: UserCog, accent: "#C53030", requires: "users.manage" },
 ];
 
