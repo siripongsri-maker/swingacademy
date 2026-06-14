@@ -432,25 +432,137 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     [qc, removeFn, invalidateAll],
   );
 
-  // ---- Local-only entities (translations/collections/talent) ----
+  // ---- Translations: DB-backed via server fns ----
+  const fetchTranslations = useServerFn(listTranslationsFn);
+  const saveTranslationS = useServerFn(saveTranslationFn);
+  const removeTranslationS = useServerFn(removeTranslationFn);
 
-  const createTranslation: StoreCtx["createTranslation"] = useCallback((t) => {
-    const now = new Date().toISOString();
-    const tr: KnowledgeTranslation = { ...t, id: uid("kt"), createdAt: now, updatedAt: now };
-    setLocal((s) => ({ ...s, translations: [tr, ...s.translations] }));
-    return tr;
-  }, []);
-  const updateTranslation: StoreCtx["updateTranslation"] = useCallback((id, patch) => {
-    setLocal((s) => ({
-      ...s,
-      translations: s.translations.map((t) =>
-        t.id === id ? { ...t, ...patch, updatedAt: new Date().toISOString() } : t,
-      ),
-    }));
-  }, []);
-  const removeTranslation: StoreCtx["removeTranslation"] = useCallback((id) => {
-    setLocal((s) => ({ ...s, translations: s.translations.filter((t) => t.id !== id) }));
-  }, []);
+  const { data: translationsData } = useQuery({
+    queryKey: ["knowledge-translations", "all"],
+    queryFn: async () => {
+      try {
+        return await fetchTranslations();
+      } catch {
+        return { items: [] as TranslationRow[] };
+      }
+    },
+    staleTime: 30_000,
+  });
+  const translations: KnowledgeTranslation[] = useMemo(
+    () =>
+      ((translationsData?.items ?? []) as TranslationRow[]).map((r) => ({
+        id: r.id,
+        assetId: r.assetId,
+        audience: r.audience,
+        format: r.format,
+        tone: r.tone,
+        language: r.language as Language,
+        instruction: r.instruction,
+        outputMd: r.outputMd,
+        title: r.title,
+        contributorId: r.contributorId,
+        status: r.status,
+        ownerId: r.ownerId ?? "",
+        publishedAt: r.publishedAt,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      })),
+    [translationsData],
+  );
+
+  const invalidateTranslations = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["knowledge-translations"] });
+    qc.invalidateQueries({ queryKey: ["knowledge", "public", "translations"] });
+  }, [qc]);
+
+  const createTranslation: StoreCtx["createTranslation"] = useCallback(
+    (t) => {
+      const now = new Date().toISOString();
+      const optimistic: KnowledgeTranslation = {
+        ...t,
+        id: uid("kt"),
+        createdAt: now,
+        updatedAt: now,
+      };
+      void (async () => {
+        try {
+          await saveTranslationS({
+            data: {
+              assetId: t.assetId,
+              audience: t.audience,
+              format: t.format,
+              tone: t.tone,
+              language: t.language,
+              instruction: t.instruction,
+              outputMd: t.outputMd,
+              title: t.title ?? null,
+              status: t.status,
+              contributorId: t.contributorId ?? null,
+            },
+          });
+          invalidateTranslations();
+        } catch (e) {
+          console.error("[translation] create failed", e);
+          invalidateTranslations();
+        }
+      })();
+      return optimistic;
+    },
+    [saveTranslationS, invalidateTranslations],
+  );
+
+  const updateTranslation: StoreCtx["updateTranslation"] = useCallback(
+    (id, patch) => {
+      const existing = translations.find((t) => t.id === id);
+      if (!existing) return;
+      const merged = { ...existing, ...patch };
+      void (async () => {
+        try {
+          await saveTranslationS({
+            data: {
+              id,
+              assetId: merged.assetId,
+              audience: merged.audience,
+              format: merged.format,
+              tone: merged.tone,
+              language: merged.language,
+              instruction: merged.instruction,
+              outputMd: merged.outputMd,
+              title: merged.title ?? null,
+              status: merged.status,
+              contributorId: merged.contributorId ?? null,
+            },
+          });
+          invalidateTranslations();
+        } catch (e) {
+          console.error("[translation] update failed", e);
+          invalidateTranslations();
+        }
+      })();
+    },
+    [translations, saveTranslationS, invalidateTranslations],
+  );
+
+  const removeTranslation: StoreCtx["removeTranslation"] = useCallback(
+    (id) => {
+      qc.setQueryData(
+        ["knowledge-translations", "all"],
+        (prev: { items: TranslationRow[] } | undefined) =>
+          prev ? { items: prev.items.filter((t) => t.id !== id) } : prev,
+      );
+      void (async () => {
+        try {
+          await removeTranslationS({ data: { id } });
+          invalidateTranslations();
+        } catch (e) {
+          console.error("[translation] remove failed", e);
+          invalidateTranslations();
+        }
+      })();
+    },
+    [qc, removeTranslationS, invalidateTranslations],
+  );
+
 
   const createCollection: StoreCtx["createCollection"] = useCallback((c) => {
     const now = new Date().toISOString();
