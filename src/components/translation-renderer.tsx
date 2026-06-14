@@ -58,7 +58,7 @@ function SmartMarkdown({ children }: { children: string }) {
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
       {children}
-    </ReactMarkdown>
+    </SmartMarkdown>
   );
 }
 
@@ -152,7 +152,7 @@ function SocialCard({ outputMd }: RendererProps) {
         </div>
       </div>
       <div className="prose prose-sm max-w-none px-4 py-3 text-navy-500">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+        <SmartMarkdown>{body}</SmartMarkdown>
       </div>
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 px-4 pb-3 text-xs text-magenta-600">
@@ -193,7 +193,7 @@ function CarouselDeck({ outputMd }: RendererProps) {
               <div>
                 {s.title && <h3 className="text-2xl font-bold leading-tight">{s.title}</h3>}
                 <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/95">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.body}</ReactMarkdown>
+                  <SmartMarkdown>{s.body}</SmartMarkdown>
                 </div>
               </div>
               <div className="text-[11px] text-white/70">SWING Academy</div>
@@ -221,7 +221,7 @@ function SlideDeck({ outputMd }: RendererProps) {
           </div>
           <h3 className="mt-2 text-2xl font-bold text-navy-500 md:text-3xl">{cur.title}</h3>
           <div className="prose prose-slate mt-4 max-w-none flex-1 overflow-auto text-base">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{cur.body}</ReactMarkdown>
+            <SmartMarkdown>{cur.body}</SmartMarkdown>
           </div>
         </div>
       </div>
@@ -273,7 +273,7 @@ function FaqAccordion({ outputMd }: RendererProps) {
             </button>
             {isOpen && (
               <div className="prose prose-sm max-w-none px-5 pb-4 text-warm-700">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{it.a}</ReactMarkdown>
+                <SmartMarkdown>{it.a}</SmartMarkdown>
               </div>
             )}
           </div>
@@ -300,7 +300,7 @@ function Infographic({ outputMd, title }: RendererProps) {
               </div>
             )}
             <div className="prose prose-invert prose-sm max-w-none text-white/95">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.body}</ReactMarkdown>
+              <SmartMarkdown>{s.body}</SmartMarkdown>
             </div>
           </div>
         ))}
@@ -328,12 +328,12 @@ function LearningCard({ outputMd, title }: RendererProps) {
           {!flipped ? (
             <>
               {front.title && <h3 className="text-navy-500">{front.title}</h3>}
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{front.body}</ReactMarkdown>
+              <SmartMarkdown>{front.body}</SmartMarkdown>
             </>
           ) : back ? (
             <>
               {back.title && <h3 className="text-navy-500">{back.title}</h3>}
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{back.body}</ReactMarkdown>
+              <SmartMarkdown>{back.body}</SmartMarkdown>
             </>
           ) : (
             <p className="italic text-warm-500">เพิ่ม section ที่สอง (## ...) เพื่อใส่คำตอบ</p>
@@ -442,7 +442,7 @@ function VideoScript({ outputMd }: RendererProps) {
             </div>
           </div>
           <div className="prose prose-sm max-w-none p-4 text-navy-500">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.body}</ReactMarkdown>
+            <SmartMarkdown>{s.body}</SmartMarkdown>
           </div>
         </div>
       ))}
@@ -460,7 +460,7 @@ function Poster({ outputMd, title }: RendererProps) {
         <div>
           {title && <h3 className="text-3xl font-extrabold leading-tight">{title}</h3>}
           <div className="prose prose-invert prose-sm mt-4 max-w-none text-white/95">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{outputMd}</ReactMarkdown>
+            <SmartMarkdown>{outputMd}</SmartMarkdown>
           </div>
         </div>
         <div className="text-[10px] text-white/70">swingacademy.life</div>
@@ -474,7 +474,7 @@ function Article({ outputMd, title }: RendererProps) {
     <div className="mx-auto w-full max-w-3xl rounded-xl border border-warm-200 bg-white p-6 md:p-8">
       {title && <h3 className="mb-4 text-2xl font-bold text-navy-500">{title}</h3>}
       <div className="prose prose-slate max-w-none prose-headings:text-navy-500 prose-a:text-magenta-600">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{outputMd}</ReactMarkdown>
+        <SmartMarkdown>{outputMd}</SmartMarkdown>
       </div>
     </div>
   );
