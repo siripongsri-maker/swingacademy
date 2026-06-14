@@ -211,7 +211,7 @@ export function slugify(input: string): string {
 }
 
 function loadLocal(): LocalState {
-  if (typeof window === "undefined") return { translations: [], collections: [], talentMappings: [] };
+  if (typeof window === "undefined") return { translations: [], collections: [] };
   try {
     const raw = window.localStorage.getItem(LS_KEY);
     if (raw) {
@@ -219,13 +219,12 @@ function loadLocal(): LocalState {
       return {
         translations: parsed.translations ?? [],
         collections: parsed.collections ?? [],
-        talentMappings: parsed.talentMappings ?? [],
       };
     }
   } catch {
     /* ignore */
   }
-  return { translations: [], collections: [], talentMappings: [] };
+  return { translations: [], collections: [] };
 }
 
 function asKnowledgeAsset(a: unknown): KnowledgeAsset {
