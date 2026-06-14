@@ -130,8 +130,11 @@ export type KnowledgeTranslation = {
   language: Language;
   instruction: string;
   outputMd: string;
+  title?: string | null;
+  contributorId?: string | null;
   status: TranslationStatus;
   ownerId: string;
+  publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
