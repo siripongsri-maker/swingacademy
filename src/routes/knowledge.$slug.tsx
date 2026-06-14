@@ -437,6 +437,66 @@ function KnowledgeDetailPage() {
           </div>
         )}
 
+        {publishedTranslations.length > 0 && (
+          <section className="mt-14">
+            <div className="mb-5 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-magenta-600">
+                  📣 รูปแบบเผยแพร่ · Published Formats
+                </p>
+                <h2 className="mt-1 text-2xl font-semibold text-navy-500">
+                  สื่อจากความรู้ชิ้นนี้
+                </h2>
+                <p className="mt-1 text-sm text-warm-500">
+                  เนื้อหาที่นักแปลความรู้ของ SWING ปรับให้เหมาะกับกลุ่มเป้าหมายต่างๆ
+                </p>
+              </div>
+              <span className="rounded-pill bg-lavender-100 px-2.5 py-1 text-xs font-semibold text-lavender-900">
+                {publishedTranslations.length} ชิ้น
+              </span>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              {publishedTranslations.map((t) => {
+                const contributor = personById(t.contributorId);
+                return (
+                  <div key={t.id} className="flex flex-col gap-3 rounded-xl border border-warm-200 bg-white p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="rounded-pill bg-magenta-50 px-2 py-0.5 font-semibold text-magenta-700">
+                        {t.format}
+                      </span>
+                      <span className="text-warm-500">{t.audience} · {t.tone}</span>
+                    </div>
+                    <div className="overflow-hidden rounded-lg">
+                      <TranslationRenderer
+                        format={t.format}
+                        outputMd={t.outputMd}
+                        title={t.title}
+                        language={t.language}
+                        heroImageUrl={t.heroImageUrl}
+                      />
+                    </div>
+                    {contributor && (
+                      <div className="mt-1 flex items-center gap-2 border-t border-warm-100 pt-3 text-xs">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-lavender-100 text-xs font-bold text-lavender-900">
+                          {contributor.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-navy-500">
+                            {contributor.nameTh} <span className="text-warm-500">· {contributor.name}</span>
+                          </p>
+                          {contributor.role && (
+                            <p className="text-warm-500">Contributor · {contributor.role}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         <footer className="mt-14 border-t border-warm-200 pt-8">
           <p className="text-xs font-semibold uppercase tracking-wider text-warm-500">
             ผู้สนับสนุนและแหล่งทุน · Supporters & Funders
