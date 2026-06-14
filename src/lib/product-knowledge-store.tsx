@@ -721,6 +721,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
     }),
     [
       assets,
+      translations,
       local,
       isLoading,
       talentMappings,
