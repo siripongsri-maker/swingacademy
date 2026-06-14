@@ -395,6 +395,7 @@ function TranslationEditor({
       ownerId: "current-user",
       contributorId: form.contributorId,
       title: form.title,
+      heroImageUrl: form.heroImageUrl,
     };
     if (translation) {
       pk.updateTranslation(translation.id, payload);
@@ -404,6 +405,37 @@ function TranslationEditor({
       toast.success(targetStatus === "published" ? "Published" : "Draft saved");
     }
     onClose();
+  }
+
+  const [imageGenerating, setImageGenerating] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+
+  async function generateImage() {
+    const sourceTxt = (form.outputMd || form.instruction || form.title || currentSource?.keyMessage || "").slice(0, 1200);
+    const userPrompt = imagePrompt.trim();
+    const prompt =
+      userPrompt
+        ? userPrompt
+        : `Create a clean, modern hero illustration suitable for a "${pk.formats.find((f) => f.id === form.format)?.en ?? form.format}" piece about: ${form.title ?? "the topic"}. Audience: ${pk.audiences.find((a) => a.id === form.audience)?.en ?? form.audience}. Tone: ${pk.tones.find((t) => t.id === form.tone)?.en ?? form.tone}. Style: editorial, warm, inclusive, no text/lettering, soft gradient background. Key context: ${sourceTxt}`;
+    setImageGenerating(true);
+    try {
+      const res = await fetch("/api/generate-translation-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(t || `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as { dataUrl: string };
+      update("heroImageUrl", data.dataUrl);
+      toast.success("สร้างภาพประกอบเรียบร้อย — แก้ไขหรือลบได้ก่อน Publish");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "ไม่สามารถสร้างภาพ");
+    } finally {
+      setImageGenerating(false);
+    }
   }
 
   if (picking) {
