@@ -28,6 +28,10 @@ import {
 import { PublicLayout } from "@/components/public-layout";
 import { DEFAULT_SPONSORS, type Sponsor } from "@/data/knowledge-products-seed";
 import { getPublicKnowledgeBySlug } from "@/lib/knowledge.functions";
+import { listPublishedTranslationsBySlug } from "@/lib/knowledge-translations.functions";
+import { TranslationRenderer } from "@/components/translation-renderer";
+import seedData from "@/data/seed-data.json";
+import { useQuery } from "@tanstack/react-query";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/knowledge/$slug")({
