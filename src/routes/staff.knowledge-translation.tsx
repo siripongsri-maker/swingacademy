@@ -647,7 +647,7 @@ function TranslationEditor({
           <Field label="Output (เขียนแบบ Blog · มี toolbar เน้นข้อความ/ใส่รูป/หัวข้อ)" className="md:col-span-4">
             <MarkdownEditor
               value={form.outputMd}
-              onChange={(v) => update("outputMd", v)}
+              onChange={(v: string) => update("outputMd", v)}
               rows={14}
               placeholder="พิมพ์เนื้อหา หรือกด Generate ด้านบน — ใช้ toolbar เพื่อจัดรูปแบบ ใส่รูป เน้นข้อความ ฯลฯ"
             />
