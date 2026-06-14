@@ -643,13 +643,12 @@ function TranslationEditor({
             </select>
           </Field>
 
-          <Field label="Output (Markdown)" className="md:col-span-4">
-            <textarea
+          <Field label="Output (เขียนแบบ Blog · มี toolbar เน้นข้อความ/ใส่รูป/หัวข้อ)" className="md:col-span-4">
+            <MarkdownEditor
               value={form.outputMd}
-              onChange={(e) => update("outputMd", e.target.value)}
-              rows={10}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm"
-              placeholder="ผลลัพธ์จะถูกใส่ที่นี่ หรือพิมพ์เองได้"
+              onChange={(v) => update("outputMd", v)}
+              rows={14}
+              placeholder="พิมพ์เนื้อหา หรือกด Generate ด้านบน — ใช้ toolbar เพื่อจัดรูปแบบ ใส่รูป เน้นข้อความ ฯลฯ"
             />
           </Field>
 
