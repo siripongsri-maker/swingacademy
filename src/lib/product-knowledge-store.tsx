@@ -632,6 +632,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
         return { items: [] as TalentMapping[] };
       }
     },
+    enabled: hasSession,
     staleTime: 30_000,
   });
   const talentMappings: TalentMapping[] = useMemo(
