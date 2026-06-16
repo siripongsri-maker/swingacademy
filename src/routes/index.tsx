@@ -193,23 +193,85 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 3. CATEGORIES */}
+      {/* 3. CATEGORIES — community knowledge / CBO theme */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-10 max-w-2xl">
-          <p className="eyebrow mb-3">{t({ th: "หมวดหมู่การเรียนรู้", en: "Learning paths" })}</p>
-          <h2 lang={lang} className="text-3xl font-semibold text-navy-500 md:text-4xl">
-            {t({ th: "เริ่มจากสิ่งที่อยากรู้", en: "Start with what matters to you" })}
-          </h2>
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <p className="eyebrow mb-3">
+              {t({ th: "สำรวจคลังความรู้", en: "Explore the knowledge hub" })}
+            </p>
+            <h2 lang={lang} className="text-3xl font-semibold text-navy-500 md:text-4xl">
+              {t({
+                th: "ความรู้จากชุมชน บทเรียนจาก CBO",
+                en: "Knowledge from the community, lessons from CBOs",
+              })}
+            </h2>
+            <p lang={lang} className="mt-3 text-base text-warm-500">
+              {t({
+                th: "เลือกหมวดที่อยากเริ่ม ทั้งงานวิจัย บทเรียนภาคสนาม สิทธิและทักษะการทำงานของนักกิจกรรมชุมชน",
+                en: "Pick a path — community research, field lessons, rights & advocacy, or CBO work skills.",
+              })}
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((cat) => {
-            const Icon = CAT_ICONS[cat.icon] ?? Sparkles;
+          {([
+            {
+              id: "research",
+              icon: BookOpen,
+              color: "#CC0099",
+              name: { th: "งานวิจัยจากชุมชน", en: "Community research" },
+              blurb: {
+                th: "งานวิจัย รายงาน และข้อมูลจากภาคสนามโดย SWING และเครือข่าย",
+                en: "Studies, reports & field data from SWING and partners",
+              },
+              to: "/knowledge" as const,
+              cta: { th: "อ่านงานวิจัย", en: "Read research" },
+            },
+            {
+              id: "lessons",
+              icon: Sparkles,
+              color: "#7A6FC4",
+              name: { th: "บทเรียนภาคสนาม", en: "Field lessons" },
+              blurb: {
+                th: "ถอดบทเรียนจากการทำงานจริงของ CBO และพี่เลี้ยงชุมชน",
+                en: "Lessons learned from CBO and peer-educator practice",
+              },
+              to: "/knowledge" as const,
+              cta: { th: "ดูบทเรียน", en: "View lessons" },
+            },
+            {
+              id: "rights",
+              icon: Scale,
+              color: "#C9A227",
+              name: { th: "สิทธิและการสนับสนุน", en: "Rights & advocacy" },
+              blurb: {
+                th: "สิทธิแรงงาน สิทธิทางเพศ และเครื่องมือสนับสนุนชุมชน",
+                en: "Labour rights, sexual rights & community advocacy tools",
+              },
+              to: "/knowledge" as const,
+              cta: { th: "เรียนรู้สิทธิ", en: "Learn rights" },
+            },
+            {
+              id: "cbo-skills",
+              icon: HeartHandshake,
+              color: "#1F8A5B",
+              name: { th: "ทักษะการทำงาน CBO", en: "CBO work skills" },
+              blurb: {
+                th: "คอร์สและบทเรียนสำหรับนักกิจกรรมและทีมงานชุมชน",
+                en: "Courses & lessons for community organisers and staff",
+              },
+              to: "/courses" as const,
+              cta: { th: "ไปที่คอร์ส", en: "Go to courses" },
+            },
+          ] as const).map((cat) => {
+            const Icon = cat.icon;
             return (
               <Link
                 key={cat.id}
-                to="/courses"
-                className="group rounded-md border border-warm-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                to={cat.to}
+                className="group flex flex-col rounded-md border border-warm-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 style={{ transitionTimingFunction: "cubic-bezier(0.2,0.8,0.2,1)" }}
               >
                 <div
@@ -221,16 +283,32 @@ function HomePage() {
                 <h3 lang={lang} className="text-lg font-semibold text-navy-500">
                   {t(cat.name)}
                 </h3>
-                <p lang={lang} className="mt-2 text-sm text-warm-500">
+                <p lang={lang} className="mt-2 flex-1 text-sm text-warm-500">
                   {t(cat.blurb)}
                 </p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-magenta-500">
-                  {t({ th: "ดูคอร์ส", en: "Browse" })}
+                  {t(cat.cta)}
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>
             );
           })}
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/knowledge"
+            className="inline-flex items-center gap-2 rounded-pill bg-navy-500 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-navy-700"
+          >
+            {t({ th: "เปิดคลังความรู้ทั้งหมด", en: "Open the knowledge hub" })}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            to="/courses"
+            className="inline-flex items-center gap-2 rounded-pill border border-navy-300 bg-white px-6 py-3 text-sm font-semibold text-navy-500 transition-all hover:border-navy-500"
+          >
+            {t({ th: "ดูคอร์สและบทเรียน", en: "See courses & lessons" })}
+          </Link>
         </div>
       </section>
 
