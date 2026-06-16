@@ -60,19 +60,8 @@ const CAT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   sun: Sun,
 };
 
-const PATH_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  users: Users,
-  heart: Heart,
-  scale: Scale,
-  sparkles: Sparkles,
-};
-
 type Category = { id: string; icon: string; color: string; name: Localized; blurb: Localized };
-type Path = { id: string; accent: string; icon: string; name: Localized; blurb: Localized; courseIds: string[] };
-type Testimonial = { id: string; initial: string; accent: string; name: Localized; role: Localized; quote: Localized };
 type Partner = { id: string; short: string; color: string; role: Localized };
-
-const FEATURED_IDS = ["c_prep", "c_uu", "c_rrttpr", "c_rights", "c_hivst", "c_english"];
 
 const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
   { icon: HeartHandshake, label: { th: "ฟรีเสมอ", en: "Always free" } },
@@ -85,16 +74,9 @@ const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
 function HomePage() {
   const { t, lang } = useLanguage();
   const categories = seed.publicPortal.categories as Category[];
-  const courses = seed.publicPortal.courses as Course[];
-  const paths = seed.publicPortal.paths as Path[];
-  const testimonials = seed.publicPortal.testimonials as Testimonial[];
   const partners = seed.publicPortal.partners as Partner[];
   const { data: knowledgeData } = useSuspenseQuery(knowledgeQueryOptions);
   const knowledgeItems = knowledgeData.items.slice(0, 6);
-
-  const featured = FEATURED_IDS.map((id) => courses.find((c) => c.id === id)).filter(
-    Boolean,
-  ) as Course[];
 
   return (
     <PublicLayout>
