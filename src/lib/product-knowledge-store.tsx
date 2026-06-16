@@ -476,6 +476,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
         return { items: [] as TranslationRow[] };
       }
     },
+    enabled: hasSession,
     staleTime: 30_000,
   });
   const translations: KnowledgeTranslation[] = useMemo(
