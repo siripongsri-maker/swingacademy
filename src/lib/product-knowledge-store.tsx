@@ -23,6 +23,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import seed from "@/data/product-knowledge-seed.json";
+import { supabase } from "@/integrations/supabase/client";
 import {
   listStaffKnowledgeAssets,
   saveKnowledgeAsset,
