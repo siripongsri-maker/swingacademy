@@ -6,7 +6,6 @@ import {
   Sparkles,
   Sun,
   ArrowRight,
-  Users,
   HeartHandshake,
   ShieldCheck,
   WifiOff,
@@ -14,12 +13,10 @@ import {
   Award,
   MapPin,
   BookOpen,
-  Quote,
   HelpCircle,
   Globe,
 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
-import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 import { pageHead } from "@/lib/seo";
