@@ -6,7 +6,6 @@ import {
   Sparkles,
   Sun,
   ArrowRight,
-  Users,
   HeartHandshake,
   ShieldCheck,
   WifiOff,
@@ -14,12 +13,10 @@ import {
   Award,
   MapPin,
   BookOpen,
-  Quote,
   HelpCircle,
   Globe,
 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
-import { CourseCard, type Course } from "@/components/course-card";
 import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 import { pageHead } from "@/lib/seo";
@@ -63,19 +60,8 @@ const CAT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   sun: Sun,
 };
 
-const PATH_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  users: Users,
-  heart: Heart,
-  scale: Scale,
-  sparkles: Sparkles,
-};
-
 type Category = { id: string; icon: string; color: string; name: Localized; blurb: Localized };
-type Path = { id: string; accent: string; icon: string; name: Localized; blurb: Localized; courseIds: string[] };
-type Testimonial = { id: string; initial: string; accent: string; name: Localized; role: Localized; quote: Localized };
 type Partner = { id: string; short: string; color: string; role: Localized };
-
-const FEATURED_IDS = ["c_prep", "c_uu", "c_rrttpr", "c_rights", "c_hivst", "c_english"];
 
 const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
   { icon: HeartHandshake, label: { th: "ฟรีเสมอ", en: "Always free" } },
@@ -88,16 +74,9 @@ const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
 function HomePage() {
   const { t, lang } = useLanguage();
   const categories = seed.publicPortal.categories as Category[];
-  const courses = seed.publicPortal.courses as Course[];
-  const paths = seed.publicPortal.paths as Path[];
-  const testimonials = seed.publicPortal.testimonials as Testimonial[];
   const partners = seed.publicPortal.partners as Partner[];
   const { data: knowledgeData } = useSuspenseQuery(knowledgeQueryOptions);
   const knowledgeItems = knowledgeData.items.slice(0, 6);
-
-  const featured = FEATURED_IDS.map((id) => courses.find((c) => c.id === id)).filter(
-    Boolean,
-  ) as Course[];
 
   return (
     <PublicLayout>
@@ -172,19 +151,19 @@ function HomePage() {
                 </span>
                 <div>
                   <p className="eyebrow">
-                    {t({ th: "วันนี้เริ่มที่นี่", en: "Start here today" })}
+                    {t({ th: "คลังความรู้จากชุมชน", en: "Community knowledge hub" })}
                   </p>
                   <p lang={lang} className="text-base font-semibold text-navy-500">
-                    {t({ th: "รู้จัก PrEP ฉบับเข้าใจง่าย", en: "Understanding PrEP, made simple" })}
+                    {t({ th: "งานวิจัยและบทเรียนจาก CBO", en: "Research & lessons from CBOs" })}
                   </p>
                 </div>
               </div>
 
               <div className="mt-5 space-y-2.5">
                 {[
-                  { th: "PrEP คืออะไร", en: "What is PrEP?" },
-                  { th: "ใครเหมาะกับ PrEP", en: "Who is PrEP for" },
-                  { th: "เริ่มต้นและการดูแล", en: "Starting & care" },
+                  { th: "งานวิจัยจากชุมชน", en: "Community-led research" },
+                  { th: "บทเรียนจากประสบการณ์จริง", en: "Lessons from real experience" },
+                  { th: "ความรู้เพื่อการพัฒนา", en: "Knowledge for development" },
                 ].map((l, i) => (
                   <div
                     key={l.en}
@@ -204,8 +183,8 @@ function HomePage() {
                 <Award className="h-4 w-4 text-gold" />
                 <span lang={lang}>
                   {t({
-                    th: "เรียนจบรับใบประกาศได้ฟรี",
-                    en: "Free certificate on completion",
+                    th: "จัดทำโดย SWING และเครือข่าย CBO",
+                    en: "Curated by SWING & CBO partners",
                   })}
                 </span>
               </div>
@@ -255,123 +234,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 4. FEATURED COURSES */}
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow mb-3">{t({ th: "คอร์สแนะนำ", en: "Featured courses" })}</p>
-              <h2 lang={lang} className="text-3xl font-semibold text-navy-500 md:text-4xl">
-                {t({ th: "คอร์สที่ชุมชนชอบมากที่สุด", en: "Loved most by our community" })}
-              </h2>
-            </div>
-            <Link
-              to="/courses"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-magenta-500 hover:text-magenta-700"
-            >
-              {t({ th: "ดูทั้งหมด", en: "See all courses" })}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((c) => (
-              <CourseCard key={c.id} course={c} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. LEARNING PATHS */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-10 max-w-2xl">
-          <p className="eyebrow mb-3">{t({ th: "เส้นทางเรียนรู้", en: "Learning paths" })}</p>
-          <h2 lang={lang} className="text-3xl font-semibold text-navy-500 md:text-4xl">
-            {t({ th: "ค่อยๆ เรียนทีละขั้น", en: "Step-by-step journeys" })}
-          </h2>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {paths.map((p) => {
-            const Icon = PATH_ICONS[p.icon] ?? Sparkles;
-            return (
-              <Link
-                key={p.id}
-                to="/paths"
-                className="group flex items-start gap-4 rounded-md border border-warm-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div
-                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md"
-                  style={{ backgroundColor: `${p.accent}1A`, color: p.accent }}
-                >
-                  <Icon className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 lang={lang} className="text-lg font-semibold text-navy-500">
-                    {t(p.name)}
-                  </h3>
-                  <p lang={lang} className="mt-1.5 text-sm text-warm-500">
-                    {t(p.blurb)}
-                  </p>
-                  <p className="mt-3 text-xs font-medium text-warm-500">
-                    {p.courseIds.length} {t({ th: "คอร์ส", en: "courses" })}
-                  </p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-warm-400 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 6. TESTIMONIALS */}
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-10 max-w-2xl">
-            <p className="eyebrow mb-3">{t({ th: "เสียงจากชุมชน", en: "From our community" })}</p>
-            <h2 lang={lang} className="text-3xl font-semibold text-navy-500 md:text-4xl">
-              {t({ th: "ที่นี่คือบ้านของเรา", en: "This is our home" })}
-            </h2>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map((q) => (
-              <figure
-                key={q.id}
-                className="relative flex h-full flex-col rounded-md border border-warm-200 bg-cream p-6"
-              >
-                <Quote
-                  className="absolute right-5 top-5 h-8 w-8 opacity-20"
-                  style={{ color: q.accent }}
-                  aria-hidden
-                />
-                <blockquote
-                  lang={lang}
-                  className="flex-1 text-base leading-relaxed text-navy-500"
-                >
-                  {t(q.quote)}
-                </blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  <span
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-pill font-semibold text-white"
-                    style={{ backgroundColor: q.accent }}
-                  >
-                    {q.initial}
-                  </span>
-                  <div>
-                    <p lang={lang} className="font-medium text-navy-500">
-                      {t(q.name)}
-                    </p>
-                    <p lang={lang} className="text-xs text-warm-500">
-                      {t(q.role)}
-                    </p>
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* 7. ACCESSIBILITY BAND */}
       <section className="mx-auto max-w-6xl px-6 py-16">
