@@ -249,6 +249,23 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
   const saveFn = useServerFn(saveKnowledgeAsset);
   const removeFn = useServerFn(deleteKnowledgeAsset);
 
+  // Track Supabase auth so we don't fire staff-only server fns when signed out
+  // (avoids 401 dev-overlay noise on public routes).
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled) setHasSession(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setHasSession(!!session);
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   const { data, isLoading } = useQuery({
     queryKey: ["knowledge", "staff", "all"],
     queryFn: async () => {
@@ -259,6 +276,7 @@ export function ProductKnowledgeProvider({ children }: { children: ReactNode }) 
         return { items: [] as unknown[] };
       }
     },
+    enabled: hasSession,
     staleTime: 30_000,
   });
   const assets: KnowledgeAsset[] = useMemo(
