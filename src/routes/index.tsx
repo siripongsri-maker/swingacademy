@@ -151,19 +151,19 @@ function HomePage() {
                 </span>
                 <div>
                   <p className="eyebrow">
-                    {t({ th: "วันนี้เริ่มที่นี่", en: "Start here today" })}
+                    {t({ th: "คลังความรู้จากชุมชน", en: "Community knowledge hub" })}
                   </p>
                   <p lang={lang} className="text-base font-semibold text-navy-500">
-                    {t({ th: "รู้จัก PrEP ฉบับเข้าใจง่าย", en: "Understanding PrEP, made simple" })}
+                    {t({ th: "งานวิจัยและบทเรียนจาก CBO", en: "Research & lessons from CBOs" })}
                   </p>
                 </div>
               </div>
 
               <div className="mt-5 space-y-2.5">
                 {[
-                  { th: "PrEP คืออะไร", en: "What is PrEP?" },
-                  { th: "ใครเหมาะกับ PrEP", en: "Who is PrEP for" },
-                  { th: "เริ่มต้นและการดูแล", en: "Starting & care" },
+                  { th: "งานวิจัยจากชุมชน", en: "Community-led research" },
+                  { th: "บทเรียนจากประสบการณ์จริง", en: "Lessons from real experience" },
+                  { th: "ความรู้เพื่อการพัฒนา", en: "Knowledge for development" },
                 ].map((l, i) => (
                   <div
                     key={l.en}
@@ -183,8 +183,8 @@ function HomePage() {
                 <Award className="h-4 w-4 text-gold" />
                 <span lang={lang}>
                   {t({
-                    th: "เรียนจบรับใบประกาศได้ฟรี",
-                    en: "Free certificate on completion",
+                    th: "จัดทำโดย SWING และเครือข่าย CBO",
+                    en: "Curated by SWING & CBO partners",
                   })}
                 </span>
               </div>
