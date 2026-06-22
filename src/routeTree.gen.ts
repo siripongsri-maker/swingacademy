@@ -20,6 +20,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
+import { Route as ClassroomIndexRouteImport } from './routes/classroom.index'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
@@ -90,6 +91,11 @@ const StaffIndexRoute = StaffIndexRouteImport.update({
 const KnowledgeIndexRoute = KnowledgeIndexRouteImport.update({
   id: '/knowledge/',
   path: '/knowledge/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClassroomIndexRoute = ClassroomIndexRouteImport.update({
+  id: '/classroom/',
+  path: '/classroom/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
 }
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/classroom': typeof ClassroomIndexRoute
   '/knowledge': typeof KnowledgeIndexRoute
   '/staff': typeof StaffIndexRoute
 }
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
 }
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/classroom/'
     | '/knowledge/'
     | '/staff/'
   fileRoutesByTo: FileRoutesByTo
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/classroom'
     | '/knowledge'
     | '/staff'
   id:
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/classroom/'
     | '/knowledge/'
     | '/staff/'
   fileRoutesById: FileRoutesById
@@ -364,6 +376,7 @@ export interface RootRouteChildren {
   ApiGenerateTranslationImageRoute: typeof ApiGenerateTranslationImageRoute
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
+  ClassroomIndexRoute: typeof ClassroomIndexRoute
   KnowledgeIndexRoute: typeof KnowledgeIndexRoute
 }
 
@@ -444,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/knowledge'
       fullPath: '/knowledge/'
       preLoaderRoute: typeof KnowledgeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/classroom/': {
+      id: '/classroom/'
+      path: '/classroom'
+      fullPath: '/classroom/'
+      preLoaderRoute: typeof ClassroomIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/users': {
@@ -619,6 +639,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGenerateTranslationImageRoute: ApiGenerateTranslationImageRoute,
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
+  ClassroomIndexRoute: ClassroomIndexRoute,
   KnowledgeIndexRoute: KnowledgeIndexRoute,
 }
 export const routeTree = rootRouteImport
