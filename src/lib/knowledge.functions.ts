@@ -328,14 +328,16 @@ export const setKnowledgeAttachments = createServerFn({ method: "POST" })
       .maybeSingle();
     if (readErr) throw new Error(readErr.message);
     const meta = ((existing?.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+    const prevAttachments = (Array.isArray(meta.attachments) ? meta.attachments : []) as KnowledgeAttachment[];
     const nowIso = new Date().toISOString();
-    meta.attachments = data.attachments.map((a) => ({
+    const nextAttachments = data.attachments.map((a) => ({
       path: a.path,
       name: a.name,
       size: a.size,
       contentType: a.contentType,
       uploadedAt: a.uploadedAt ?? nowIso,
     }));
+    meta.attachments = nextAttachments;
     const { data: row, error } = await context.supabase
       .from("knowledge_products")
       .update({ metadata: meta as never })
@@ -343,9 +345,108 @@ export const setKnowledgeAttachments = createServerFn({ method: "POST" })
       .select(SELECT_COLS)
       .single();
     if (error) throw new Error(error.message);
+
+    // Diff and log attachment activity (best-effort)
+    try {
+      const prevPaths = new Set(prevAttachments.map((a) => a.path));
+      const nextPaths = new Set(nextAttachments.map((a) => a.path));
+      const added = nextAttachments.filter((a) => !prevPaths.has(a.path));
+      const removed = prevAttachments.filter((a) => !nextPaths.has(a.path));
+      const logRows = [
+        ...added.map((a) => ({
+          knowledge_id: data.id,
+          actor_id: context.userId,
+          action: "attachment_uploaded",
+          attachment_path: a.path,
+          attachment_name: a.name,
+          attachment_size: a.size,
+          attachment_content_type: a.contentType,
+        })),
+        ...removed.map((a) => ({
+          knowledge_id: data.id,
+          actor_id: context.userId,
+          action: "attachment_deleted",
+          attachment_path: a.path,
+          attachment_name: a.name,
+          attachment_size: a.size,
+          attachment_content_type: a.contentType,
+        })),
+      ];
+      if (logRows.length > 0) {
+        await context.supabase.from("knowledge_activity_logs").insert(logRows as never);
+      }
+    } catch { /* ignore logging errors */ }
+
     const mapped = mapRow(row as Record<string, unknown>);
     await signAttachments(context.supabase as never, [mapped]);
     return { item: mapped };
+  });
+
+export type KnowledgeActivityLog = {
+  id: string;
+  knowledgeId: string;
+  actorId: string | null;
+  actorEmail: string | null;
+  action: string;
+  attachmentPath: string | null;
+  attachmentName: string | null;
+  attachmentSize: number | null;
+  attachmentContentType: string | null;
+  createdAt: string;
+};
+
+export const listKnowledgeActivity = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({ knowledgeId: z.string().uuid(), limit: z.number().int().min(1).max(200).optional() }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("knowledge_activity_logs")
+      .select("id, knowledge_id, actor_id, action, attachment_path, attachment_name, attachment_size, attachment_content_type, created_at")
+      .eq("knowledge_id", data.knowledgeId)
+      .order("created_at", { ascending: false })
+      .limit(data.limit ?? 100);
+    if (error) throw new Error(error.message);
+
+    const items: KnowledgeActivityLog[] = (rows ?? []).map((r) => {
+      const rec = r as Record<string, unknown>;
+      return {
+        id: String(rec.id),
+        knowledgeId: String(rec.knowledge_id),
+        actorId: (rec.actor_id as string | null) ?? null,
+        actorEmail: null,
+        action: String(rec.action ?? ""),
+        attachmentPath: (rec.attachment_path as string | null) ?? null,
+        attachmentName: (rec.attachment_name as string | null) ?? null,
+        attachmentSize: (rec.attachment_size as number | null) ?? null,
+        attachmentContentType: (rec.attachment_content_type as string | null) ?? null,
+        createdAt: String(rec.created_at ?? ""),
+      };
+    });
+
+    // Best-effort actor email enrichment via admin Auth API
+    try {
+      const actorIds = Array.from(new Set(items.map((i) => i.actorId).filter((v): v is string => Boolean(v))));
+      if (actorIds.length > 0) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const emailMap = new Map<string, string>();
+        for (const uid of actorIds) {
+          try {
+            const { data: u } = await (supabaseAdmin as never as {
+              auth: { admin: { getUserById: (id: string) => Promise<{ data: { user: { email: string | null } | null } | null }> } };
+            }).auth.admin.getUserById(uid);
+            const email = u?.user?.email ?? null;
+            if (email) emailMap.set(uid, email);
+          } catch { /* ignore */ }
+        }
+        for (const it of items) {
+          if (it.actorId && emailMap.has(it.actorId)) it.actorEmail = emailMap.get(it.actorId) ?? null;
+        }
+      }
+    } catch { /* ignore */ }
+
+    return { items };
   });
 
 export const createKnowledgeAttachmentSignedUploadUrl = createServerFn({ method: "POST" })
