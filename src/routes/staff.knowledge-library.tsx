@@ -48,6 +48,7 @@ function KnowledgeLibraryPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | KnowledgeRow["status"]>("all");
   const [visibilityFilter, setVisibilityFilter] = useState<"all" | KnowledgeRow["visibility"]>("all");
   const [editing, setEditing] = useState<KnowledgeRow | null>(null);
+  const [historyFor, setHistoryFor] = useState<KnowledgeRow | null>(null);
 
   const items = query.data?.items ?? [];
 
