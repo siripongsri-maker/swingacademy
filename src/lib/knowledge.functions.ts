@@ -144,6 +144,7 @@ export const getPublicKnowledgeBySlug = createServerFn({ method: "GET" })
       const { default: contentMd } = await import("@/data/hivst-content.md?raw");
       mapped.contentMd = contentMd as unknown as string;
     }
+    await signAttachments(supabaseAdmin, [mapped]);
     return { item: mapped };
   });
 
