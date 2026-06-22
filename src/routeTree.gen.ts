@@ -27,6 +27,7 @@ import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
 import { Route as StaffTalentRouteImport } from './routes/staff.talent'
 import { Route as StaffStorageRouteImport } from './routes/staff.storage'
 import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
+import { Route as StaffNotesRouteImport } from './routes/staff.notes'
 import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
 import { Route as StaffKnowledgeHubRouteImport } from './routes/staff.knowledge-hub'
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
@@ -132,6 +133,11 @@ const StaffProductKnowledgeRoute = StaffProductKnowledgeRouteImport.update({
   path: '/product-knowledge',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffNotesRoute = StaffNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffKnowledgeTranslationRoute =
   StaffKnowledgeTranslationRouteImport.update({
     id: '/knowledge-translation',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
+  '/staff/notes': typeof StaffNotesRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/storage': typeof StaffStorageRoute
   '/staff/talent': typeof StaffTalentRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
+  '/staff/notes': typeof StaffNotesRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/storage': typeof StaffStorageRoute
   '/staff/talent': typeof StaffTalentRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
+  '/staff/notes': typeof StaffNotesRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/storage': typeof StaffStorageRoute
   '/staff/talent': typeof StaffTalentRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge'
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
+    | '/staff/notes'
     | '/staff/product-knowledge'
     | '/staff/storage'
     | '/staff/talent'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge'
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
+    | '/staff/notes'
     | '/staff/product-knowledge'
     | '/staff/storage'
     | '/staff/talent'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge'
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
+    | '/staff/notes'
     | '/staff/product-knowledge'
     | '/staff/storage'
     | '/staff/talent'
@@ -560,6 +572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffProductKnowledgeRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/notes': {
+      id: '/staff/notes'
+      path: '/notes'
+      fullPath: '/staff/notes'
+      preLoaderRoute: typeof StaffNotesRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/knowledge-translation': {
       id: '/staff/knowledge-translation'
       path: '/knowledge-translation'
@@ -679,6 +698,7 @@ interface StaffRouteChildren {
   StaffKnowledgeRoute: typeof StaffKnowledgeRoute
   StaffKnowledgeHubRoute: typeof StaffKnowledgeHubRoute
   StaffKnowledgeTranslationRoute: typeof StaffKnowledgeTranslationRoute
+  StaffNotesRoute: typeof StaffNotesRoute
   StaffProductKnowledgeRoute: typeof StaffProductKnowledgeRoute
   StaffStorageRoute: typeof StaffStorageRoute
   StaffTalentRoute: typeof StaffTalentRoute
@@ -695,6 +715,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffKnowledgeRoute: StaffKnowledgeRoute,
   StaffKnowledgeHubRoute: StaffKnowledgeHubRoute,
   StaffKnowledgeTranslationRoute: StaffKnowledgeTranslationRoute,
+  StaffNotesRoute: StaffNotesRoute,
   StaffProductKnowledgeRoute: StaffProductKnowledgeRoute,
   StaffStorageRoute: StaffStorageRoute,
   StaffTalentRoute: StaffTalentRoute,
