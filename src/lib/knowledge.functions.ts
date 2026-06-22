@@ -4,6 +4,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type KnowledgeSponsor = { name: string; role?: string; logoUrl?: string };
 
+export type KnowledgeAttachment = {
+  path: string;            // storage key inside knowledge-attachments bucket
+  name: string;            // original filename to display
+  size: number;            // bytes
+  contentType: string;     // e.g. application/pdf, image/png
+  uploadedAt: string;      // ISO timestamp
+  url?: string;            // populated server-side as a signed URL when reading
+};
+
 export type KnowledgeRow = {
   id: string;
   slug: string;
@@ -21,6 +30,7 @@ export type KnowledgeRow = {
   sourceType: string | null;
   coverUrl: string | null;
   sponsors: KnowledgeSponsor[];
+  attachments: KnowledgeAttachment[];
   status: "draft" | "in_review" | "published";
   visibility: "internal" | "public";
   isFeatured: boolean;
@@ -31,9 +41,11 @@ export type KnowledgeRow = {
 };
 
 const SELECT_COLS =
-  "id, slug, title_th, title_en, summary, key_message, content_md, language, categories, tags, audiences, product_service, source, source_type, cover_url, sponsors, status, visibility, is_featured, featured_order, published_at, updated_at, created_at";
+  "id, slug, title_th, title_en, summary, key_message, content_md, language, categories, tags, audiences, product_service, source, source_type, cover_url, sponsors, status, visibility, is_featured, featured_order, published_at, updated_at, created_at, metadata";
 
 function mapRow(r: Record<string, unknown>): KnowledgeRow {
+  const meta = ((r.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+  const attachments = (Array.isArray(meta.attachments) ? meta.attachments : []) as KnowledgeAttachment[];
   return {
     id: String(r.id),
     slug: String(r.slug),
@@ -51,6 +63,7 @@ function mapRow(r: Record<string, unknown>): KnowledgeRow {
     sourceType: (r.source_type as string | null) ?? null,
     coverUrl: (r.cover_url as string | null) ?? null,
     sponsors: (r.sponsors as KnowledgeSponsor[]) ?? [],
+    attachments,
     status: (r.status as KnowledgeRow["status"]) ?? "draft",
     visibility: (r.visibility as KnowledgeRow["visibility"]) ?? "internal",
     isFeatured: Boolean(r.is_featured),
@@ -59,6 +72,23 @@ function mapRow(r: Record<string, unknown>): KnowledgeRow {
     updatedAt: String(r.updated_at ?? ""),
     createdAt: String(r.created_at ?? ""),
   };
+}
+
+// Enrich attachments with signed URLs (7-day expiry). Best-effort.
+async function signAttachments(
+  client: { storage: { from: (b: string) => { createSignedUrl: (p: string, exp: number) => Promise<{ data: { signedUrl: string } | null; error: unknown }> } } },
+  rows: KnowledgeRow[],
+): Promise<KnowledgeRow[]> {
+  for (const row of rows) {
+    for (const a of row.attachments ?? []) {
+      if (!a?.path) continue;
+      try {
+        const { data } = await client.storage.from("knowledge-attachments").createSignedUrl(a.path, 60 * 60 * 24 * 7);
+        if (data?.signedUrl) a.url = data.signedUrl;
+      } catch { /* ignore */ }
+    }
+  }
+  return rows;
 }
 
 // ===== Public reads (no auth; called from SSR loaders) =====
