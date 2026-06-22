@@ -4,6 +4,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type KnowledgeSponsor = { name: string; role?: string; logoUrl?: string };
 
+export type KnowledgeAttachment = {
+  path: string;            // storage key inside knowledge-attachments bucket
+  name: string;            // original filename to display
+  size: number;            // bytes
+  contentType: string;     // e.g. application/pdf, image/png
+  uploadedAt: string;      // ISO timestamp
+  url?: string;            // populated server-side as a signed URL when reading
+};
+
 export type KnowledgeRow = {
   id: string;
   slug: string;
@@ -21,6 +30,7 @@ export type KnowledgeRow = {
   sourceType: string | null;
   coverUrl: string | null;
   sponsors: KnowledgeSponsor[];
+  attachments: KnowledgeAttachment[];
   status: "draft" | "in_review" | "published";
   visibility: "internal" | "public";
   isFeatured: boolean;
@@ -31,9 +41,11 @@ export type KnowledgeRow = {
 };
 
 const SELECT_COLS =
-  "id, slug, title_th, title_en, summary, key_message, content_md, language, categories, tags, audiences, product_service, source, source_type, cover_url, sponsors, status, visibility, is_featured, featured_order, published_at, updated_at, created_at";
+  "id, slug, title_th, title_en, summary, key_message, content_md, language, categories, tags, audiences, product_service, source, source_type, cover_url, sponsors, status, visibility, is_featured, featured_order, published_at, updated_at, created_at, metadata";
 
 function mapRow(r: Record<string, unknown>): KnowledgeRow {
+  const meta = ((r.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+  const attachments = (Array.isArray(meta.attachments) ? meta.attachments : []) as KnowledgeAttachment[];
   return {
     id: String(r.id),
     slug: String(r.slug),
@@ -51,6 +63,7 @@ function mapRow(r: Record<string, unknown>): KnowledgeRow {
     sourceType: (r.source_type as string | null) ?? null,
     coverUrl: (r.cover_url as string | null) ?? null,
     sponsors: (r.sponsors as KnowledgeSponsor[]) ?? [],
+    attachments,
     status: (r.status as KnowledgeRow["status"]) ?? "draft",
     visibility: (r.visibility as KnowledgeRow["visibility"]) ?? "internal",
     isFeatured: Boolean(r.is_featured),
@@ -59,6 +72,23 @@ function mapRow(r: Record<string, unknown>): KnowledgeRow {
     updatedAt: String(r.updated_at ?? ""),
     createdAt: String(r.created_at ?? ""),
   };
+}
+
+// Enrich attachments with signed URLs (7-day expiry). Best-effort.
+async function signAttachments(
+  client: { storage: { from: (b: string) => { createSignedUrl: (p: string, exp: number) => Promise<{ data: { signedUrl: string } | null; error: unknown }> } } },
+  rows: KnowledgeRow[],
+): Promise<KnowledgeRow[]> {
+  for (const row of rows) {
+    for (const a of row.attachments ?? []) {
+      if (!a?.path) continue;
+      try {
+        const { data } = await client.storage.from("knowledge-attachments").createSignedUrl(a.path, 60 * 60 * 24 * 7);
+        if (data?.signedUrl) a.url = data.signedUrl;
+      } catch { /* ignore */ }
+    }
+  }
+  return rows;
 }
 
 // ===== Public reads (no auth; called from SSR loaders) =====
@@ -114,6 +144,7 @@ export const getPublicKnowledgeBySlug = createServerFn({ method: "GET" })
       const { default: contentMd } = await import("@/data/hivst-content.md?raw");
       mapped.contentMd = contentMd as unknown as string;
     }
+    await signAttachments(supabaseAdmin, [mapped]);
     return { item: mapped };
   });
 
@@ -127,7 +158,9 @@ export const listAllKnowledge = createServerFn({ method: "GET" })
       .select(SELECT_COLS)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { items: (data ?? []).map(mapRow) };
+    const rows = (data ?? []).map(mapRow);
+    await signAttachments(context.supabase as never, rows);
+    return { items: rows };
   });
 
 const UpsertSchema = z.object({
@@ -267,3 +300,65 @@ export const publishKnowledgeBySlug = createServerFn({ method: "POST" })
     return { item: mapRow(row as Record<string, unknown>) };
   });
 
+
+// ===== Attachments =====
+
+const AttachmentSchema = z.object({
+  path: z.string().min(1).max(500),
+  name: z.string().min(1).max(255),
+  size: z.number().int().min(0).max(50 * 1024 * 1024),
+  contentType: z.string().max(127).default("application/octet-stream"),
+  uploadedAt: z.string().optional(),
+});
+
+export const setKnowledgeAttachments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      attachments: z.array(AttachmentSchema).max(50),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    // Merge into existing metadata to preserve other keys
+    const { data: existing, error: readErr } = await context.supabase
+      .from("knowledge_products")
+      .select("metadata")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    const meta = ((existing?.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+    const nowIso = new Date().toISOString();
+    meta.attachments = data.attachments.map((a) => ({
+      path: a.path,
+      name: a.name,
+      size: a.size,
+      contentType: a.contentType,
+      uploadedAt: a.uploadedAt ?? nowIso,
+    }));
+    const { data: row, error } = await context.supabase
+      .from("knowledge_products")
+      .update({ metadata: meta as never })
+      .eq("id", data.id)
+      .select(SELECT_COLS)
+      .single();
+    if (error) throw new Error(error.message);
+    const mapped = mapRow(row as Record<string, unknown>);
+    await signAttachments(context.supabase as never, [mapped]);
+    return { item: mapped };
+  });
+
+export const createKnowledgeAttachmentSignedUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({ id: z.string().uuid(), filename: z.string().min(1).max(255) }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const safe = data.filename.replace(/[^\w.\-]+/g, "_").slice(-200);
+    const path = `${data.id}/${Date.now()}-${safe}`;
+    const { data: signed, error } = await (context.supabase as never as {
+      storage: { from: (b: string) => { createSignedUploadUrl: (p: string) => Promise<{ data: { signedUrl: string; token: string; path: string } | null; error: unknown }> } };
+    }).storage.from("knowledge-attachments").createSignedUploadUrl(path);
+    if (error || !signed) throw new Error((error as Error)?.message ?? "Failed to create upload URL");
+    return { path: signed.path, token: signed.token };
+  });

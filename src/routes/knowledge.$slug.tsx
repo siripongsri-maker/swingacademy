@@ -497,6 +497,44 @@ function KnowledgeDetailPage() {
           </section>
         )}
 
+        {asset.attachments && asset.attachments.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-lg font-semibold text-navy-500">เอกสารและไฟล์แนบ · Attachments</h2>
+            <ul className="mt-4 divide-y divide-warm-200 overflow-hidden rounded-xl border border-warm-200 bg-white">
+              {asset.attachments.map((a) => {
+                const sizeLabel =
+                  a.size < 1024
+                    ? `${a.size} B`
+                    : a.size < 1024 * 1024
+                    ? `${(a.size / 1024).toFixed(1)} KB`
+                    : `${(a.size / 1024 / 1024).toFixed(1)} MB`;
+                return (
+                  <li key={a.path} className="flex items-center gap-3 px-4 py-3">
+                    <FileText className="h-5 w-5 shrink-0 text-magenta-500" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-navy-500">{a.name}</p>
+                      <p className="text-xs text-warm-500">{sizeLabel} · {a.contentType}</p>
+                    </div>
+                    {a.url ? (
+                      <a
+                        href={a.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-flex items-center gap-1.5 rounded-md bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-600"
+                      >
+                        <Download className="h-3.5 w-3.5" /> ดาวน์โหลด
+                      </a>
+                    ) : (
+                      <span className="text-xs text-warm-400">ลิงก์หมดอายุ</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
         <footer className="mt-14 border-t border-warm-200 pt-8">
           <p className="text-xs font-semibold uppercase tracking-wider text-warm-500">
             ผู้สนับสนุนและแหล่งทุน · Supporters & Funders
