@@ -215,6 +215,53 @@ export type Database = {
           },
         ]
       }
+      knowledge_activity_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          attachment_content_type: string | null
+          attachment_name: string | null
+          attachment_path: string | null
+          attachment_size: number | null
+          created_at: string
+          details: Json
+          id: string
+          knowledge_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          attachment_content_type?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          knowledge_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          attachment_content_type?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          knowledge_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_activity_logs_knowledge_id_fkey"
+            columns: ["knowledge_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       knowledge_products: {
         Row: {
           approved_at: string | null
