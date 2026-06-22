@@ -86,7 +86,7 @@ export function VoiceRecorder({ lessonId, courseId, onSaved }: Props) {
           file_path: path,
           lesson_id: lessonId ?? null,
           course_id: courseId ?? null,
-          title: title || null,
+          title: title || undefined,
           duration_sec: seconds,
           mime: blob.type,
         },
