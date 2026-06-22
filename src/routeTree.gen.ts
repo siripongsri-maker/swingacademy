@@ -38,6 +38,7 @@ import { Route as KSlugRouteImport } from './routes/k.$slug'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
 import { Route as ClassroomClassroomIdRouteImport } from './routes/classroom.$classroomId'
 import { Route as ApiGenerateTranslationImageRouteImport } from './routes/api/generate-translation-image'
+import { Route as ClassroomClassroomIdLessonLessonIdRouteImport } from './routes/classroom.$classroomId.lesson.$lessonId'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
@@ -186,6 +187,12 @@ const ApiGenerateTranslationImageRoute =
     path: '/api/generate-translation-image',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ClassroomClassroomIdLessonLessonIdRoute =
+  ClassroomClassroomIdLessonLessonIdRouteImport.update({
+    id: '/lesson/$lessonId',
+    path: '/lesson/$lessonId',
+    getParentRoute: () => ClassroomClassroomIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -198,7 +205,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
-  '/classroom/$classroomId': typeof ClassroomClassroomIdRoute
+  '/classroom/$classroomId': typeof ClassroomClassroomIdRouteWithChildren
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
+  '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -228,7 +236,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
   '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
-  '/classroom/$classroomId': typeof ClassroomClassroomIdRoute
+  '/classroom/$classroomId': typeof ClassroomClassroomIdRouteWithChildren
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -247,6 +255,7 @@ export interface FileRoutesByTo {
   '/classroom': typeof ClassroomIndexRoute
   '/knowledge': typeof KnowledgeIndexRoute
   '/staff': typeof StaffIndexRoute
+  '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -260,7 +269,7 @@ export interface FileRoutesById {
   '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
-  '/classroom/$classroomId': typeof ClassroomClassroomIdRoute
+  '/classroom/$classroomId': typeof ClassroomClassroomIdRouteWithChildren
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -279,6 +288,7 @@ export interface FileRoutesById {
   '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
+  '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/classroom/'
     | '/knowledge/'
     | '/staff/'
+    | '/classroom/$classroomId/lesson/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/classroom'
     | '/knowledge'
     | '/staff'
+    | '/classroom/$classroomId/lesson/$lessonId'
   id:
     | '__root__'
     | '/'
@@ -373,6 +385,7 @@ export interface FileRouteTypes {
     | '/classroom/'
     | '/knowledge/'
     | '/staff/'
+    | '/classroom/$classroomId/lesson/$lessonId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -386,7 +399,7 @@ export interface RootRouteChildren {
   StaffRoute: typeof StaffRouteWithChildren
   VerifyRoute: typeof VerifyRoute
   ApiGenerateTranslationImageRoute: typeof ApiGenerateTranslationImageRoute
-  ClassroomClassroomIdRoute: typeof ClassroomClassroomIdRoute
+  ClassroomClassroomIdRoute: typeof ClassroomClassroomIdRouteWithChildren
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
   ClassroomIndexRoute: typeof ClassroomIndexRoute
@@ -598,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGenerateTranslationImageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/classroom/$classroomId/lesson/$lessonId': {
+      id: '/classroom/$classroomId/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/classroom/$classroomId/lesson/$lessonId'
+      preLoaderRoute: typeof ClassroomClassroomIdLessonLessonIdRouteImport
+      parentRoute: typeof ClassroomClassroomIdRoute
+    }
   }
 }
 
@@ -646,6 +666,18 @@ const StaffRouteChildren: StaffRouteChildren = {
 
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
+interface ClassroomClassroomIdRouteChildren {
+  ClassroomClassroomIdLessonLessonIdRoute: typeof ClassroomClassroomIdLessonLessonIdRoute
+}
+
+const ClassroomClassroomIdRouteChildren: ClassroomClassroomIdRouteChildren = {
+  ClassroomClassroomIdLessonLessonIdRoute:
+    ClassroomClassroomIdLessonLessonIdRoute,
+}
+
+const ClassroomClassroomIdRouteWithChildren =
+  ClassroomClassroomIdRoute._addFileChildren(ClassroomClassroomIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
@@ -657,7 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffRoute: StaffRouteWithChildren,
   VerifyRoute: VerifyRoute,
   ApiGenerateTranslationImageRoute: ApiGenerateTranslationImageRoute,
-  ClassroomClassroomIdRoute: ClassroomClassroomIdRoute,
+  ClassroomClassroomIdRoute: ClassroomClassroomIdRouteWithChildren,
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
   ClassroomIndexRoute: ClassroomIndexRoute,
