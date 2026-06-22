@@ -60,7 +60,8 @@ function KnowledgeLibraryPage() {
     });
   }, [items, q, statusFilter, visibilityFilter]);
 
-  async function patch(row: KnowledgeRow, patchData: Parameters<typeof setState>[0]["data"]) {
+  type PatchData = { id: string; status?: KnowledgeRow["status"]; visibility?: KnowledgeRow["visibility"]; isFeatured?: boolean; featuredOrder?: number };
+  async function patch(_row: KnowledgeRow, patchData: PatchData) {
     try {
       await setState({ data: patchData });
       toast.success(t({ th: "อัปเดตแล้ว", en: "Updated" }));
