@@ -425,10 +425,12 @@ function HomePage() {
                     <BookOpen className="h-5 w-5" />
                   </span>
                   <h3 className="text-lg font-semibold text-navy-500 group-hover:text-magenta-500">
-                    {k.titleTh}
+                    {t({ th: k.titleTh, en: k.titleEn || k.titleTh })}
                   </h3>
-                  {k.titleEn && (
-                    <p className="mt-0.5 text-xs italic text-warm-500">{k.titleEn}</p>
+                  {k.titleEn && k.titleEn !== k.titleTh && (
+                    <p className="mt-0.5 text-xs italic text-warm-500">
+                      {t({ th: k.titleEn, en: k.titleTh })}
+                    </p>
                   )}
                   {k.summary && (
                     <p className="mt-3 line-clamp-3 flex-1 text-sm text-warm-600">{k.summary}</p>
