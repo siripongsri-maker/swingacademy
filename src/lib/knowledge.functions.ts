@@ -158,7 +158,9 @@ export const listAllKnowledge = createServerFn({ method: "GET" })
       .select(SELECT_COLS)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { items: (data ?? []).map(mapRow) };
+    const rows = (data ?? []).map(mapRow);
+    await signAttachments(context.supabase as never, rows);
+    return { items: rows };
   });
 
 const UpsertSchema = z.object({
