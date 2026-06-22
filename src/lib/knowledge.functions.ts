@@ -338,7 +338,7 @@ export const setKnowledgeAttachments = createServerFn({ method: "POST" })
     }));
     const { data: row, error } = await context.supabase
       .from("knowledge_products")
-      .update({ metadata: meta })
+      .update({ metadata: meta as never })
       .eq("id", data.id)
       .select(SELECT_COLS)
       .single();
