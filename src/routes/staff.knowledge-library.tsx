@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Search, Eye, EyeOff, Globe, Lock, Star, StarOff, Trash2, Save, X, ExternalLink, RefreshCw, FileText,
-  Paperclip, Upload, Download,
+  Paperclip, Upload, Download, History,
 } from "lucide-react";
 import {
   listAllKnowledge,
@@ -13,8 +13,10 @@ import {
   setKnowledgePublishState,
   setKnowledgeAttachments,
   deleteKnowledge,
+  listKnowledgeActivity,
   type KnowledgeRow,
   type KnowledgeAttachment,
+  type KnowledgeActivityLog,
 } from "@/lib/knowledge.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/lib/language-context";
