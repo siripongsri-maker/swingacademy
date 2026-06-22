@@ -307,7 +307,72 @@ function EditorModal({ row, onClose, onSave }: { row: KnowledgeRow; onClose: () 
   const [contentMd, setContentMd] = useState(row.contentMd);
   const [tags, setTags] = useState(row.tags.join(", "));
   const [categories, setCategories] = useState(row.categories.join(", "));
+  const [attachments, setAttachments] = useState<KnowledgeAttachment[]>(row.attachments ?? []);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const saveAttachments = useServerFn(setKnowledgeAttachments);
+
+  async function persistAttachments(next: KnowledgeAttachment[]) {
+    const res = await saveAttachments({ data: { id: row.id, attachments: next.map(({ url: _u, ...a }) => a) } });
+    setAttachments(res.item.attachments);
+  }
+
+  async function onFilesPicked(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const newOnes: KnowledgeAttachment[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 50 * 1024 * 1024) {
+          toast.error(t({ th: `ไฟล์ใหญ่เกิน 50MB: ${file.name}`, en: `File over 50MB: ${file.name}` }));
+          continue;
+        }
+        const safe = file.name.replace(/[^\w.\-]+/g, "_").slice(-200);
+        const path = `${row.id}/${Date.now()}-${safe}`;
+        const { error: upErr } = await supabase.storage
+          .from("knowledge-attachments")
+          .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+        if (upErr) {
+          toast.error(`${file.name}: ${upErr.message}`);
+          continue;
+        }
+        newOnes.push({
+          path,
+          name: file.name,
+          size: file.size,
+          contentType: file.type || "application/octet-stream",
+          uploadedAt: new Date().toISOString(),
+        });
+      }
+      if (newOnes.length) {
+        await persistAttachments([...attachments, ...newOnes]);
+        toast.success(t({ th: `แนบ ${newOnes.length} ไฟล์แล้ว`, en: `Attached ${newOnes.length} file(s)` }));
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function removeAttachment(att: KnowledgeAttachment) {
+    if (!confirm(t({ th: `ลบไฟล์ "${att.name}"?`, en: `Delete file "${att.name}"?` }))) return;
+    try {
+      await supabase.storage.from("knowledge-attachments").remove([att.path]);
+      await persistAttachments(attachments.filter((a) => a.path !== att.path));
+      toast.success(t({ th: "ลบไฟล์แล้ว", en: "File removed" }));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  function formatSize(bytes: number) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
@@ -329,6 +394,57 @@ function EditorModal({ row, onClose, onSave }: { row: KnowledgeRow; onClose: () 
           <Field label={t({ th: "เนื้อหา (Markdown)", en: "Content (Markdown)" })}>
             <textarea value={contentMd} onChange={(e) => setContentMd(e.target.value)} rows={14} className="w-full rounded border border-warm-200 px-3 py-2 font-mono text-xs" />
           </Field>
+
+          {/* Attachments */}
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-warm-500">
+                <Paperclip className="mr-1 inline h-3.5 w-3.5" />
+                {t({ th: "ไฟล์แนบ", en: "Attachments" })} ({attachments.length})
+              </span>
+              <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-warm-200 bg-white px-3 py-1.5 text-xs font-semibold text-navy-500 hover:bg-warm-50 ${uploading ? "opacity-60" : ""}`}>
+                <Upload className="h-3.5 w-3.5" />
+                {uploading ? t({ th: "กำลังอัปโหลด…", en: "Uploading…" }) : t({ th: "อัปโหลดไฟล์", en: "Upload" })}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  disabled={uploading}
+                  onChange={(e) => onFilesPicked(e.target.files)}
+                />
+              </label>
+            </div>
+            {attachments.length === 0 ? (
+              <p className="rounded-md border border-dashed border-warm-200 bg-warm-50 px-3 py-4 text-center text-xs text-warm-500">
+                {t({ th: "ยังไม่มีไฟล์แนบ — รองรับ PDF, รูปภาพ และไฟล์อื่น ๆ สูงสุด 50MB ต่อไฟล์", en: "No attachments yet — PDF, images, and other files up to 50MB each" })}
+              </p>
+            ) : (
+              <ul className="divide-y divide-warm-100 rounded-md border border-warm-200">
+                {attachments.map((a) => (
+                  <li key={a.path} className="flex items-center gap-3 px-3 py-2 text-sm">
+                    <FileText className="h-4 w-4 shrink-0 text-warm-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-navy-500">{a.name}</div>
+                      <div className="text-[11px] text-warm-500">{formatSize(a.size)} · {a.contentType}</div>
+                    </div>
+                    {a.url && (
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" download
+                        className="rounded-md border border-warm-200 p-1.5 text-warm-600 hover:bg-warm-50"
+                        title={t({ th: "ดาวน์โหลด", en: "Download" })}>
+                        <Download className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                    <button onClick={() => removeAttachment(a)}
+                      className="rounded-md border border-red-200 p-1.5 text-red-600 hover:bg-red-50"
+                      title={t({ th: "ลบ", en: "Delete" })}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
         <div className="flex items-center justify-end gap-2 border-t border-warm-200 bg-warm-50 px-5 py-3">
           <button onClick={onClose} className="rounded-md border border-warm-200 bg-white px-3 py-2 text-sm">{t({ th: "ยกเลิก", en: "Cancel" })}</button>
