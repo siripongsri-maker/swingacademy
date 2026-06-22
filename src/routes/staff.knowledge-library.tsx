@@ -282,6 +282,10 @@ function KnowledgeLibraryPage() {
           }}
         />
       )}
+
+      {historyFor && (
+        <HistoryModal row={historyFor} onClose={() => setHistoryFor(null)} />
+      )}
     </div>
   );
 }
