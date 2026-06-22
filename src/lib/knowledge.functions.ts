@@ -300,3 +300,65 @@ export const publishKnowledgeBySlug = createServerFn({ method: "POST" })
     return { item: mapRow(row as Record<string, unknown>) };
   });
 
+
+// ===== Attachments =====
+
+const AttachmentSchema = z.object({
+  path: z.string().min(1).max(500),
+  name: z.string().min(1).max(255),
+  size: z.number().int().min(0).max(50 * 1024 * 1024),
+  contentType: z.string().max(127).default("application/octet-stream"),
+  uploadedAt: z.string().optional(),
+});
+
+export const setKnowledgeAttachments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      attachments: z.array(AttachmentSchema).max(50),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    // Merge into existing metadata to preserve other keys
+    const { data: existing, error: readErr } = await context.supabase
+      .from("knowledge_products")
+      .select("metadata")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    const meta = ((existing?.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+    const nowIso = new Date().toISOString();
+    meta.attachments = data.attachments.map((a) => ({
+      path: a.path,
+      name: a.name,
+      size: a.size,
+      contentType: a.contentType,
+      uploadedAt: a.uploadedAt ?? nowIso,
+    }));
+    const { data: row, error } = await context.supabase
+      .from("knowledge_products")
+      .update({ metadata: meta })
+      .eq("id", data.id)
+      .select(SELECT_COLS)
+      .single();
+    if (error) throw new Error(error.message);
+    const mapped = mapRow(row as Record<string, unknown>);
+    await signAttachments(context.supabase as never, [mapped]);
+    return { item: mapped };
+  });
+
+export const createKnowledgeAttachmentSignedUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({ id: z.string().uuid(), filename: z.string().min(1).max(255) }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const safe = data.filename.replace(/[^\w.\-]+/g, "_").slice(-200);
+    const path = `${data.id}/${Date.now()}-${safe}`;
+    const { data: signed, error } = await (context.supabase as never as {
+      storage: { from: (b: string) => { createSignedUploadUrl: (p: string) => Promise<{ data: { signedUrl: string; token: string; path: string } | null; error: unknown }> } };
+    }).storage.from("knowledge-attachments").createSignedUploadUrl(path);
+    if (error || !signed) throw new Error((error as Error)?.message ?? "Failed to create upload URL");
+    return { path: signed.path, token: signed.token };
+  });
