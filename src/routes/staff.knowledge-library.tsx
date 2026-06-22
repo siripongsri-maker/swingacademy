@@ -1,18 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Search, Eye, EyeOff, Globe, Lock, Star, StarOff, Trash2, Save, X, ExternalLink, RefreshCw, FileText,
+  Paperclip, Upload, Download,
 } from "lucide-react";
 import {
   listAllKnowledge,
   upsertKnowledge,
   setKnowledgePublishState,
+  setKnowledgeAttachments,
   deleteKnowledge,
   type KnowledgeRow,
+  type KnowledgeAttachment,
 } from "@/lib/knowledge.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/lib/language-context";
 
 export const Route = createFileRoute("/staff/knowledge-library")({
