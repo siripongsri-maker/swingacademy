@@ -18,6 +18,9 @@ import {
   Mic,
   Shield,
   HardDrive,
+  GraduationCap,
+  StickyNote,
+  Volume2,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import { useConsoleRole } from "@/lib/console-role-context";
@@ -44,11 +47,12 @@ const knowledgeFlow: NavItem[] = [
 
 const consoleNav: NavItem[] = [
   { to: "/staff/dashboard", label: { th: "แดชบอร์ด", en: "Dashboard" }, sub: { th: "ภาพรวม", en: "Overview" }, icon: LayoutDashboard },
+  { to: "/classroom", label: { th: "ห้องเรียน", en: "Classrooms" }, sub: { th: "จัดการห้องเรียนและบทเรียน", en: "Manage classrooms" }, icon: GraduationCap },
+  { to: "/staff/notes", label: { th: "โน้ตทั้งหมด", en: "All Notes" }, sub: { th: "โน้ตจากผู้เรียน", en: "Learner notes" }, icon: StickyNote, requires: "users.manage" },
+  { to: "/staff/voice", label: { th: "เสียงบันทึก", en: "Voice Records" }, sub: { th: "เสียงจากผู้เรียน", en: "Learner voices" }, icon: Volume2, requires: "users.manage" },
   { to: "/staff/trainings", label: { th: "การอบรม", en: "Trainings" }, sub: { th: "ตารางและคอร์ส", en: "Schedule & courses" }, icon: CalendarClock },
   { to: "/staff/transfer", label: { th: "ถ่ายทอดความรู้", en: "KT Transfer" }, sub: { th: "ติดตามการถ่ายทอด", en: "Track transfers" }, icon: GitBranch },
   { to: "/staff/storage", label: { th: "ไฟล์ใน Storage", en: "Storage Files" }, sub: { th: "ตรวจสอบไฟล์ที่อัปโหลด", en: "Inspect uploaded files" }, icon: HardDrive, requires: "users.manage" },
-  
-  
   { to: "/staff/users", label: { th: "ผู้ใช้และสิทธิ์", en: "Users & Roles" }, sub: { th: "จัดการบัญชี", en: "Manage accounts" }, icon: UserCog, requires: "users.manage" },
   { to: "/staff/admin", label: { th: "ตั้งค่า", en: "Admin" }, sub: { th: "ตั้งค่าระบบ", en: "System settings" }, icon: Settings, requires: "roles.manage" },
 ];

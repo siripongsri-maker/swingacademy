@@ -1,82 +1,100 @@
+## ภาพรวม
 
-# Visualize & Publish Knowledge Translation
+ปรับ SWING Academy ให้เป็น **Learning Classroom + Community Knowledge Platform** แนว Google Classroom — เรียบง่าย ใช้งานจริง รองรับทีมภาคสนาม โดย **ไม่ลบ** ระบบเดิม (knowledge_products, trainings, knowledge_translations, user_roles, storage buckets) และไม่แตะ RLS เดิมที่ทำงานอยู่
 
-ทำให้หน้า `/staff/knowledge-translation` แสดงผล "ตามรูปแบบจริง" (Social Caption, Carousel, Infographic, FAQ, Flow Chart, Poster, Slide, HTML, Learning Card, Video Script ฯลฯ) มี **Preview** ก่อน Publish และพอ Publish จะไป **แสดงบนหน้าเว็บความรู้จริง** (`/k/<slug>` / `/knowledge/<slug>`) เป็นส่วนหนึ่งของเนื้อหา พร้อม **ระบุผู้สร้างเป็น Contributor**
+งานแบ่งเป็น 4 เฟส เพื่อให้ตรวจรับทีละขั้น ไม่พังของเดิม
 
-## สิ่งที่จะทำ
+---
 
-### 1) Format renderers (Visualize)
-สร้าง `src/components/translation-renderers/` แต่ละไฟล์รับ markdown + meta แล้ว render เป็น UI จริง:
-- **social_caption / campaign_message** → การ์ดโพสต์โซเชียล (avatar SWING, ข้อความ, hashtag)
-- **carousel** → สไลด์เลื่อนซ้าย-ขวา (1 ## = 1 สไลด์)
-- **infographic_text / poster_concept** → กรอบโปสเตอร์แนวตั้ง gradient + bullets
-- **short_article / training_handout / micro_learning** → บทความ prose
-- **learning_card** → flip card หน้า/หลัง
-- **faq** → accordion (Q: / A: คู่)
-- **chatbot_script / script / short_video_script** → bubble chat / scene blocks
-- **slide_outline** → 16:9 slide deck (## = title, bullets = body)
-- **flow_chart** → ถ้า output มี mermaid block → render mermaid, ไม่มีก็ ordered steps
-- **html_page** → iframe sandbox preview ของ HTML block
-- fallback → ReactMarkdown
+## เฟส 1 — Database & RLS (migration เดียว, ปลอดภัย, idempotent)
 
-ทุก renderer มีปุ่ม "ดูเป็น Markdown" toggle
+เพิ่มตารางใหม่ด้วย `CREATE TABLE IF NOT EXISTS` พร้อม GRANT + RLS ตาม policy แต่ละ role (`learner`, `trainer`, `staff`, `admin`). ใช้ฟังก์ชัน `public.has_role()` ที่มีอยู่แล้ว
 
-### 2) Preview ในหน้า Editor
-- เพิ่ม Tabs: **Edit / Preview** (default Preview หลัง generate)
-- Preview เรียก renderer ตาม `format` ที่เลือก เห็นหน้าตาเหมือนตอน publish จริง
-- ปุ่ม "Preview on site" เปิด modal เต็มจอจำลองหน้า `/knowledge/<slug>` พร้อม section translation นี้
+ตารางใหม่:
+- **classrooms** — id, title, description, cover_url, owner_id, created_at, updated_at
+- **courses** — id, classroom_id, title, slug (unique per classroom, auto-suffix กัน duplicate), description, cover_url, order_index, owner_id, …
+- **lessons** — id, course_id, title, body_md, order_index, owner_id, …
+- **assignments** — id, lesson_id, title, instructions, due_at, …
+- **enrollments** — id, classroom_id, user_id, role_in_class ('learner'|'trainer'), unique(classroom_id, user_id)
+- **lesson_notes** — id, lesson_id, course_id, user_id, body, visibility ('private'|'class'), created_at
+- **voice_records** — id, lesson_id, course_id, user_id, title, file_path (training-attachments bucket), duration_sec, mime, created_at
+- **course_files** — id, course_id, lesson_id (nullable), file_path, file_name, size, mime, uploaded_by
 
-### 3) Publish → ขึ้นหน้าเว็บจริง
-ตอนนี้ translations เก็บใน localStorage เท่านั้น จึงไม่มีทางขึ้นหน้า public ต้องย้ายเป็น DB-backed:
+**RLS รวบสั้น:**
+- learner เห็น/แก้ของตัวเอง + อ่าน classroom/course/lesson ที่ enroll
+- trainer/staff จัดการ classroom/course/lesson ที่ตัวเองเป็น owner หรือถูก assign
+- admin จัดการได้ทุกอย่างผ่าน `has_role(uid,'admin')`
+- `lesson_notes.visibility='private'` → เห็นเฉพาะเจ้าของ + staff/admin
+- `voice_records` → learner เห็นเฉพาะของตัวเอง, staff/admin/trainer ที่เป็น owner ของ course เห็นทั้งหมด
 
-**Migration** `knowledge_translations`:
-```
-id uuid pk, asset_id uuid fk knowledge_products(id) on delete cascade,
-audience text, format text, tone text, language text,
-instruction text, output_md text, status text check (draft|ready|published),
-title text null, contributor_id text null (person id ใน seed),
-owner_id uuid references auth.users, published_at timestamptz,
-created_at, updated_at
-```
-- GRANT SELECT to anon (เฉพาะ published), GRANT ALL to authenticated/service_role
-- RLS: anon อ่าน `status='published'` + asset.visibility='public'; staff/admin เขียน
+ใช้ storage bucket **`training-attachments`** เดิมสำหรับเสียง + ไฟล์ (เพิ่ม object-level RLS path-based: `lesson-notes/<user_id>/...`, `voice/<user_id>/...`)
 
-**Server functions** `src/lib/knowledge-translations.functions.ts`:
-- `listTranslations({assetId?})` — staff
-- `saveTranslation({id?, patch})` — staff/admin
-- `removeTranslation({id})` — staff/admin
-- `listPublishedTranslationsForAsset({slug})` — public (admin client + filter)
+---
 
-**Store** `product-knowledge-store.tsx`: ย้าย translations จาก localStorage ไป useQuery + server fn (รูปแบบเดียวกับ talent mappings ที่เพิ่งทำ) — optimistic update เพื่อความลื่น
+## เฟส 2 — Server functions (createServerFn)
 
-### 4) แสดงบนหน้า Public
-ใน `src/routes/knowledge.$slug.tsx` (และ `k.$slug.tsx` ที่ render เดียวกัน) หลัง section บทเรียน เพิ่ม:
+ไฟล์ใหม่ใน `src/lib/`:
+- `classrooms.functions.ts` — CRUD classroom + enroll/unenroll
+- `courses.functions.ts` — CRUD course (slug-uniqueness ตามที่ทำใน knowledge-assets แล้ว)
+- `lessons.functions.ts` — CRUD lesson + list by course
+- `lesson-notes.functions.ts` — list/create/update/delete note ของผู้ใช้ + staff list ทั้งหมด
+- `voice-records.functions.ts` — upload (signed upload URL), list, delete, get signed playback URL
+- `assignments.functions.ts` — CRUD + submission (เฟสนี้แค่โครง, full submission ค่อยทำต่อ)
 
-**"📣 รูปแบบเผยแพร่ · Published Formats"** — แสดง translations ที่ `status='published'` ของ asset นี้ เป็นการ์ดเรียง grid โดย render ด้วย renderer เดียวกับ Preview (social card, carousel, slide ฯลฯ) ผู้ใช้กดเปิดดูเต็มได้
+ทุกฟังก์ชันใช้ `requireSupabaseAuth` + ตรวจ role ก่อนการเขียน
 
-**Contributor**: แต่ละการ์ดมี chip "โดย <ชื่อคน>" ดึงจาก:
-1. `contributor_id` ถ้าเลือกใน editor (จาก seed people เช่น Sakda)
-2. ถ้าไม่เลือก → fallback เป็น owner ของ translation (จาก auth user / profile) หรือ owner ของ asset
+---
 
-ในหน้า editor เพิ่ม dropdown "Contributor" เลือก person จาก `seed.staffConsole.people` (เลือกหลายคนได้ในรอบต่อไป รอบนี้เอา 1 คน)
+## เฟส 3 — Public/Learner UI (Google-Classroom-like)
 
-### 5) UX เล็กน้อย
-- การ์ดในลิสต์ `/staff/knowledge-translation` แสดง thumbnail mini ตาม format แทนที่จะเป็นข้อความล้วน
-- ปุ่ม Publish เปลี่ยนเป็น disabled เมื่อ output ว่าง + toast บอก "เผยแพร่ไปที่ /knowledge/<slug> แล้ว" พร้อม link
+Routes ใหม่ (ทั้งหมดอยู่ใต้ `_authenticated/` ที่มีอยู่):
+- `/classroom` — กริดการ์ดห้องเรียนที่ฉัน enroll (Classroom-style cover + title)
+- `/classroom/$id` — แท็บ: Stream / Courses / People
+- `/classroom/$id/course/$courseId` — รายการ Lesson + ปุ่ม "เข้าเรียน"
+- `/classroom/$id/course/$courseId/lesson/$lessonId` — เนื้อหา + sidebar:
+  - **Notes panel** (จดโน้ต inline, autosave)
+  - **Voice recorder** (MediaRecorder API: เริ่ม/หยุด/ฟัง/บันทึก)
+  - **Files** (download list)
+  - **Assignment** (ส่งงาน — โครง)
+- `/my/notes` — โน้ตของฉันทั้งหมด (filter ตาม course/lesson)
+- `/my/voice` — เสียงบันทึกของฉัน
 
-## รายละเอียดเทคนิค
+Component ใหม่:
+- `<ClassroomCard />`, `<LessonSidebar />`, `<NoteEditor />` (textarea + autosave debounce), `<VoiceRecorder />` (ปุ่ม record/stop/preview/save), `<FileList />`
+- ทุกข้อความผ่าน `useLanguage().t({th, en})` ตาม core rule
 
-- Mermaid: ใช้ `mermaid` package (lazy import, client-only ผ่าน `<ClientOnly>` หรือ effect) ถ้าไม่มีก็ install
-- HTML preview: `<iframe sandbox srcDoc={html} />` ดึง code block ` ```html ` ตัวแรก
-- Carousel: ใช้ `@/components/ui/carousel` ที่มีอยู่แล้ว
-- Renderer dispatcher: `<TranslationRenderer format=... outputMd=... />` map id → component
-- Public read: server fn ใช้ `supabaseAdmin` + filter `status='published'` และ asset.visibility='public' (เหมือน pattern ที่มีอยู่)
-- localStorage cleanup: ลบ translations ออกจาก LS_KEY หลัง migrate
+---
 
-## ที่จะแก้/สร้าง
-- **New**: `supabase/migrations/<ts>_knowledge_translations.sql`, `src/lib/knowledge-translations.functions.ts`, `src/components/translation-renderers/{index.tsx, social-card.tsx, carousel-deck.tsx, slide-deck.tsx, faq-accordion.tsx, infographic.tsx, learning-card.tsx, chat-script.tsx, html-preview.tsx, flow-chart.tsx}`
-- **Edit**: `src/lib/product-knowledge-store.tsx` (translations → DB), `src/routes/staff.knowledge-translation.tsx` (tabs Edit/Preview, contributor select, thumbnails), `src/routes/knowledge.$slug.tsx` + `src/routes/k.$slug.tsx` (section "Published Formats"), `src/lib/knowledge.functions.ts` (publicGetBySlug รวม translations หรือเพิ่ม fn แยก)
+## เฟส 4 — Staff Console (ลดความซับซ้อน + เพิ่มหน้าใหม่)
 
-## คำถามก่อนเริ่ม
-1. ฟิลด์ **Contributor** ให้เลือกได้กี่คน — 1 คน (เริ่มต้น) หรือหลายคน?
-2. Translation ที่ publish แล้วให้แสดง "ในหน้าความรู้เดิม" (รวมเป็น section ใหม่ใต้บทเรียน) หรือ "หน้าย่อยใหม่" `/knowledge/<slug>/formats/<translation-id>` ด้วย?
+ปรับ `staff-sidebar.tsx` จัดกลุ่มใหม่ให้เหมือน Classroom admin:
+- **ห้องเรียน** — `/staff/classrooms` (จัดการ classroom/course/lesson แบบ tree)
+- **งานและส่งงาน** — `/staff/assignments`
+- **โน้ตทั้งหมด** — `/staff/notes` (ใหม่ — ดู lesson_notes ทุกคน, filter)
+- **เสียงบันทึกทั้งหมด** — `/staff/voice` (ใหม่ — ดู voice_records ทุกคน + play)
+- **คลังความรู้ (เดิม)** — รวมเมนู knowledge/product-knowledge/translation เข้ากลุ่มเดียว
+- **ไฟล์ Storage** — คงเดิม (`/staff/storage`)
+- **ผู้ใช้/บทบาท** — คงเดิม
+
+หน้า capture, knowledge-hub, transfer, talent, trainings เดิม **ไม่ลบ** แค่จัดกลุ่มให้เรียบ
+
+---
+
+## เทคนิคสำคัญ
+
+- **Voice upload**: ใช้ `supabase.storage.from('training-attachments').upload()` ฝั่ง client (มี session อยู่แล้ว) แล้วเรียก server fn บันทึก row ใน `voice_records`
+- **Slug**: ใช้ pattern เดียวกับ `knowledge-assets.functions.ts` (`-2`, `-3` …)
+- **ไม่แตะ**: `src/integrations/supabase/*` (auto-gen), policies เดิมบน knowledge_products / trainings / user_roles
+- **Mobile**: Tailwind responsive, card grid `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+- **Style**: คงโทน SWING เดิม (warm, clean) — ใช้ semantic tokens เท่านั้น
+
+---
+
+## ลำดับ deliverable
+
+1. Migration → ขอ approval ก่อน
+2. Server functions
+3. Learner UI + recorder/note
+4. Staff console refactor + 2 หน้าใหม่ (notes, voice)
+
+ขอ approve plan แล้วเริ่มจาก migration (เฟส 1) ก่อนครับ

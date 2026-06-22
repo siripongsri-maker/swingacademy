@@ -20,22 +20,29 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
+import { Route as ClassroomIndexRouteImport } from './routes/classroom.index'
+import { Route as StaffVoiceRouteImport } from './routes/staff.voice'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
 import { Route as StaffTalentRouteImport } from './routes/staff.talent'
 import { Route as StaffStorageRouteImport } from './routes/staff.storage'
 import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
+import { Route as StaffNotesRouteImport } from './routes/staff.notes'
 import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
 import { Route as StaffKnowledgeHubRouteImport } from './routes/staff.knowledge-hub'
 import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
 import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
 import { Route as StaffCaptureRouteImport } from './routes/staff.capture'
 import { Route as StaffAdminRouteImport } from './routes/staff.admin'
+import { Route as MyVoiceRouteImport } from './routes/my.voice'
+import { Route as MyNotesRouteImport } from './routes/my.notes'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as KSlugRouteImport } from './routes/k.$slug'
 import { Route as CoursesIdRouteImport } from './routes/courses.$id'
+import { Route as ClassroomClassroomIdRouteImport } from './routes/classroom.$classroomId'
 import { Route as ApiGenerateTranslationImageRouteImport } from './routes/api/generate-translation-image'
+import { Route as ClassroomClassroomIdLessonLessonIdRouteImport } from './routes/classroom.$classroomId.lesson.$lessonId'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
@@ -92,6 +99,16 @@ const KnowledgeIndexRoute = KnowledgeIndexRouteImport.update({
   path: '/knowledge/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClassroomIndexRoute = ClassroomIndexRouteImport.update({
+  id: '/classroom/',
+  path: '/classroom/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffVoiceRoute = StaffVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -120,6 +137,11 @@ const StaffStorageRoute = StaffStorageRouteImport.update({
 const StaffProductKnowledgeRoute = StaffProductKnowledgeRouteImport.update({
   id: '/product-knowledge',
   path: '/product-knowledge',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffNotesRoute = StaffNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
   getParentRoute: () => StaffRoute,
 } as any)
 const StaffKnowledgeTranslationRoute =
@@ -153,6 +175,16 @@ const StaffAdminRoute = StaffAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => StaffRoute,
 } as any)
+const MyVoiceRoute = MyVoiceRouteImport.update({
+  id: '/my/voice',
+  path: '/my/voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyNotesRoute = MyNotesRouteImport.update({
+  id: '/my/notes',
+  path: '/my/notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
   id: '/knowledge/$slug',
   path: '/knowledge/$slug',
@@ -168,11 +200,22 @@ const CoursesIdRoute = CoursesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => CoursesRoute,
 } as any)
+const ClassroomClassroomIdRoute = ClassroomClassroomIdRouteImport.update({
+  id: '/classroom/$classroomId',
+  path: '/classroom/$classroomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGenerateTranslationImageRoute =
   ApiGenerateTranslationImageRouteImport.update({
     id: '/api/generate-translation-image',
     path: '/api/generate-translation-image',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ClassroomClassroomIdLessonLessonIdRoute =
+  ClassroomClassroomIdLessonLessonIdRouteImport.update({
+    id: '/lesson/$lessonId',
+    path: '/lesson/$lessonId',
+    getParentRoute: () => ClassroomClassroomIdRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -186,23 +229,30 @@ export interface FileRoutesByFullPath {
   '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
+  '/classroom/$classroomId': typeof ClassroomClassroomIdRouteWithChildren
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/my/notes': typeof MyNotesRoute
+  '/my/voice': typeof MyVoiceRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
+  '/staff/notes': typeof StaffNotesRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/storage': typeof StaffStorageRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/staff/voice': typeof StaffVoiceRoute
+  '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
+  '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -214,23 +264,30 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
   '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
+  '/classroom/$classroomId': typeof ClassroomClassroomIdRouteWithChildren
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/my/notes': typeof MyNotesRoute
+  '/my/voice': typeof MyVoiceRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
+  '/staff/notes': typeof StaffNotesRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/storage': typeof StaffStorageRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/staff/voice': typeof StaffVoiceRoute
+  '/classroom': typeof ClassroomIndexRoute
   '/knowledge': typeof KnowledgeIndexRoute
   '/staff': typeof StaffIndexRoute
+  '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -244,23 +301,30 @@ export interface FileRoutesById {
   '/staff': typeof StaffRouteWithChildren
   '/verify': typeof VerifyRoute
   '/api/generate-translation-image': typeof ApiGenerateTranslationImageRoute
+  '/classroom/$classroomId': typeof ClassroomClassroomIdRouteWithChildren
   '/courses/$id': typeof CoursesIdRoute
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/my/notes': typeof MyNotesRoute
+  '/my/voice': typeof MyVoiceRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
   '/staff/knowledge': typeof StaffKnowledgeRoute
   '/staff/knowledge-hub': typeof StaffKnowledgeHubRoute
   '/staff/knowledge-translation': typeof StaffKnowledgeTranslationRoute
+  '/staff/notes': typeof StaffNotesRoute
   '/staff/product-knowledge': typeof StaffProductKnowledgeRoute
   '/staff/storage': typeof StaffStorageRoute
   '/staff/talent': typeof StaffTalentRoute
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/staff/voice': typeof StaffVoiceRoute
+  '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
+  '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -275,23 +339,30 @@ export interface FileRouteTypes {
     | '/staff'
     | '/verify'
     | '/api/generate-translation-image'
+    | '/classroom/$classroomId'
     | '/courses/$id'
     | '/k/$slug'
     | '/knowledge/$slug'
+    | '/my/notes'
+    | '/my/voice'
     | '/staff/admin'
     | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
+    | '/staff/notes'
     | '/staff/product-knowledge'
     | '/staff/storage'
     | '/staff/talent'
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/staff/voice'
+    | '/classroom/'
     | '/knowledge/'
     | '/staff/'
+    | '/classroom/$classroomId/lesson/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -303,23 +374,30 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/verify'
     | '/api/generate-translation-image'
+    | '/classroom/$classroomId'
     | '/courses/$id'
     | '/k/$slug'
     | '/knowledge/$slug'
+    | '/my/notes'
+    | '/my/voice'
     | '/staff/admin'
     | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
+    | '/staff/notes'
     | '/staff/product-knowledge'
     | '/staff/storage'
     | '/staff/talent'
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/staff/voice'
+    | '/classroom'
     | '/knowledge'
     | '/staff'
+    | '/classroom/$classroomId/lesson/$lessonId'
   id:
     | '__root__'
     | '/'
@@ -332,23 +410,30 @@ export interface FileRouteTypes {
     | '/staff'
     | '/verify'
     | '/api/generate-translation-image'
+    | '/classroom/$classroomId'
     | '/courses/$id'
     | '/k/$slug'
     | '/knowledge/$slug'
+    | '/my/notes'
+    | '/my/voice'
     | '/staff/admin'
     | '/staff/capture'
     | '/staff/dashboard'
     | '/staff/knowledge'
     | '/staff/knowledge-hub'
     | '/staff/knowledge-translation'
+    | '/staff/notes'
     | '/staff/product-knowledge'
     | '/staff/storage'
     | '/staff/talent'
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/staff/voice'
+    | '/classroom/'
     | '/knowledge/'
     | '/staff/'
+    | '/classroom/$classroomId/lesson/$lessonId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -362,8 +447,12 @@ export interface RootRouteChildren {
   StaffRoute: typeof StaffRouteWithChildren
   VerifyRoute: typeof VerifyRoute
   ApiGenerateTranslationImageRoute: typeof ApiGenerateTranslationImageRoute
+  ClassroomClassroomIdRoute: typeof ClassroomClassroomIdRouteWithChildren
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
+  MyNotesRoute: typeof MyNotesRoute
+  MyVoiceRoute: typeof MyVoiceRoute
+  ClassroomIndexRoute: typeof ClassroomIndexRoute
   KnowledgeIndexRoute: typeof KnowledgeIndexRoute
 }
 
@@ -446,6 +535,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KnowledgeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/classroom/': {
+      id: '/classroom/'
+      path: '/classroom'
+      fullPath: '/classroom/'
+      preLoaderRoute: typeof ClassroomIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/voice': {
+      id: '/staff/voice'
+      path: '/voice'
+      fullPath: '/staff/voice'
+      preLoaderRoute: typeof StaffVoiceRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/users': {
       id: '/staff/users'
       path: '/users'
@@ -486,6 +589,13 @@ declare module '@tanstack/react-router' {
       path: '/product-knowledge'
       fullPath: '/staff/product-knowledge'
       preLoaderRoute: typeof StaffProductKnowledgeRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/notes': {
+      id: '/staff/notes'
+      path: '/notes'
+      fullPath: '/staff/notes'
+      preLoaderRoute: typeof StaffNotesRouteImport
       parentRoute: typeof StaffRoute
     }
     '/staff/knowledge-translation': {
@@ -530,6 +640,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffAdminRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/my/voice': {
+      id: '/my/voice'
+      path: '/my/voice'
+      fullPath: '/my/voice'
+      preLoaderRoute: typeof MyVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my/notes': {
+      id: '/my/notes'
+      path: '/my/notes'
+      fullPath: '/my/notes'
+      preLoaderRoute: typeof MyNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/knowledge/$slug': {
       id: '/knowledge/$slug'
       path: '/knowledge/$slug'
@@ -551,12 +675,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesIdRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/classroom/$classroomId': {
+      id: '/classroom/$classroomId'
+      path: '/classroom/$classroomId'
+      fullPath: '/classroom/$classroomId'
+      preLoaderRoute: typeof ClassroomClassroomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/generate-translation-image': {
       id: '/api/generate-translation-image'
       path: '/api/generate-translation-image'
       fullPath: '/api/generate-translation-image'
       preLoaderRoute: typeof ApiGenerateTranslationImageRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/classroom/$classroomId/lesson/$lessonId': {
+      id: '/classroom/$classroomId/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/classroom/$classroomId/lesson/$lessonId'
+      preLoaderRoute: typeof ClassroomClassroomIdLessonLessonIdRouteImport
+      parentRoute: typeof ClassroomClassroomIdRoute
     }
   }
 }
@@ -579,12 +717,14 @@ interface StaffRouteChildren {
   StaffKnowledgeRoute: typeof StaffKnowledgeRoute
   StaffKnowledgeHubRoute: typeof StaffKnowledgeHubRoute
   StaffKnowledgeTranslationRoute: typeof StaffKnowledgeTranslationRoute
+  StaffNotesRoute: typeof StaffNotesRoute
   StaffProductKnowledgeRoute: typeof StaffProductKnowledgeRoute
   StaffStorageRoute: typeof StaffStorageRoute
   StaffTalentRoute: typeof StaffTalentRoute
   StaffTrainingsRoute: typeof StaffTrainingsRoute
   StaffTransferRoute: typeof StaffTransferRoute
   StaffUsersRoute: typeof StaffUsersRoute
+  StaffVoiceRoute: typeof StaffVoiceRoute
   StaffIndexRoute: typeof StaffIndexRoute
 }
 
@@ -595,16 +735,30 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffKnowledgeRoute: StaffKnowledgeRoute,
   StaffKnowledgeHubRoute: StaffKnowledgeHubRoute,
   StaffKnowledgeTranslationRoute: StaffKnowledgeTranslationRoute,
+  StaffNotesRoute: StaffNotesRoute,
   StaffProductKnowledgeRoute: StaffProductKnowledgeRoute,
   StaffStorageRoute: StaffStorageRoute,
   StaffTalentRoute: StaffTalentRoute,
   StaffTrainingsRoute: StaffTrainingsRoute,
   StaffTransferRoute: StaffTransferRoute,
   StaffUsersRoute: StaffUsersRoute,
+  StaffVoiceRoute: StaffVoiceRoute,
   StaffIndexRoute: StaffIndexRoute,
 }
 
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
+
+interface ClassroomClassroomIdRouteChildren {
+  ClassroomClassroomIdLessonLessonIdRoute: typeof ClassroomClassroomIdLessonLessonIdRoute
+}
+
+const ClassroomClassroomIdRouteChildren: ClassroomClassroomIdRouteChildren = {
+  ClassroomClassroomIdLessonLessonIdRoute:
+    ClassroomClassroomIdLessonLessonIdRoute,
+}
+
+const ClassroomClassroomIdRouteWithChildren =
+  ClassroomClassroomIdRoute._addFileChildren(ClassroomClassroomIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -617,20 +771,14 @@ const rootRouteChildren: RootRouteChildren = {
   StaffRoute: StaffRouteWithChildren,
   VerifyRoute: VerifyRoute,
   ApiGenerateTranslationImageRoute: ApiGenerateTranslationImageRoute,
+  ClassroomClassroomIdRoute: ClassroomClassroomIdRouteWithChildren,
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
+  MyNotesRoute: MyNotesRoute,
+  MyVoiceRoute: MyVoiceRoute,
+  ClassroomIndexRoute: ClassroomIndexRoute,
   KnowledgeIndexRoute: KnowledgeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
