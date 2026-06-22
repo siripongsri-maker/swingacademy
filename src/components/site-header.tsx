@@ -68,8 +68,9 @@ function useSupabaseAccount() {
 
 const NAV: { to: string; label: Localized }[] = [
   { to: "/", label: { th: "หน้าแรก", en: "Home" } },
-  { to: "/courses", label: { th: "คอร์ส", en: "Courses" } },
-  { to: "/paths", label: { th: "เส้นทางเรียนรู้", en: "Paths" } },
+  { to: "/classroom", label: { th: "ห้องเรียน", en: "Classroom" } },
+  { to: "/my/notes", label: { th: "โน้ตของฉัน", en: "My Notes" } },
+  { to: "/my/voice", label: { th: "เสียงของฉัน", en: "My Voice" } },
   { to: "/resources", label: { th: "คลังความรู้", en: "Resources" } },
   { to: "/verify", label: { th: "ตรวจสอบใบประกาศ", en: "Verify" } },
 ];
