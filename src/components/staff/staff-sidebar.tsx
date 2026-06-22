@@ -41,6 +41,7 @@ const knowledgeFlow: NavItem[] = [
   { to: "/staff/capture", label: { th: "อัดเสียง / สรุปสด", en: "Live Capture" }, sub: { th: "บันทึกสนทนาแบบเรียลไทม์", en: "Record live notes" }, icon: Mic, requires: "knowledge.capture" },
   { to: "/staff/product-knowledge", label: { th: "บันทึก/สร้างความรู้", en: "Knowledge Product" }, sub: { th: "สร้างความรู้ใหม่", en: "Author knowledge" }, icon: BookMarked },
   { to: "/staff/knowledge", label: { th: "จัดการความรู้", en: "Knowledge Management" }, sub: { th: "จัดหมวด ตรวจสอบ เชื่อมโยง", en: "Categorize & review" }, icon: Library, requires: "km.categorize" },
+  { to: "/staff/knowledge-library", label: { th: "คลังความรู้ (DB)", en: "Knowledge Library" }, sub: { th: "เผยแพร่/ซ่อน · แก้ไขในฐานข้อมูล", en: "Publish/hide · edit in DB" }, icon: Library, requires: "km.categorize" },
   { to: "/staff/talent", label: { th: "เชื่อมความรู้กับคน", en: "Talent Mapping" }, sub: { th: "ผู้เชี่ยวชาญในองค์กร", en: "Experts directory" }, icon: Users, requires: "talent.viewAll" },
   { to: "/staff/knowledge-translation", label: { th: "แปลงเป็นสื่อ", en: "Knowledge Translation" }, sub: { th: "แปลงเป็นเนื้อหา/สื่อ", en: "Turn into content" }, icon: GitBranch, requires: "translation.fromOwn" },
 ];
