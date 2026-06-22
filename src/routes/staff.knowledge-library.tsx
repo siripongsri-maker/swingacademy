@@ -63,7 +63,7 @@ function KnowledgeLibraryPage() {
   type PatchData = { id: string; status?: KnowledgeRow["status"]; visibility?: KnowledgeRow["visibility"]; isFeatured?: boolean; featuredOrder?: number };
   async function patch(_row: KnowledgeRow, patchData: PatchData) {
     try {
-      await setState({ data: patchData });
+      await setState({ data: patchData as never });
       toast.success(t({ th: "อัปเดตแล้ว", en: "Updated" }));
       qc.invalidateQueries({ queryKey: ["staff", "knowledge-library"] });
     } catch (e) {
