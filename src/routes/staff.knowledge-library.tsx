@@ -177,6 +177,7 @@ function KnowledgeLibraryPage() {
                       <span>·</span>
                       <span>{new Date(row.updatedAt).toLocaleDateString("th-TH")}</span>
                       {row.contentMd && <><span>·</span><span>{row.contentMd.length.toLocaleString()} ตัวอักษร</span></>}
+                      {row.attachments?.length > 0 && <><span>·</span><span className="inline-flex items-center gap-0.5"><Paperclip className="h-3 w-3" />{row.attachments.length}</span></>}
                     </div>
                   </td>
                   <td className="px-4 py-3">
