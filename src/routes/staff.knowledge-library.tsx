@@ -240,6 +240,11 @@ function KnowledgeLibraryPage() {
                         title={t({ th: "แก้ไข", en: "Edit" })}>
                         <FileText className="h-3.5 w-3.5" />
                       </button>
+                      <button onClick={() => setHistoryFor(row)}
+                        className="rounded-md border border-warm-200 p-1.5 text-warm-600 hover:bg-warm-50"
+                        title={t({ th: "ประวัติไฟล์แนบ", en: "Attachment history" })}>
+                        <History className="h-3.5 w-3.5" />
+                      </button>
                       {row.visibility === "public" && row.status === "published" && (
                         <Link to="/knowledge/$slug" params={{ slug: row.slug }} target="_blank"
                           className="rounded-md border border-warm-200 p-1.5 text-warm-600 hover:bg-warm-50"
