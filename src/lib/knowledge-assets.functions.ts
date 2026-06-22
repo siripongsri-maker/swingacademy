@@ -262,6 +262,21 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
       // Insert — slug & titleTh are required
       if (!cols.slug) throw new Error("slug is required to create knowledge");
       cols.owner_id = context.userId;
+
+      // Ensure slug uniqueness — append -2, -3, ... if taken
+      const baseSlug = String(cols.slug);
+      let candidate = baseSlug;
+      for (let i = 2; i < 100; i++) {
+        const { data: existing } = await context.supabase
+          .from("knowledge_products")
+          .select("id")
+          .eq("slug", candidate)
+          .maybeSingle();
+        if (!existing) break;
+        candidate = `${baseSlug}-${i}`;
+      }
+      cols.slug = candidate;
+
       const { data: row, error } = await context.supabase
         .from("knowledge_products")
         .insert(cols as never)
@@ -271,6 +286,7 @@ export const saveKnowledgeAsset = createServerFn({ method: "POST" })
       return { item: fromDb(row as Record<string, any>) };
     }
   });
+
 
 // ---------- Delete ----------
 
