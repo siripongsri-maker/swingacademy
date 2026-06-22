@@ -33,6 +33,7 @@ import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
 import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
 import { Route as StaffCaptureRouteImport } from './routes/staff.capture'
 import { Route as StaffAdminRouteImport } from './routes/staff.admin'
+import { Route as MyVoiceRouteImport } from './routes/my.voice'
 import { Route as MyNotesRouteImport } from './routes/my.notes'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as KSlugRouteImport } from './routes/k.$slug'
@@ -162,6 +163,11 @@ const StaffAdminRoute = StaffAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => StaffRoute,
 } as any)
+const MyVoiceRoute = MyVoiceRouteImport.update({
+  id: '/my/voice',
+  path: '/my/voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyNotesRoute = MyNotesRouteImport.update({
   id: '/my/notes',
   path: '/my/notes',
@@ -216,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/my/notes': typeof MyNotesRoute
+  '/my/voice': typeof MyVoiceRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/my/notes': typeof MyNotesRoute
+  '/my/voice': typeof MyVoiceRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/k/$slug': typeof KSlugRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/my/notes': typeof MyNotesRoute
+  '/my/voice': typeof MyVoiceRoute
   '/staff/admin': typeof StaffAdminRoute
   '/staff/capture': typeof StaffCaptureRoute
   '/staff/dashboard': typeof StaffDashboardRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/k/$slug'
     | '/knowledge/$slug'
     | '/my/notes'
+    | '/my/voice'
     | '/staff/admin'
     | '/staff/capture'
     | '/staff/dashboard'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/k/$slug'
     | '/knowledge/$slug'
     | '/my/notes'
+    | '/my/voice'
     | '/staff/admin'
     | '/staff/capture'
     | '/staff/dashboard'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/k/$slug'
     | '/knowledge/$slug'
     | '/my/notes'
+    | '/my/voice'
     | '/staff/admin'
     | '/staff/capture'
     | '/staff/dashboard'
@@ -415,6 +427,7 @@ export interface RootRouteChildren {
   KSlugRoute: typeof KSlugRoute
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
   MyNotesRoute: typeof MyNotesRoute
+  MyVoiceRoute: typeof MyVoiceRoute
   ClassroomIndexRoute: typeof ClassroomIndexRoute
   KnowledgeIndexRoute: typeof KnowledgeIndexRoute
 }
@@ -589,6 +602,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffAdminRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/my/voice': {
+      id: '/my/voice'
+      path: '/my/voice'
+      fullPath: '/my/voice'
+      preLoaderRoute: typeof MyVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my/notes': {
       id: '/my/notes'
       path: '/my/notes'
@@ -713,6 +733,7 @@ const rootRouteChildren: RootRouteChildren = {
   KSlugRoute: KSlugRoute,
   KnowledgeSlugRoute: KnowledgeSlugRoute,
   MyNotesRoute: MyNotesRoute,
+  MyVoiceRoute: MyVoiceRoute,
   ClassroomIndexRoute: ClassroomIndexRoute,
   KnowledgeIndexRoute: KnowledgeIndexRoute,
 }
