@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
 import { Route as ClassroomIndexRouteImport } from './routes/classroom.index'
+import { Route as StaffVoiceRouteImport } from './routes/staff.voice'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
@@ -102,6 +103,11 @@ const ClassroomIndexRoute = ClassroomIndexRouteImport.update({
   id: '/classroom/',
   path: '/classroom/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StaffVoiceRoute = StaffVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => StaffRoute,
 } as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
   id: '/users',
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/staff/voice': typeof StaffVoiceRoute
   '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/staff/voice': typeof StaffVoiceRoute
   '/classroom': typeof ClassroomIndexRoute
   '/knowledge': typeof KnowledgeIndexRoute
   '/staff': typeof StaffIndexRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/staff/trainings': typeof StaffTrainingsRoute
   '/staff/transfer': typeof StaffTransferRoute
   '/staff/users': typeof StaffUsersRoute
+  '/staff/voice': typeof StaffVoiceRoute
   '/classroom/': typeof ClassroomIndexRoute
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/staff/voice'
     | '/classroom/'
     | '/knowledge/'
     | '/staff/'
@@ -383,6 +393,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/staff/voice'
     | '/classroom'
     | '/knowledge'
     | '/staff'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/staff/trainings'
     | '/staff/transfer'
     | '/staff/users'
+    | '/staff/voice'
     | '/classroom/'
     | '/knowledge/'
     | '/staff/'
@@ -529,6 +541,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/classroom/'
       preLoaderRoute: typeof ClassroomIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/staff/voice': {
+      id: '/staff/voice'
+      path: '/voice'
+      fullPath: '/staff/voice'
+      preLoaderRoute: typeof StaffVoiceRouteImport
+      parentRoute: typeof StaffRoute
     }
     '/staff/users': {
       id: '/staff/users'
@@ -705,6 +724,7 @@ interface StaffRouteChildren {
   StaffTrainingsRoute: typeof StaffTrainingsRoute
   StaffTransferRoute: typeof StaffTransferRoute
   StaffUsersRoute: typeof StaffUsersRoute
+  StaffVoiceRoute: typeof StaffVoiceRoute
   StaffIndexRoute: typeof StaffIndexRoute
 }
 
@@ -722,6 +742,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffTrainingsRoute: StaffTrainingsRoute,
   StaffTransferRoute: StaffTransferRoute,
   StaffUsersRoute: StaffUsersRoute,
+  StaffVoiceRoute: StaffVoiceRoute,
   StaffIndexRoute: StaffIndexRoute,
 }
 

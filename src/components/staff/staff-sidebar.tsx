@@ -18,6 +18,9 @@ import {
   Mic,
   Shield,
   HardDrive,
+  GraduationCap,
+  StickyNote,
+  Volume2,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import { useConsoleRole } from "@/lib/console-role-context";
