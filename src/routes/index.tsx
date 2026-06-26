@@ -21,6 +21,7 @@ import { useLanguage, type Localized } from "@/lib/language-context";
 import seed from "@/data/seed-data.json";
 import { pageHead } from "@/lib/seo";
 import { listPublicKnowledge } from "@/lib/knowledge.functions";
+import { HomepageVisitCounter } from "@/components/homepage-visit-counter";
 
 const knowledgeQueryOptions = queryOptions({
   queryKey: ["knowledge", "public", "all"],
@@ -139,6 +140,8 @@ function HomePage() {
                 {t({ th: "ดูคอร์สทั้งหมด", en: "Browse courses" })}
               </Link>
             </div>
+
+            <HomepageVisitCounter />
           </div>
 
           {/* Soft illustrative card */}

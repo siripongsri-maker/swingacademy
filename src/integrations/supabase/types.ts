@@ -352,6 +352,47 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          knowledge_id: string | null
+          rater_hash: string
+          rating: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          knowledge_id?: string | null
+          rater_hash: string
+          rating: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          knowledge_id?: string | null
+          rater_hash?: string
+          rating?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_ratings_knowledge_id_fkey"
+            columns: ["knowledge_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       knowledge_talent_mappings: {
         Row: {
           asset_id: string
@@ -449,6 +490,41 @@ export type Database = {
           {
             foreignKeyName: "knowledge_translations_asset_id_fkey"
             columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_views: {
+        Row: {
+          created_at: string
+          id: string
+          knowledge_id: string | null
+          slug: string
+          user_agent: string | null
+          viewer_hash: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          knowledge_id?: string | null
+          slug: string
+          user_agent?: string | null
+          viewer_hash?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          knowledge_id?: string | null
+          slug?: string
+          user_agent?: string | null
+          viewer_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_views_knowledge_id_fkey"
+            columns: ["knowledge_id"]
             isOneToOne: false
             referencedRelation: "knowledge_products"
             referencedColumns: ["id"]
@@ -616,6 +692,30 @@ export type Database = {
           size_bytes?: number | null
           storage_path?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_visits: {
+        Row: {
+          created_at: string
+          id: string
+          path: string
+          user_agent: string | null
+          visitor_hash: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path?: string
+          user_agent?: string | null
+          visitor_hash?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string
+          user_agent?: string | null
+          visitor_hash?: string | null
         }
         Relationships: []
       }

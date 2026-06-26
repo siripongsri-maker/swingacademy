@@ -30,6 +30,7 @@ import { DEFAULT_SPONSORS, type Sponsor } from "@/data/knowledge-products-seed";
 import { getPublicKnowledgeBySlug } from "@/lib/knowledge.functions";
 import { listPublishedTranslationsBySlug } from "@/lib/knowledge-translations.functions";
 import { TranslationRenderer } from "@/components/translation-renderer";
+import { KnowledgeAnalytics } from "@/components/knowledge-analytics";
 import seedData from "@/data/seed-data.json";
 import { useQuery } from "@tanstack/react-query";
 import { pageHead } from "@/lib/seo";
@@ -496,6 +497,8 @@ function KnowledgeDetailPage() {
             </div>
           </section>
         )}
+
+        <KnowledgeAnalytics slug={asset.slug} knowledgeId={asset.id} />
 
         {asset.attachments && asset.attachments.length > 0 && (
           <section className="mt-14">
