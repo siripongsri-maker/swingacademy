@@ -189,6 +189,14 @@ function KnowledgeLibraryPage() {
                       <span>{new Date(row.updatedAt).toLocaleDateString("th-TH")}</span>
                       {row.contentMd && <><span>·</span><span>{row.contentMd.length.toLocaleString()} ตัวอักษร</span></>}
                       {row.attachments?.length > 0 && <><span>·</span><span className="inline-flex items-center gap-0.5"><Paperclip className="h-3 w-3" />{row.attachments.length}</span></>}
+                      {stats[row.slug] && (
+                        <>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-0.5" title="ผู้อ่าน"><Eye className="h-3 w-3" />{stats[row.slug].views}</span>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-0.5" title="คะแนนเฉลี่ย"><Star className="h-3 w-3" />{stats[row.slug].ratingCount > 0 ? `${stats[row.slug].ratingAvg.toFixed(1)} (${stats[row.slug].ratingCount})` : "—"}</span>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
