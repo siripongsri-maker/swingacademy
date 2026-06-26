@@ -498,6 +498,8 @@ function KnowledgeDetailPage() {
           </section>
         )}
 
+        <KnowledgeAnalytics slug={asset.slug} knowledgeId={asset.id} />
+
         {asset.attachments && asset.attachments.length > 0 && (
           <section className="mt-14">
             <h2 className="text-lg font-semibold text-navy-500">เอกสารและไฟล์แนบ · Attachments</h2>
