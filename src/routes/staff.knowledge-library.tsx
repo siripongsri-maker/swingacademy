@@ -44,6 +44,13 @@ function KnowledgeLibraryPage() {
     queryKey: ["staff", "knowledge-library"],
     queryFn: () => list(),
   });
+  const statsFn = useServerFn(listKnowledgeStats);
+  const statsQuery = useQuery({
+    queryKey: ["staff", "knowledge-stats"],
+    queryFn: () => statsFn(),
+    staleTime: 30_000,
+  });
+  const stats = statsQuery.data?.stats ?? {};
 
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | KnowledgeRow["status"]>("all");
