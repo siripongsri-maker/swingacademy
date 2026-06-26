@@ -140,6 +140,8 @@ function HomePage() {
                 {t({ th: "ดูคอร์สทั้งหมด", en: "Browse courses" })}
               </Link>
             </div>
+
+            <HomepageVisitCounter />
           </div>
 
           {/* Soft illustrative card */}
