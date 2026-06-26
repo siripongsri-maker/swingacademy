@@ -18,6 +18,7 @@ import {
   type KnowledgeAttachment,
   type KnowledgeActivityLog,
 } from "@/lib/knowledge.functions";
+import { listKnowledgeStats } from "@/lib/knowledge-analytics.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/lib/language-context";
 
