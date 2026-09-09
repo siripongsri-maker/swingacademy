@@ -568,7 +568,9 @@ function KnowledgeDetailPage() {
 
         {asset.attachments && asset.attachments.length > 0 && (
           <section className="mt-14">
-            <h2 className="text-lg font-semibold text-navy-500">เอกสารและไฟล์แนบ · Attachments</h2>
+            <h2 className="text-lg font-semibold text-navy-500">
+              {t({ th: "เอกสารและไฟล์แนบ", en: "Documents & attachments" })}
+            </h2>
             <ul className="mt-4 divide-y divide-warm-200 overflow-hidden rounded-xl border border-warm-200 bg-white">
               {asset.attachments.map((a) => {
                 const sizeLabel =
@@ -577,9 +579,12 @@ function KnowledgeDetailPage() {
                     : a.size < 1024 * 1024
                     ? `${(a.size / 1024).toFixed(1)} KB`
                     : `${(a.size / 1024 / 1024).toFixed(1)} MB`;
+                const isPdf =
+                  a.contentType?.toLowerCase().includes("pdf") ||
+                  a.name?.toLowerCase().endsWith(".pdf");
                 return (
                   <li key={a.path} className="flex items-center gap-3 px-4 py-3">
-                    <FileText className="h-5 w-5 shrink-0 text-magenta-500" />
+                    <FileText className={`h-5 w-5 shrink-0 ${isPdf ? "text-magenta-500" : "text-warm-400"}`} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold text-navy-500">{a.name}</p>
                       <p className="text-xs text-warm-500">{sizeLabel} · {a.contentType}</p>
@@ -592,12 +597,16 @@ function KnowledgeDetailPage() {
                         download
                         className="inline-flex items-center gap-1.5 rounded-md bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-600"
                       >
-                        <Download className="h-3.5 w-3.5" /> ดาวน์โหลด
+                        <Download className="h-3.5 w-3.5" />{" "}
+                        {t({ th: "ดาวน์โหลด", en: "Download" })}
                       </a>
                     ) : (
-                      <span className="text-xs text-warm-400">ลิงก์หมดอายุ</span>
+                      <span className="text-xs text-warm-400">
+                        {t({ th: "ลิงก์หมดอายุ", en: "Link expired" })}
+                      </span>
                     )}
                   </li>
+
                 );
               })}
             </ul>
