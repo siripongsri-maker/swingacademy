@@ -43,9 +43,29 @@ export type KnowledgeRow = {
 const SELECT_COLS =
   "id, slug, title_th, title_en, summary, key_message, content_md, language, categories, tags, audiences, product_service, source, source_type, cover_url, sponsors, status, visibility, is_featured, featured_order, published_at, updated_at, created_at, metadata";
 
+function normalizeAttachments(raw: unknown): KnowledgeAttachment[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((r) => {
+      const a = (r ?? {}) as Record<string, unknown>;
+      const url = (a.url as string) || (a.externalUrl as string) || "";
+      return {
+        path: String(a.path ?? ""),
+        name: String(a.name ?? a.title ?? "Attachment"),
+        size: Number(a.size ?? 0),
+        contentType: String(a.contentType ?? (a.kind === "pdf" ? "application/pdf" : "application/octet-stream")),
+        uploadedAt: String(a.uploadedAt ?? ""),
+        ...(url && !url.startsWith("blob:") ? { url } : {}),
+      } as KnowledgeAttachment;
+    })
+    // drop entries that can neither be signed (no storage path) nor linked
+    .filter((a) => a.path || a.url);
+}
+
 function mapRow(r: Record<string, unknown>): KnowledgeRow {
   const meta = ((r.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
-  const attachments = (Array.isArray(meta.attachments) ? meta.attachments : []) as KnowledgeAttachment[];
+  const attachments = normalizeAttachments(meta.attachments);
+
   return {
     id: String(r.id),
     slug: String(r.slug),
