@@ -142,9 +142,21 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Thai needs a looser line box */
+  /* Thai needs a looser line box (tone marks sit above the x-height) */
   [lang="th"] {
-    line-height: calc(1em + 9px);
+    line-height: calc(1em + 11px);
+  }
+
+  /* Long-form Thai body copy: looser leading, comfortable measure */
+  [lang="th"] p,
+  [lang="th"] li {
+    line-height: calc(1em + 13px);
+  }
+
+  [lang="th"] h1,
+  [lang="th"] h2,
+  [lang="th"] h3 {
+    line-height: calc(1em + 10px);
   }
 
   h1, h2, h3, h4 {

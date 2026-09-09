@@ -34,6 +34,7 @@ import { KnowledgeAnalytics } from "@/components/knowledge-analytics";
 import seedData from "@/data/seed-data.json";
 import { useQuery } from "@tanstack/react-query";
 import { pageHead } from "@/lib/seo";
+import { useLanguage } from "@/lib/language-context";
 
 export const Route = createFileRoute("/knowledge/$slug")({
   beforeLoad: ({ params }) => {
@@ -106,6 +107,7 @@ function splitIntoChapters(md: string): Chapter[] {
 
 function KnowledgeDetailPage() {
   const { slug } = Route.useParams();
+  const { t, lang } = useLanguage();
   const fetchOne = useServerFn(getPublicKnowledgeBySlug);
   const fetchTrans = useServerFn(listPublishedTranslationsBySlug);
   const { data } = useSuspenseQuery({
@@ -174,7 +176,8 @@ function KnowledgeDetailPage() {
           to="/knowledge"
           className="inline-flex items-center gap-1.5 text-sm text-warm-500 hover:text-magenta-500"
         >
-          <ArrowLeft className="h-4 w-4" /> กลับสู่คลังความรู้
+          <ArrowLeft className="h-4 w-4" />{" "}
+          {t({ th: "กลับสู่คลังความรู้", en: "Back to knowledge hub" })}
         </Link>
 
         {/* Hero */}
@@ -189,11 +192,13 @@ function KnowledgeDetailPage() {
                 )}
                 <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 font-semibold text-navy-500 ring-1 ring-warm-200">
                   <ShieldCheck className="h-3 w-3" />
-                  {asset.status === "published" ? "เผยแพร่แล้ว" : asset.status}
+                  {asset.status === "published"
+                    ? t({ th: "เผยแพร่แล้ว", en: "Published" })
+                    : asset.status}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 text-warm-600 ring-1 ring-warm-200">
                   <Calendar className="h-3 w-3" />
-                  {new Date(asset.updatedAt).toLocaleDateString("th-TH", {
+                  {new Date(asset.updatedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-GB", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -201,21 +206,35 @@ function KnowledgeDetailPage() {
                 </span>
                 {hasChapters && (
                   <span className="inline-flex items-center gap-1 rounded-pill bg-white/70 px-2.5 py-1 text-warm-600 ring-1 ring-warm-200">
-                    <BookOpen className="h-3 w-3" /> {chapters.length} บทเรียน
+                    <BookOpen className="h-3 w-3" />{" "}
+                    {t({
+                      th: `${chapters.length} บทเรียน`,
+                      en: `${chapters.length} lessons`,
+                    })}
                   </span>
                 )}
               </div>
 
-              <h1 className="mt-4 text-3xl font-semibold text-navy-500 md:text-4xl">{asset.titleTh}</h1>
-              {asset.titleEn && <p className="mt-1 text-base italic text-warm-500">{asset.titleEn}</p>}
+              <h1 lang={lang} className="mt-4 max-w-[38ch] text-3xl font-semibold leading-snug text-navy-500 md:text-4xl md:leading-tight">
+                {t({ th: asset.titleTh, en: asset.titleEn || asset.titleTh })}
+              </h1>
+              {asset.titleEn && asset.titleEn !== asset.titleTh && (
+                <p className="mt-1 text-base italic text-warm-500">
+                  {t({ th: asset.titleEn, en: asset.titleTh })}
+                </p>
+              )}
               {asset.summary && (
-                <p className="mt-4 text-lg leading-relaxed text-navy-500">{asset.summary}</p>
+                <p lang={lang} className="mt-4 max-w-[62ch] text-lg leading-8 text-navy-500">
+                  {asset.summary}
+                </p>
               )}
 
               {asset.keyMessage && (
-                <div className="mt-6 rounded-lg border border-magenta-200 bg-magenta-50 p-4 text-sm text-navy-500">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-magenta-700">สารสำคัญ</p>
-                  <p className="leading-relaxed">{asset.keyMessage}</p>
+                <div className="mt-6 max-w-[62ch] rounded-lg border border-magenta-200 bg-magenta-50 p-4 text-sm text-navy-500">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-magenta-700">
+                    {t({ th: "สารสำคัญ", en: "Key message" })}
+                  </p>
+                  <p lang={lang} className="leading-8">{asset.keyMessage}</p>
                 </div>
               )}
 
@@ -256,9 +275,10 @@ function KnowledgeDetailPage() {
               {hasChapters && (
                 <div className="mt-6">
                   <div className="flex items-center justify-between text-xs text-warm-500">
-                    <span>ความก้าวหน้าการเรียน</span>
+                    <span>{t({ th: "ความก้าวหน้าการเรียน", en: "Learning progress" })}</span>
                     <span className="font-semibold text-navy-500">
-                      {completedCount}/{chapters.length} บท · {progress}%
+                      {completedCount}/{chapters.length}{" "}
+                      {t({ th: "บท", en: "lessons" })} · {progress}%
                     </span>
                   </div>
                   <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-warm-100">
@@ -352,7 +372,8 @@ function KnowledgeDetailPage() {
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <div className="rounded-xl border border-warm-200 bg-white">
                 <div className="flex items-center gap-2 border-b border-warm-200 px-4 py-3 text-sm font-semibold text-navy-500">
-                  <ListTree className="h-4 w-4 text-magenta-500" /> สารบัญบทเรียน
+                  <ListTree className="h-4 w-4 text-magenta-500" />{" "}
+                  {t({ th: "สารบัญบทเรียน", en: "Lesson contents" })}
                 </div>
                 <ol className="max-h-[60vh] overflow-y-auto py-2">
                   {chapters.map((ch, i) => {
@@ -393,12 +414,15 @@ function KnowledgeDetailPage() {
             <section className="min-w-0">
               <div className="rounded-xl border border-warm-200 bg-white p-6 md:p-8">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-magenta-600">
-                  บทที่ {active + 1} / {chapters.length}
+                  {t({ th: "บทที่", en: "Lesson" })} {active + 1} / {chapters.length}
                 </div>
-                <h2 className="mt-2 text-2xl font-semibold text-navy-500 md:text-3xl">
+                <h2 lang={lang} className="mt-2 max-w-[40ch] text-2xl font-semibold leading-snug text-navy-500 md:text-3xl">
                   {current!.title}
                 </h2>
-                <div className="prose prose-slate mt-6 max-w-none prose-headings:text-navy-500 prose-h3:text-lg prose-h3:mt-6 prose-a:text-magenta-600 prose-strong:text-navy-500 prose-table:text-sm prose-th:bg-warm-100 prose-th:p-2 prose-td:p-2 prose-blockquote:border-l-magenta-500 prose-blockquote:bg-cream prose-blockquote:not-italic">
+                <div
+                  lang={lang}
+                  className="prose prose-slate mt-6 max-w-[68ch] prose-p:leading-8 prose-li:leading-8 prose-headings:text-navy-500 prose-headings:leading-snug prose-h3:text-lg prose-h3:mt-6 prose-a:text-magenta-600 prose-strong:text-navy-500 prose-table:text-sm prose-th:bg-warm-100 prose-th:p-2 prose-td:p-2 prose-blockquote:border-l-magenta-500 prose-blockquote:bg-cream prose-blockquote:not-italic"
+                >
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{current!.body}</ReactMarkdown>
                 </div>
 
@@ -409,7 +433,8 @@ function KnowledgeDetailPage() {
                     disabled={active === 0}
                     className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-warm-600 hover:bg-warm-50 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <ChevronLeft className="h-4 w-4" /> บทก่อนหน้า
+                    <ChevronLeft className="h-4 w-4" />{" "}
+                    {t({ th: "บทก่อนหน้า", en: "Previous lesson" })}
                   </button>
                   <button
                     type="button"
@@ -421,11 +446,11 @@ function KnowledgeDetailPage() {
                   >
                     {completed[current!.id]
                       ? active < chapters.length - 1
-                        ? "ไปบทถัดไป"
-                        : "เรียนจบแล้ว"
+                        ? t({ th: "ไปบทถัดไป", en: "Next lesson" })
+                        : t({ th: "เรียนจบแล้ว", en: "Completed" })
                       : active < chapters.length - 1
-                      ? "ทำเครื่องหมายเรียนจบ & บทถัดไป"
-                      : "ทำเครื่องหมายเรียนจบ"}
+                      ? t({ th: "ทำเครื่องหมายเรียนจบ & บทถัดไป", en: "Mark complete & next" })
+                      : t({ th: "ทำเครื่องหมายเรียนจบ", en: "Mark as complete" })}
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -434,7 +459,7 @@ function KnowledgeDetailPage() {
           </div>
         ) : (
           <div className="mt-10 rounded-xl border border-dashed border-warm-200 bg-white px-6 py-12 text-center text-warm-500">
-            ยังไม่มีเนื้อหาบทเรียนสำหรับชิ้นนี้
+            {t({ th: "ยังไม่มีเนื้อหาบทเรียนสำหรับชิ้นนี้", en: "No lesson content yet for this item." })}
           </div>
         )}
 

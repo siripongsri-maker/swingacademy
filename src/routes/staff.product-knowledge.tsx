@@ -41,9 +41,8 @@ import {
 
 export const Route = createFileRoute("/staff/product-knowledge")({
   component: ProductKnowledgePage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    create: s.create === "1" || s.create === 1 || s.create === true ? 1 : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { create?: 1 } =>
+    s.create === "1" || s.create === 1 || s.create === true ? { create: 1 } : {},
 });
 
 const STATUS_STYLES: Record<KnowledgeStatus, string> = {
