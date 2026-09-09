@@ -355,35 +355,56 @@ function KnowledgeDetailPage() {
           </div>
         </header>
 
-        {asset.source && asset.sourceType === "pdf" && (
-          <div className="mt-6 rounded-lg border border-dashed border-warm-200 bg-cream/60 px-5 py-3 text-sm text-warm-500">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-magenta-500" />
-                มีเอกสารประกอบการเรียนรู้แบบ PDF พร้อมดาวน์โหลด
-              </span>
-              <a
-                href={asset.source}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md bg-navy-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-600"
-              >
-                <Download className="h-3.5 w-3.5" /> ดาวน์โหลด
-              </a>
-              <button
-                type="button"
-                onClick={() => {
-                  setZoomScale(1);
-                  setModalOpen(true);
-                }}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-navy-500 bg-white px-3 py-1.5 text-xs font-semibold text-navy-500 hover:bg-lavender-50"
-              >
-                <Eye className="h-3.5 w-3.5" /> ดูตัวอย่าง · Preview
-              </button>
+        {(asset.source && asset.sourceType === "pdf") || pdfAttachments.length > 0 ? (
+          <div className="mt-6 rounded-xl border border-warm-200 bg-gradient-to-r from-cream to-white px-5 py-4 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-navy-500">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-magenta-100 text-magenta-600">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold">
+                    {t({ th: "เอกสาร PDF ฉบับเต็มพร้อมดาวน์โหลด", en: "Full PDF available for download" })}
+                  </p>
+                  <p className="text-xs text-warm-500">
+                    {t({
+                      th: "บันทึกในอุปกรณ์ของคุณเพื่ออ่านออฟไลน์หรือแชร์ในชุมชน",
+                      en: "Save to your device to read offline or share with your community",
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {mainPdf && (
+                  <a
+                    href={mainPdf.url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-navy-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-600"
+                  >
+                    <Download className="h-4 w-4" />{" "}
+                    {t({ th: "ดาวน์โหลด PDF", en: "Download PDF" })}
+                  </a>
+                )}
+                {asset.source && asset.sourceType === "pdf" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setZoomScale(1);
+                      setModalOpen(true);
+                    }}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-navy-500 bg-white px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-lavender-50"
+                  >
+                    <Eye className="h-4 w-4" />{" "}
+                    {t({ th: "ดูตัวอย่าง", en: "Preview" })}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
+
 
         {/* Lessons layout */}
         {hasChapters ? (
