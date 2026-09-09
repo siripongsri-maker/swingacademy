@@ -135,6 +135,17 @@ function KnowledgeDetailPage() {
   const hasChapters = chapters.length > 0;
   const current = hasChapters ? chapters[Math.min(active, chapters.length - 1)] : null;
 
+  const pdfAttachments = useMemo(
+    () =>
+      asset.attachments.filter(
+        (a) =>
+          a.contentType?.toLowerCase().includes("pdf") ||
+          a.name?.toLowerCase().endsWith(".pdf"),
+      ),
+    [asset.attachments],
+  );
+  const mainPdf = asset.source && asset.sourceType === "pdf" ? { url: asset.source, name: asset.titleTh } : pdfAttachments[0];
+
   const markComplete = (id: string) => setCompleted((c) => ({ ...c, [id]: true }));
   const goTo = (i: number) => {
     setActive(Math.max(0, Math.min(chapters.length - 1, i)));
@@ -142,6 +153,7 @@ function KnowledgeDetailPage() {
 
   const completedCount = Object.values(completed).filter(Boolean).length;
   const progress = hasChapters ? Math.round((completedCount / chapters.length) * 100) : 0;
+
 
   useEffect(() => {
     if (!modalOpen) return;
