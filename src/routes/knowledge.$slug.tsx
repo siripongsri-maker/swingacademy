@@ -260,29 +260,37 @@ function KnowledgeDetailPage() {
                   ))}
                 </div>
               )}
-              {asset.source && asset.sourceType === "pdf" && (
+              {mainPdf && (
                 <div className="mt-6 flex flex-wrap gap-2">
                   <a
-                    href={asset.source}
+                    href={mainPdf.url}
                     download
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-md bg-navy-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-600"
                   >
-                    <Download className="h-4 w-4" /> ดาวน์โหลด PDF ฉบับเต็ม · Download Full PDF
+                    <Download className="h-4 w-4" />{" "}
+                    {t({
+                      th: "ดาวน์โหลด PDF ฉบับเต็ม",
+                      en: "Download full PDF",
+                    })}
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setZoomScale(1);
-                      setModalOpen(true);
-                    }}
-                    className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-navy-500 bg-white px-4 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-lavender-50"
-                  >
-                    <Eye className="h-4 w-4" /> ดูตัวอย่างเอกสาร · Preview
-                  </button>
+                  {asset.source && asset.sourceType === "pdf" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setZoomScale(1);
+                        setModalOpen(true);
+                      }}
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-navy-500 bg-white px-4 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-lavender-50"
+                    >
+                      <Eye className="h-4 w-4" />{" "}
+                      {t({ th: "ดูตัวอย่างเอกสาร", en: "Preview document" })}
+                    </button>
+                  )}
                 </div>
               )}
+
 
               {hasChapters && (
                 <div className="mt-6">
