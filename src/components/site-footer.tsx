@@ -6,7 +6,8 @@ import { BrandLogo } from "@/components/brand-logo";
 const QUICK_LINKS: { to: string; label: Localized }[] = [
   { to: "/courses", label: { th: "คอร์สทั้งหมด", en: "All courses" } },
   { to: "/paths", label: { th: "เส้นทางเรียนรู้", en: "Learning paths" } },
-  { to: "/resources", label: { th: "คลังความรู้", en: "Resources" } },
+  { to: "/knowledge", label: { th: "คลังความรู้", en: "Knowledge library" } },
+  { to: "/resources", label: { th: "คลังทรัพยากร", en: "Resources" } },
   { to: "/verify", label: { th: "ตรวจสอบใบประกาศ", en: "Verify certificate" } },
 ];
 

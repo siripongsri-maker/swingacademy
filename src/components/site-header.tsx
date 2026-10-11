@@ -71,7 +71,7 @@ const NAV: { to: string; label: Localized }[] = [
   { to: "/classroom", label: { th: "ห้องเรียน", en: "Classroom" } },
   { to: "/my/notes", label: { th: "โน้ตของฉัน", en: "My Notes" } },
   { to: "/my/voice", label: { th: "เสียงของฉัน", en: "My Voice" } },
-  { to: "/resources", label: { th: "คลังความรู้", en: "Resources" } },
+  { to: "/knowledge", label: { th: "คลังความรู้", en: "Library" } },
   { to: "/verify", label: { th: "ตรวจสอบใบประกาศ", en: "Verify" } },
 ];
 

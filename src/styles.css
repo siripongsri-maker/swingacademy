@@ -156,16 +156,22 @@
     line-height: calc(1em + 11px);
   }
 
-  /* Long-form Thai body copy: looser leading, comfortable measure */
-  [lang="th"] p,
-  [lang="th"] li {
-    line-height: calc(1em + 13px);
+  /*
+   * Tailwind's text-* utilities set line-height from --tw-leading and beat this base layer,
+   * so Thai headings and paragraphs set the variable too. Explicit leading-* still wins.
+   * :lang() follows the nearest lang attribute, so English blocks keep their own leading.
+   */
+  p:lang(th) {
+    --tw-leading: 1.7;
+    line-height: 1.7;
   }
 
-  [lang="th"] h1,
-  [lang="th"] h2,
-  [lang="th"] h3 {
-    line-height: calc(1em + 10px);
+  /* Ink of stacked Thai vowels and tone marks spans about 1.45em */
+  h1:lang(th),
+  h2:lang(th),
+  h3:lang(th) {
+    --tw-leading: 1.45;
+    line-height: 1.45;
   }
 
   h1, h2, h3, h4 {

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import {
   Heart,
   Scale,
@@ -14,7 +14,10 @@ import {
   Award,
   MapPin,
   BookOpen,
-  HelpCircle,
+  Languages,
+  Library,
+  MessageCircle,
+  Route as RouteIcon,
   Mic,
   Settings2,
   Network,
@@ -33,39 +36,49 @@ import { pageHead } from "@/lib/seo";
 import { listPublicKnowledge } from "@/lib/knowledge.functions";
 import { HomepageVisitCounter } from "@/components/homepage-visit-counter";
 import { PhraseText } from "@/components/phrase-text";
+import { RouteError, RouteNotFound } from "@/components/route-fallback";
 
+// Shared with /knowledge and /courses, so errors must not be cached as an empty success.
 const knowledgeQueryOptions = queryOptions({
   queryKey: ["knowledge", "public", "all"],
-  // The knowledge list is a bonus on the homepage: if it fails, still render the page.
-  queryFn: () =>
-    listPublicKnowledge().catch(() => ({
-      items: [] as Awaited<ReturnType<typeof listPublicKnowledge>>["items"],
-    })),
+  queryFn: () => listPublicKnowledge(),
   staleTime: 60_000,
 });
+
+// SWING's LINE account, already used on /verify.
+const LINE_URL = "https://line.me/R/ti/p/@swingthailand";
 
 export const Route = createFileRoute("/")({
   head: () =>
     pageHead({
       title: "SWING Academy · Community knowledge you can find and trust",
       description:
-        "Free, bilingual (TH/EN) lessons from frontline community workers on sexual health, rights and work skills. Built around two checks: accurate and dignified.",
+        "Free Thai and English lessons from frontline community workers on sexual health, rights and work skills. A two-check review (accurate and dignified) is in development.",
       path: "/",
     }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(knowledgeQueryOptions),
+  // The library list is a bonus on the homepage: if it fails, render the page without it.
+  // Only the card fields are returned, so the article bodies stay out of the homepage HTML.
+  loader: async ({ context }) => {
+    try {
+      const { items } = await context.queryClient.ensureQueryData(knowledgeQueryOptions);
+      return {
+        total: items.length,
+        items: items.slice(0, 6).map(({ id, slug, coverUrl, titleTh, titleEn, summary }) => ({
+          id,
+          slug,
+          coverUrl,
+          titleTh,
+          titleEn,
+          summary,
+        })),
+      };
+    } catch {
+      return { total: 0, items: [] };
+    }
+  },
   component: HomePage,
-  errorComponent: ({ error }) => (
-    <PublicLayout>
-      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">
-        โหลดหน้าไม่สำเร็จ: {error.message}
-      </div>
-    </PublicLayout>
-  ),
-  notFoundComponent: () => (
-    <PublicLayout>
-      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">ไม่พบเนื้อหา</div>
-    </PublicLayout>
-  ),
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 type Partner = { id: string; short: string; color: string; role: Localized };
@@ -74,11 +87,21 @@ const REASSURE: { icon: typeof HeartHandshake; label: Localized }[] = [
   { icon: HeartHandshake, label: { th: "ฟรีเสมอ", en: "Always free" } },
   { icon: ShieldCheck, label: { th: "ไม่ต้องใช้บัตรประชาชน", en: "No ID required" } },
   { icon: Lock, label: { th: "เป็นความลับ", en: "Private & confidential" } },
-  { icon: Heart, label: { th: "ไม่มีการตัดสิน", en: "No judgment" } },
+  { icon: Heart, label: { th: "เคารพทุกคน", en: "Respect for everyone" } },
 ];
 
 // Example searches that match published titles today.
-const EXAMPLE_QUERIES = ["PrEP", "ตรวจเอชไอวีด้วยตนเอง", "SDART"];
+const EXAMPLE_QUERIES: { label: Localized; q: Localized }[] = [
+  { label: { th: "PrEP", en: "PrEP" }, q: { th: "PrEP", en: "PrEP" } },
+  {
+    label: { th: "ตรวจเอชไอวีด้วยตนเอง", en: "HIV self-testing" },
+    q: { th: "ตรวจเอชไอวีด้วยตนเอง", en: "HIV self-testing" },
+  },
+  {
+    label: { th: "เริ่มยาต้านในวันเดียว (SDART)", en: "Same-day ART (SDART)" },
+    q: { th: "SDART", en: "SDART" },
+  },
+];
 
 // CVSK: Community Voice to Structured Knowledge, four layers.
 const JOURNEY: {
@@ -99,10 +122,10 @@ const JOURNEY: {
   {
     icon: Settings2,
     tone: "bg-warm-100 text-warm-700",
-    title: { th: "ถอดและปกป้อง", en: "Transcribed and protected" },
+    title: { th: "ถอดเสียง ปกปิดตัวตน", en: "Transcribed and de-identified" },
     body: {
-      th: "ถอดเสียง ลบข้อมูลที่ระบุตัวตนได้ แล้วแยกออกมาเป็นหน่วยความรู้",
-      en: "Speech is transcribed, identifying details removed, and split into knowledge units.",
+      th: "ถอดเสียงเป็นข้อความ ลบชื่อและรายละเอียดที่ชี้ตัวคนเล่าได้ แล้วแยกเป็นหน่วยความรู้ทีละเรื่อง",
+      en: "Speech becomes text, names and identifying details are removed, and it is split into knowledge units.",
     },
   },
   {
@@ -119,8 +142,8 @@ const JOURNEY: {
     tone: "bg-navy-100 text-navy-500",
     title: { th: "ตรวจสองด้าน", en: "Checked two ways" },
     body: {
-      th: "ผู้เชี่ยวชาญตรวจความถูกต้อง ชุมชนร่วมประเมินการให้เกียรติ ก่อนเผยแพร่",
-      en: "Experts check accuracy, the community co-assesses dignity, before anything is published.",
+      th: "ผู้เชี่ยวชาญดูว่าถูกต้องไหม ชุมชนร่วมประเมินว่าให้เกียรติคนหรือเปล่า ผ่านครบสองด้านถึงจะเผยแพร่",
+      en: "Experts check it is accurate, and the community co-assesses whether it treats people with dignity. Only then is it published.",
     },
   },
 ];
@@ -144,8 +167,8 @@ const CATEGORIES = [
     tone: "bg-dignity-soft text-dignity-ink",
     name: { th: "บทเรียนภาคสนาม", en: "Field lessons" },
     blurb: {
-      th: "ถอดบทเรียนจากการทำงานจริงของ CBO และพี่เลี้ยงชุมชน",
-      en: "Lessons learned from CBO and peer-educator practice",
+      th: "ถอดบทเรียนจากงานจริงขององค์กรชุมชน (CBO) และพี่เลี้ยงชุมชน",
+      en: "Lessons from the real work of community-based organisations (CBOs) and peer educators",
     },
     to: "/knowledge" as const,
     cta: { th: "ดูบทเรียน", en: "View lessons" },
@@ -154,19 +177,19 @@ const CATEGORIES = [
     id: "rights",
     icon: Scale,
     tone: "bg-lavender-100 text-lavender-900",
-    name: { th: "สิทธิและการสนับสนุน", en: "Rights & advocacy" },
+    name: { th: "สิทธิและการรณรงค์", en: "Rights & advocacy" },
     blurb: {
-      th: "สิทธิแรงงาน สิทธิทางเพศ และเครื่องมือสนับสนุนชุมชน",
-      en: "Labour rights, sexual rights & community advocacy tools",
+      th: "สิทธิแรงงาน สิทธิทางเพศ และเครื่องมือที่ชุมชนใช้ผลักดันเรื่องสิทธิ",
+      en: "Labour rights, sexual rights and tools communities use to push for change",
     },
     to: "/knowledge" as const,
-    cta: { th: "เรียนรู้สิทธิ", en: "Learn rights" },
+    cta: { th: "รู้สิทธิของคุณ", en: "Know your rights" },
   },
   {
     id: "cbo-skills",
     icon: HeartHandshake,
     tone: "bg-navy-100 text-navy-500",
-    name: { th: "ทักษะการทำงาน CBO", en: "CBO work skills" },
+    name: { th: "ทักษะงานองค์กรชุมชน", en: "Community organisation skills" },
     blurb: {
       th: "คอร์สและบทเรียนสำหรับนักกิจกรรมและทีมงานชุมชน",
       en: "Courses & lessons for community organisers and staff",
@@ -177,16 +200,25 @@ const CATEGORIES = [
 ];
 
 const ACCESS: { icon: typeof Smartphone; label: Localized }[] = [
-  { icon: Smartphone, label: { th: "เปิดในมือถือได้ดี", en: "Mobile-friendly" } },
-  { icon: WifiOff, label: { th: "ดาวน์โหลดอ่านออฟไลน์ได้", en: "Works offline" } },
-  { icon: Lock, label: { th: "เป็นความลับเสมอ", en: "Always private" } },
+  { icon: Smartphone, label: { th: "อ่านบนมือถือได้สบาย", en: "Easy to read on your phone" } },
+  {
+    icon: WifiOff,
+    label: {
+      th: "บางเรื่องมี PDF ให้โหลดไปอ่านออฟไลน์",
+      en: "Some items have PDFs to read offline",
+    },
+  },
+  { icon: Languages, label: { th: "อ่านได้ทั้งไทยและอังกฤษ", en: "In Thai and English" } },
 ];
 
-const HELP: { icon: typeof HelpCircle; label: Localized }[] = [
-  { icon: HelpCircle, label: { th: "คุยกับพี่เลี้ยงชุมชน", en: "Talk to a peer educator" } },
-  { icon: MapPin, label: { th: "ค้นหาบริการใกล้บ้าน", en: "Find services near you" } },
-  { icon: BookOpen, label: { th: "เรียนรู้ด้วยตัวเอง", en: "Self-paced learning" } },
-  { icon: Award, label: { th: "รับใบประกาศ", en: "Earn certificates" } },
+const MORE_LINKS: {
+  icon: typeof Library;
+  to: "/knowledge" | "/paths" | "/verify";
+  label: Localized;
+}[] = [
+  { icon: Library, to: "/knowledge", label: { th: "เปิดคลังความรู้", en: "Open the library" } },
+  { icon: RouteIcon, to: "/paths", label: { th: "ดูเส้นทางเรียนรู้", en: "See learning paths" } },
+  { icon: Award, to: "/verify", label: { th: "ตรวจสอบใบประกาศ", en: "Verify a certificate" } },
 ];
 
 const eyebrow = "mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-accuracy-ink";
@@ -235,6 +267,8 @@ function HeroSearch() {
     <div className="mt-8">
       <form
         role="search"
+        action="/knowledge"
+        method="get"
         onSubmit={submit}
         className="flex items-center gap-2 rounded-pill border border-warm-300 bg-white p-1.5 pl-5 shadow-md transition-shadow focus-within:border-accuracy focus-within:shadow-lg"
       >
@@ -244,14 +278,13 @@ function HeroSearch() {
         </label>
         <input
           id="hero-search"
+          name="q"
           type="search"
+          maxLength={100}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder={t({
-            th: "ค้นบทเรียน เช่น PrEP หรือการชวนตรวจ",
-            en: "Search lessons, e.g. PrEP or HIV testing",
-          })}
-          className="h-11 min-w-0 flex-1 bg-transparent text-base text-navy-500 placeholder:text-warm-400 focus:outline-none"
+          placeholder={t({ th: "ค้นบทเรียน เช่น PrEP", en: "Search, e.g. PrEP" })}
+          className="h-11 min-w-0 flex-1 bg-transparent text-base text-navy-500 placeholder:text-warm-500 focus:outline-hidden"
         />
         <button
           type="submit"
@@ -262,14 +295,14 @@ function HeroSearch() {
       </form>
       <div className="mt-3 flex flex-wrap items-center gap-2 pl-1 text-sm">
         <span className="text-warm-600">{t({ th: "เช่น", en: "e.g." })}</span>
-        {EXAMPLE_QUERIES.map((term) => (
+        {EXAMPLE_QUERIES.map((ex) => (
           <Link
-            key={term}
+            key={ex.label.en}
             to="/knowledge"
-            search={{ q: term }}
-            className="inline-flex min-h-8 items-center rounded-pill border border-accuracy/25 bg-accuracy-soft/60 px-3 text-xs font-medium text-accuracy-ink transition-colors hover:bg-accuracy-soft"
+            search={{ q: t(ex.q) }}
+            className="inline-flex min-h-11 items-center rounded-pill border border-accuracy/25 bg-accuracy-soft/60 px-4 text-sm font-medium text-accuracy-ink transition-colors hover:bg-accuracy-soft"
           >
-            {term}
+            {t(ex.label)}
           </Link>
         ))}
       </div>
@@ -281,18 +314,24 @@ function HeroSearch() {
 function SampleUnitCard() {
   const { t, lang } = useLanguage();
   return (
-    <figure className="relative">
+    <figure
+      className="relative"
+      aria-label={t({
+        th: "ตัวอย่างสมมติของหน่วยความรู้ที่ผ่านกุญแจสองดอก ระบบนี้กำลังพัฒนา",
+        en: "Fictional example of a knowledge unit passing both keys. This process is in development.",
+      })}
+    >
       <div
         aria-hidden
         className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-accuracy-soft via-white to-dignity-soft opacity-80 blur-xl"
       />
       <div className="relative overflow-hidden rounded-lg border border-warm-200 bg-white shadow-lg">
-        <div className="flex items-center justify-between gap-3 border-b border-warm-200 px-6 py-3">
-          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-warm-600">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-warm-200 px-6 py-3">
+          <span className="text-xs font-semibold whitespace-nowrap uppercase tracking-[0.12em] text-warm-600">
             {t({ th: "หน่วยความรู้", en: "Knowledge unit" })}
           </span>
-          <span className="rounded-pill bg-warm-100 px-2.5 py-0.5 text-[11px] font-medium text-warm-600">
-            {t({ th: "ตัวอย่างสมมติ", en: "Fictional example" })}
+          <span className="rounded-pill border border-warm-400 bg-white px-2.5 py-0.5 text-xs whitespace-nowrap font-semibold text-warm-700">
+            {t({ th: "ตัวอย่างสมมติ · ระบบกำลังพัฒนา", en: "Fictional · in development" })}
           </span>
         </div>
 
@@ -323,9 +362,9 @@ function SampleUnitCard() {
               <KeyRound className="h-5 w-5 shrink-0 text-accuracy" aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-accuracy-ink">
-                  {t({ th: "ถูกต้อง · ตรงแหล่ง", en: "Accurate · true to source" })}
+                  {t({ th: "ถูกต้อง · ตรงกับที่มา", en: "Accurate · true to source" })}
                 </span>
-                <span className="block text-xs text-accuracy-ink/80">
+                <span className="block text-xs text-accuracy-ink">
                   {t({ th: "ผู้เชี่ยวชาญตรวจแล้ว", en: "Checked by experts" })}
                 </span>
               </span>
@@ -337,7 +376,7 @@ function SampleUnitCard() {
                 <span className="block text-sm font-semibold text-dignity-ink">
                   {t({ th: "ให้เกียรติ · ไม่ตีตรา", en: "Dignified · non-stigmatising" })}
                 </span>
-                <span className="block text-xs text-dignity-ink/85">
+                <span className="block text-xs text-dignity-ink">
                   {t({ th: "ชุมชนร่วมประเมินแล้ว", en: "Co-assessed by the community" })}
                 </span>
               </span>
@@ -349,8 +388,8 @@ function SampleUnitCard() {
         <div className="flex items-center gap-2.5 bg-navy-500 px-6 py-3.5 text-sm font-semibold text-white">
           <DoorOpen className="h-4 w-4 text-dignity" aria-hidden />
           {t({
-            th: "ผ่านทั้งสองด้าน จึงเผยแพร่ในคลัง",
-            en: "Both keys pass, so it goes in the library",
+            th: "เมื่อผ่านทั้งสองด้าน จึงจะเผยแพร่ในคลัง",
+            en: "When both keys pass, it can go in the library",
           })}
         </div>
       </div>
@@ -365,8 +404,8 @@ function TwoKeyMatrix() {
     <figure
       className="relative pl-7 pb-7"
       aria-label={t({
-        th: "ตารางสองมิติ ถูกต้อง และ ให้เกียรติ ต้องผ่านทั้งคู่จึงเผยแพร่ได้",
-        en: "Two-by-two grid of accurate and dignified. Only both together can be published.",
+        th: "ตารางสองด้าน ถูกต้องกับให้เกียรติ ต้องผ่านทั้งคู่ถึงจะเผยแพร่ได้",
+        en: "Two-by-two grid: content must be both accurate and dignified to be published.",
       })}
     >
       <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-2.5">
@@ -382,17 +421,22 @@ function TwoKeyMatrix() {
           <DoorOpen className="h-6 w-6 text-dignity" aria-hidden />
           <span>
             <span className="block text-base font-semibold sm:text-lg">
-              {t({ th: "เผยแพร่ได้", en: "Publish" })}
+              {t({ th: "เผยแพร่ได้", en: "Ready to publish" })}
             </span>
             <span className="block text-xs text-lavender-300">
-              {t({ th: "ครบกุญแจสองดอก", en: "Both keys pass" })}
+              {t({ th: "ได้กุญแจครบสองดอก", en: "Both keys pass" })}
             </span>
           </span>
         </div>
         <div className={`${cell} bg-warm-100 text-warm-700`}>
           <Lock className="h-5 w-5" aria-hidden />
-          <span className="text-xs font-semibold sm:text-sm">
-            {t({ th: "ระงับไว้ก่อน", en: "On hold" })}
+          <span>
+            <span className="block text-xs font-semibold sm:text-sm">
+              {t({ th: "พักไว้ก่อน", en: "On hold" })}
+            </span>
+            <span className="block text-xs">
+              {t({ th: "ยังไม่ผ่านทั้งสองด้าน", en: "Neither key passes yet" })}
+            </span>
           </span>
         </div>
         <div className={`${cell} bg-dignity-soft text-dignity-ink`}>
@@ -412,7 +456,8 @@ function TwoKeyMatrix() {
       >
         <span className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-dignity" />
         <span className="relative -rotate-90 whitespace-nowrap bg-cream px-2 text-xs font-semibold text-dignity-ink">
-          {t({ th: "ให้เกียรติ ↑", en: "Dignified ↑" })}
+          {/* The label is rotated -90deg, so a right arrow points up the axis */}
+          {t({ th: "ให้เกียรติ →", en: "Dignified →" })}
         </span>
       </div>
       <div
@@ -431,9 +476,7 @@ function TwoKeyMatrix() {
 function HomePage() {
   const { t, lang } = useLanguage();
   const partners = seed.publicPortal.partners as Partner[];
-  const { data: knowledgeData } = useSuspenseQuery(knowledgeQueryOptions);
-  const knowledgeTotal = knowledgeData.items.length;
-  const knowledgeItems = knowledgeData.items.slice(0, 6);
+  const { total: knowledgeTotal, items: knowledgeItems } = Route.useLoaderData();
 
   return (
     <PublicLayout flushFooter>
@@ -453,7 +496,7 @@ function HomePage() {
             <p className={eyebrow}>SWING Academy · Community Voice to Structured Knowledge</p>
             <h1
               lang={lang}
-              className="text-balance text-4xl leading-[1.3] font-semibold text-navy-500 md:text-5xl md:leading-[1.3] lg:text-[3.4rem] lg:leading-[1.3]"
+              className="text-balance text-4xl leading-[1.38] font-semibold text-navy-500 md:text-5xl md:leading-[1.38] lg:text-[3.4rem] lg:leading-[1.38]"
             >
               <PhraseText
                 text={t({
@@ -464,7 +507,7 @@ function HomePage() {
               <span className="bg-[linear-gradient(transparent_60%,var(--color-dignity-soft)_60%)] text-accuracy-ink">
                 <PhraseText
                   text={t({
-                    th: "ที่ค้นเจอ |และใช้ได้จริง",
+                    th: "ที่ค้นง่าย |และใช้ได้จริง",
                     en: "easy to find and use",
                   })}
                 />
@@ -510,12 +553,12 @@ function HomePage() {
               en: "How knowledge gets here · in development",
             })}
             title={t({
-              th: "จากเสียงหน้างาน |สู่ความรู้ที่ค้นเจอ",
+              th: "จากเสียงหน้างาน |สู่ความรู้ที่ใครก็ค้นเจอ",
               en: "From frontline voices to knowledge you can find",
             })}
             intro={t({
-              th: "AI ช่วยทำงานด่านแรก แต่คนตรวจก่อนเผยแพร่ทุกครั้ง นี่คือแนวทางที่ SWING Academy กำลังพัฒนา เพื่อไม่ให้ความรู้หายไปพร้อมกับคน",
-              en: "AI does the first pass; people review before anything is published. This is the approach SWING Academy is building, so know-how stays when people move on.",
+              th: "แนวทางที่ SWING Academy กำลังพัฒนา: AI ช่วยทำงานด่านแรก และคนตรวจก่อนเผยแพร่ทุกครั้ง เพื่อให้ความรู้ยังอยู่ แม้คนทำงานจะย้ายไป",
+              en: "The approach SWING Academy is building: AI does the first pass, and people review before anything is published, so know-how stays when people move on.",
             })}
           />
 
@@ -526,10 +569,13 @@ function HomePage() {
               return (
                 <li
                   key={step.title.en}
-                  className="relative flex flex-col overflow-hidden rounded-lg border border-warm-200 bg-cream/50 p-6"
+                  className="relative flex flex-col rounded-lg border border-warm-200 bg-cream/50 p-6"
                 >
                   {isReview ? (
-                    <span aria-hidden className="absolute inset-x-0 top-0 flex h-1.5">
+                    <span
+                      aria-hidden
+                      className="absolute inset-x-0 top-0 flex h-1.5 overflow-hidden rounded-t-[23px]"
+                    >
                       <span className="flex-1 bg-accuracy" />
                       <span className="flex-1 bg-dignity" />
                     </span>
@@ -540,7 +586,7 @@ function HomePage() {
                     >
                       <Icon className="h-6 w-6" aria-hidden />
                     </span>
-                    <span className="text-3xl font-semibold text-warm-300" aria-hidden>
+                    <span className="text-3xl font-semibold text-warm-500" aria-hidden>
                       {i + 1}
                     </span>
                   </div>
@@ -567,8 +613,8 @@ function HomePage() {
               <RefreshCw className="h-5 w-5 shrink-0" aria-hidden />
               <span lang={lang}>
                 {t({
-                  th: "ทุกข้อแก้ไขจากผู้ตรวจ ย้อนกลับไปปรับระบบในรอบถัดไป",
-                  en: "Every reviewer correction feeds back to improve the next round.",
+                  th: "ผู้ตรวจแก้ตรงไหน ระบบจะเอาไปปรับในรอบถัดไป",
+                  en: "Wherever reviewers correct something, the system uses it to improve the next round.",
                 })}
               </span>
             </p>
@@ -590,10 +636,13 @@ function HomePage() {
         <div className="grid items-center gap-14 lg:grid-cols-[1fr_0.85fr]">
           <div>
             <SectionHeading
-              kicker={t({ th: "ประตูหนึ่งบาน กุญแจสองดอก", en: "One door, two keys" })}
+              kicker={t({
+                th: "ประตูหนึ่งบาน กุญแจสองดอก · กำลังพัฒนา",
+                en: "One door, two keys · in development",
+              })}
               title={t({
-                th: "ความรู้จะเผยแพร่ได้ |เมื่อผ่านทั้งสองด้าน",
-                en: "Knowledge is published only when it passes both",
+                th: "ความรู้จะขึ้นคลังได้ |ก็ต่อเมื่อผ่านครบสองด้าน",
+                en: "Knowledge goes live only when it passes both checks",
               })}
             />
 
@@ -604,11 +653,11 @@ function HomePage() {
                 </span>
                 <div>
                   <h3 lang={lang} className="font-semibold text-accuracy-ink">
-                    {t({ th: "ถูกต้อง · ตรงแหล่ง", en: "Accurate · true to source" })}
+                    {t({ th: "ถูกต้อง · ตรงกับที่มา", en: "Accurate · true to source" })}
                   </h3>
                   <p lang={lang} className="mt-1 text-sm text-warm-600">
                     {t({
-                      th: "ผู้เชี่ยวชาญตรวจว่าเนื้อหาถูกต้อง และย้อนกลับไปดูแหล่งที่มาได้",
+                      th: "ผู้เชี่ยวชาญตรวจว่าเนื้อหาถูกต้อง และย้อนกลับไปดูที่มาได้",
                       en: "Experts check the content is correct and can be traced back to its source.",
                     })}
                   </p>
@@ -624,8 +673,8 @@ function HomePage() {
                   </h3>
                   <p lang={lang} className="mt-1 text-sm text-warm-600">
                     {t({
-                      th: "ผู้ให้ความรู้ในกลุ่มเพื่อนเป็นผู้ประเมินหลัก ร่วมกับนักสิทธิมนุษยชนและบุคลากรสุขภาพที่ทำงานกับชุมชน",
-                      en: "Peer educators lead this assessment, with human rights advocates and health workers who work with the community.",
+                      th: "พี่เลี้ยงชุมชนเป็นผู้ประเมินหลัก ร่วมกับนักสิทธิมนุษยชน พยาบาล และแพทย์ประจำคลินิก ทุกคนทำงานกับชุมชนอยู่แล้ว",
+                      en: "Peer educators lead this check, with human rights advocates, nurses and a clinic doctor. Everyone on the panel works with the community.",
                     })}
                   </p>
                 </div>
@@ -655,17 +704,21 @@ function HomePage() {
           <div className="mx-auto max-w-6xl px-6">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <SectionHeading
-                kicker={t({ th: "คลังความรู้ล่าสุด", en: "Latest knowledge" })}
+                kicker={t({ th: "เพิ่งขึ้นคลัง", en: "New in the library" })}
                 title={t({
                   th: "งานวิจัย บทเรียน |และความรู้จากชุมชน",
                   en: "Research, lessons & community knowledge",
+                })}
+                intro={t({
+                  th: "เรื่องในคลังตอนนี้ SWING และภาคีเผยแพร่ก่อนจะมีการตรวจสองด้าน ซึ่งยังอยู่ระหว่างพัฒนา",
+                  en: "These items from SWING and partners were published before the two-key review, which is still in development.",
                 })}
               />
               <Link
                 to="/knowledge"
                 className="inline-flex h-11 items-center gap-1 text-sm font-semibold text-accuracy-ink hover:text-accuracy"
               >
-                {t({ th: `ดูทั้งหมด ${knowledgeTotal} ชิ้น`, en: `See all ${knowledgeTotal}` })}
+                {t({ th: `ดูทั้งหมด ${knowledgeTotal} เรื่อง`, en: `See all ${knowledgeTotal}` })}
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
@@ -676,6 +729,7 @@ function HomePage() {
                   key={k.id}
                   to="/knowledge/$slug"
                   params={{ slug: k.slug }}
+                  aria-labelledby={`k-${k.id}-title`}
                   className={`group flex flex-col overflow-hidden rounded-lg border border-warm-200 bg-cream/40 ${cardLift}`}
                 >
                   <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-accuracy-soft via-cream to-dignity-soft">
@@ -694,19 +748,28 @@ function HomePage() {
                     )}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
-                    <h3 className="line-clamp-3 text-lg font-semibold text-navy-500 group-hover:text-accuracy-ink">
+                    <h3
+                      id={`k-${k.id}-title`}
+                      lang={lang === "en" && k.titleEn ? "en" : "th"}
+                      className="line-clamp-3 text-lg font-semibold text-navy-500 group-hover:text-accuracy-ink"
+                    >
                       {t({ th: k.titleTh, en: k.titleEn || k.titleTh })}
                     </h3>
                     {k.titleEn && k.titleEn !== k.titleTh && (
-                      <p className="mt-1 line-clamp-2 text-xs text-warm-500">
+                      <p
+                        lang={lang === "en" ? "th" : "en"}
+                        className="mt-1 line-clamp-2 text-xs text-warm-500"
+                      >
                         {t({ th: k.titleEn, en: k.titleTh })}
                       </p>
                     )}
                     {k.summary && (
-                      <p className="mt-3 line-clamp-3 flex-1 text-sm text-warm-600">{k.summary}</p>
+                      <p lang="th" className="mt-3 line-clamp-3 flex-1 text-sm text-warm-600">
+                        {k.summary}
+                      </p>
                     )}
                     <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accuracy-ink">
-                      {t({ th: "อ่านต่อ", en: "Read" })}
+                      {t({ th: "อ่านต่อ", en: "Read more" })}
                       <ArrowRight
                         className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
                         aria-hidden
@@ -726,8 +789,8 @@ function HomePage() {
           <SectionHeading
             kicker={t({ th: "เริ่มจากหมวดที่ใช่", en: "Start where it fits" })}
             title={t({
-              th: "ความรู้จากชุมชน |บทเรียนจาก CBO",
-              en: "Knowledge from the community, lessons from CBOs",
+              th: "เลือกเรื่อง |ที่ตรงกับงานของคุณ",
+              en: "Pick what fits your work",
             })}
           />
         </div>
@@ -819,48 +882,60 @@ function HomePage() {
         <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center">
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-dignity">
-              {t({ th: "มีคำถามอยู่ใช่ไหม", en: "Got a question?" })}
+              {t({ th: "อยากถามอะไรไหม", en: "Got a question?" })}
             </p>
             <h2 lang={lang} className="text-balance text-3xl font-semibold md:text-4xl">
               <PhraseText
                 text={t({
-                  th: "พร้อมเสมอ |ไม่ว่าคุณจะอยู่ที่ไหน",
-                  en: "We're here for you, wherever you are.",
+                  th: "ถามได้ |มีคนฟังจริง",
+                  en: "Ask us. Real people answer.",
                 })}
               />
             </h2>
             <p lang={lang} className="mt-4 max-w-xl text-base text-lavender-300">
               {t({
-                th: "ทีมพี่เลี้ยงชุมชนพร้อมรับฟัง ตอบคำถาม และพาคุณไปยังบริการที่ฟรีและเป็นมิตร",
-                en: "Our peer educators are ready to listen, answer questions, and connect you with free, friendly services.",
+                th: "ทีม SWING พร้อมฟัง ตอบคำถาม และแนะนำบริการฟรีที่เป็นมิตร โดยคุณเป็นคนเลือกเองว่าจะไปที่ไหน",
+                en: "The SWING team listens, answers questions and points you to free, friendly services. You choose where to go.",
               })}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
+              <a
+                href={LINE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-12 items-center gap-2 rounded-pill bg-dignity px-6 text-sm font-semibold text-navy-900 shadow-md transition-colors hover:bg-[#D9B743] focus-visible:outline-white"
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden />
+                {t({ th: "ทักทีม SWING ทาง LINE", en: "Message SWING on LINE" })}
+              </a>
               <Link
                 to="/courses"
-                className="inline-flex h-12 items-center gap-2 rounded-pill bg-dignity px-6 text-sm font-semibold text-navy-900 shadow-md transition-colors hover:bg-[#D9B743]"
+                className="inline-flex h-12 items-center gap-2 rounded-pill border border-white/30 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-white"
               >
                 {t({ th: "เริ่มเรียนเลย", en: "Start learning" })}
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
-              <Link
-                to="/knowledge"
-                className="inline-flex h-12 items-center gap-2 rounded-pill border border-white/30 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-              >
-                {t({ th: "เปิดคลังความรู้", en: "Open the library" })}
-              </Link>
             </div>
           </div>
 
-          <ul className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-            {HELP.map(({ icon: Icon, label }) => (
-              <li key={label.en} className="flex items-center gap-3 border-t border-white/10 pt-4">
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-white/10 text-dignity">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-                <span lang={lang} className="text-sm font-medium">
-                  {t(label)}
-                </span>
+          <ul className="grid gap-3">
+            {MORE_LINKS.map(({ icon: Icon, to, label }) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  className="group flex min-h-14 items-center gap-3 rounded-md border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10 focus-visible:outline-white"
+                >
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-white/10 text-dignity">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span lang={lang} className="flex-1 text-sm font-medium">
+                    {t(label)}
+                  </span>
+                  <ArrowRight
+                    className="h-4 w-4 text-lavender-300 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </Link>
               </li>
             ))}
           </ul>
