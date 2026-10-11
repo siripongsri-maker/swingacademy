@@ -95,29 +95,26 @@ export function SiteHeader() {
     }
   }, []);
 
-
-
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-warm-200 bg-cream/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link
             to="/"
-            className="flex items-center gap-2 transition-opacity hover:opacity-90"
-            aria-label="SWING Academy — Home"
+            className="flex min-w-0 items-center gap-2 transition-opacity hover:opacity-90"
+            aria-label="SWING Academy หน้าแรก"
             onClick={() => setOpen(false)}
           >
             <BrandLogo imgClassName="h-8 w-8 md:h-10 md:w-10" />
           </Link>
 
-
-          <nav className="hidden items-center gap-6 lg:flex">
+          <nav aria-label="เมนูหลัก" className="hidden items-center gap-1 xl:flex">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="text-sm font-medium text-navy-500/80 transition-colors hover:text-magenta-500"
-                activeProps={{ className: "text-magenta-500" }}
+                className="whitespace-nowrap rounded-pill px-3 py-2 text-sm font-medium text-navy-500/80 transition-colors hover:bg-white hover:text-magenta-500"
+                activeProps={{ className: "bg-white text-magenta-500 shadow-sm" }}
                 activeOptions={{ exact: item.to === "/" }}
               >
                 {t(item.label)}
@@ -125,14 +122,14 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={toggle}
-              aria-label="Toggle language"
-              className="inline-flex items-center gap-1.5 rounded-pill border border-warm-300 bg-white px-3 py-1.5 text-sm font-medium text-navy-500 transition-all hover:border-magenta-500 hover:text-magenta-500"
+              aria-label={lang === "th" ? "Switch to English" : "เปลี่ยนเป็นภาษาไทย"}
+              className="inline-flex h-10 items-center gap-1.5 rounded-pill border border-warm-300 bg-white px-3 text-sm font-medium text-navy-500 transition-all hover:border-magenta-500 hover:text-magenta-500"
             >
-              <Languages className="h-4 w-4" />
+              <Languages className="hidden h-4 w-4 sm:block" aria-hidden />
               <span className={lang === "th" ? "text-magenta-500" : ""}>ไทย</span>
               <span className="text-warm-300">/</span>
               <span className={lang === "en" ? "text-magenta-500" : ""}>EN</span>
@@ -146,9 +143,7 @@ export function SiteHeader() {
                       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-lavender-300 text-navy-500 font-semibold text-xs">
                         {supaUser.initial}
                       </span>
-                      <span className="hidden text-sm font-medium lg:inline">
-                        {supaUser.name}
-                      </span>
+                      <span className="hidden text-sm font-medium lg:inline">{supaUser.name}</span>
                       <ChevronDown className="h-3.5 w-3.5" />
                     </button>
                   </DropdownMenuTrigger>
@@ -157,19 +152,13 @@ export function SiteHeader() {
                     <DropdownMenuSeparator />
                     {isStaff && (
                       <DropdownMenuItem asChild>
-                        <Link
-                          to="/staff"
-                          className="cursor-pointer gap-2"
-                        >
+                        <Link to="/staff" className="cursor-pointer gap-2">
                           <ShieldCheck className="h-4 w-4" />
                           {t({ th: "เข้าหลังบ้าน", en: "Staff console" })}
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem
-                      onClick={handleSupaSignOut}
-                      className="cursor-pointer gap-2"
-                    >
+                    <DropdownMenuItem onClick={handleSupaSignOut} className="cursor-pointer gap-2">
                       <LogOut className="h-4 w-4" />
                       {t({ th: "ออกจากระบบ", en: "Sign out" })}
                     </DropdownMenuItem>
@@ -195,7 +184,7 @@ export function SiteHeader() {
             ) : (
               <Link
                 to="/auth"
-                className="hidden rounded-pill bg-magenta-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-magenta-700 md:inline-flex"
+                className="hidden h-10 items-center whitespace-nowrap rounded-pill bg-magenta-500 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-magenta-700 md:inline-flex"
               >
                 {t({ th: "เข้าสู่ระบบ", en: "Sign in" })}
               </Link>
@@ -204,18 +193,18 @@ export function SiteHeader() {
             <button
               type="button"
               onClick={() => setTourOpen(true)}
-              aria-label="Help / tour"
-              className="hidden rounded-pill border border-warm-300 bg-white p-2 text-navy-500 hover:border-magenta-500 hover:text-magenta-500 md:inline-flex"
+              aria-label={t({ th: "แนะนำการใช้งาน", en: "Help / tour" })}
+              className="hidden h-10 w-10 items-center justify-center rounded-pill border border-warm-300 bg-white text-navy-500 transition-colors hover:border-magenta-500 hover:text-magenta-500 md:inline-flex"
             >
               <HelpCircle className="h-4 w-4" />
             </button>
 
-
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              aria-label="Menu"
-              className="inline-flex items-center justify-center rounded-pill border border-warm-300 bg-white p-2 text-navy-500 lg:hidden"
+              aria-label={t({ th: "เมนู", en: "Menu" })}
+              aria-expanded={open}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-pill border border-warm-300 bg-white text-navy-500 xl:hidden"
             >
               {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
@@ -223,14 +212,14 @@ export function SiteHeader() {
         </div>
 
         {open && (
-          <div className="border-t border-warm-200 bg-cream lg:hidden">
-            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4">
+          <div className="border-t border-warm-200 bg-cream xl:hidden">
+            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4 sm:px-6">
               {NAV.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-navy-500/80 hover:bg-white hover:text-magenta-500"
+                  className="rounded-md px-3 py-3 text-base font-medium text-navy-500/80 hover:bg-white hover:text-magenta-500"
                   activeProps={{ className: "bg-white text-magenta-500" }}
                   activeOptions={{ exact: item.to === "/" }}
                 >

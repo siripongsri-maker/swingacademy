@@ -12,24 +12,24 @@ const QUICK_LINKS: { to: string; label: Localized }[] = [
 
 const PARTNERS = ["EpiC", "PEPFAR", "NHSO", "UNAIDS", "APCOM"];
 
-export function SiteFooter() {
+export function SiteFooter({ flush = false }: { flush?: boolean }) {
   const { t, lang } = useLanguage();
 
   return (
-    <footer className="mt-20 border-t border-warm-200 bg-white">
+    <footer className={`${flush ? "" : "mt-20 "}border-t border-warm-200 bg-white`}>
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-4">
         <div className="md:col-span-2">
           <Link
             to="/"
             className="inline-flex items-center gap-2 transition-opacity hover:opacity-90"
-            aria-label="SWING Academy — Home"
+            aria-label="SWING Academy หน้าแรก"
           >
             <BrandLogo size={44} />
           </Link>
-          <p lang={lang} className="mt-4 max-w-md text-sm text-warm-500">
+          <p lang={lang} className="mt-4 max-w-md text-sm text-warm-600">
             {t({
-              th: "โดยมูลนิธิ SWING — พื้นที่เรียนรู้สำหรับชุมชนของเรา",
-              en: "By the SWING Foundation — a learning space built for and with our community.",
+              th: "โดยมูลนิธิเพื่อนพนักงานบริการ (SWING) พื้นที่เรียนรู้ที่ทำกับชุมชน เพื่อชุมชน",
+              en: "By the SWING Foundation. A learning space built with and for our community.",
             })}
           </p>
           <div className="mt-5 inline-flex items-center gap-2 rounded-pill bg-lavender-100 px-3.5 py-1.5 text-xs font-medium text-navy-500">
@@ -45,12 +45,12 @@ export function SiteFooter() {
 
         <div>
           <p className="eyebrow mb-3">{t({ th: "ทางลัด", en: "Quick links" })}</p>
-          <ul className="space-y-2">
+          <ul className="space-y-0.5">
             {QUICK_LINKS.map((l) => (
               <li key={l.to}>
                 <Link
                   to={l.to}
-                  className="text-sm text-navy-500/80 transition-colors hover:text-magenta-500"
+                  className="inline-flex min-h-9 items-center text-sm text-navy-500/80 transition-colors hover:text-magenta-500"
                 >
                   {t(l.label)}
                 </Link>
