@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireStaff } from "@/lib/auth-guards";
 
 // All analytics writes/reads run through the service-role admin client.
 // RLS is enabled on the underlying tables with no public policies so users
@@ -88,31 +89,34 @@ export const submitKnowledgeRating = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// Bulk stats for the staff library list page
-export const listKnowledgeStats = createServerFn({ method: "GET" }).handler(async () => {
-  const admin = await getAdmin();
-  const [{ data: views }, { data: ratings }] = await Promise.all([
-    admin.from("knowledge_views").select("slug"),
-    admin.from("knowledge_ratings").select("slug, rating"),
-  ]);
-  const stats: Record<string, { views: number; ratingCount: number; ratingAvg: number }> = {};
-  for (const r of views ?? []) {
-    const s = (r as { slug: string }).slug;
-    if (!stats[s]) stats[s] = { views: 0, ratingCount: 0, ratingAvg: 0 };
-    stats[s].views += 1;
-  }
-  const agg: Record<string, number[]> = {};
-  for (const r of ratings ?? []) {
-    const row = r as { slug: string; rating: number };
-    (agg[row.slug] ??= []).push(row.rating);
-  }
-  for (const [slug, list] of Object.entries(agg)) {
-    if (!stats[slug]) stats[slug] = { views: 0, ratingCount: 0, ratingAvg: 0 };
-    stats[slug].ratingCount = list.length;
-    stats[slug].ratingAvg = Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10) / 10;
-  }
-  return { stats };
-});
+// Bulk stats for the staff library list page. Covers every slug, including
+// internal drafts, so it is staff-only (its only caller is /staff/knowledge-library).
+export const listKnowledgeStats = createServerFn({ method: "GET" })
+  .middleware([requireStaff])
+  .handler(async () => {
+    const admin = await getAdmin();
+    const [{ data: views }, { data: ratings }] = await Promise.all([
+      admin.from("knowledge_views").select("slug"),
+      admin.from("knowledge_ratings").select("slug, rating"),
+    ]);
+    const stats: Record<string, { views: number; ratingCount: number; ratingAvg: number }> = {};
+    for (const r of views ?? []) {
+      const s = (r as { slug: string }).slug;
+      if (!stats[s]) stats[s] = { views: 0, ratingCount: 0, ratingAvg: 0 };
+      stats[s].views += 1;
+    }
+    const agg: Record<string, number[]> = {};
+    for (const r of ratings ?? []) {
+      const row = r as { slug: string; rating: number };
+      (agg[row.slug] ??= []).push(row.rating);
+    }
+    for (const [slug, list] of Object.entries(agg)) {
+      if (!stats[slug]) stats[slug] = { views: 0, ratingCount: 0, ratingAvg: 0 };
+      stats[slug].ratingCount = list.length;
+      stats[slug].ratingAvg = Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10) / 10;
+    }
+    return { stats };
+  });
 
 // ---------- Homepage / site visits ----------
 

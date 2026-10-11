@@ -1,8 +1,19 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import type { AiConfig } from "@/lib/config.server";
 
 const LOVABLE_AIG_RUN_ID_HEADER = "X-Lovable-AIG-Run-ID";
 
-export function createLovableAiGatewayProvider(lovableApiKey: string, initialRunId?: string) {
+/**
+ * OpenAI-compatible provider for the configured AI_BASE_URL (see getAiConfig).
+ * On the Lovable gateway it keeps the Lovable auth and run-id headers; any other
+ * host gets a standard `Authorization: Bearer <AI_API_KEY>` header.
+ */
+export function createAiGatewayProvider(
+  ai: Pick<AiConfig, "baseUrl" | "apiKey" | "isLovableGateway">,
+  initialRunId?: string,
+) {
+  if (!ai.apiKey) throw new Error("AI gateway is not configured (missing API key).");
+  const apiKey = ai.apiKey;
   let runId = initialRunId?.trim() || undefined;
   let resolveRunId: (value: string | undefined) => void = () => {};
   let runIdResolved = false;
@@ -21,15 +32,19 @@ export function createLovableAiGatewayProvider(lovableApiKey: string, initialRun
   if (runId) publishRunId(runId);
 
   const provider = createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
+    name: ai.isLovableGateway ? "lovable" : "ai",
+    baseURL: ai.baseUrl,
+    ...(ai.isLovableGateway
+      ? {
+          headers: {
+            "Lovable-API-Key": apiKey,
+            "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+          },
+        }
+      : { apiKey }),
     fetch: async (input, init) => {
       const headers = new Headers(init?.headers);
-      if (runId && !headers.has(LOVABLE_AIG_RUN_ID_HEADER)) {
+      if (ai.isLovableGateway && runId && !headers.has(LOVABLE_AIG_RUN_ID_HEADER)) {
         headers.set(LOVABLE_AIG_RUN_ID_HEADER, runId);
       }
       try {

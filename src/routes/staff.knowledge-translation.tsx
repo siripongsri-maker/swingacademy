@@ -31,6 +31,7 @@ import { translateKnowledge, creativeAssist } from "@/lib/knowledge-ai.functions
 import { TranslationRenderer, MarkdownToggle } from "@/components/translation-renderer";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import seedData from "@/data/seed-data.json";
+import { authHeaders } from "@/lib/auth-headers";
 
 const searchSchema = z.object({
   from: z.string().optional(),
@@ -422,7 +423,7 @@ function TranslationEditor({
     try {
       const res = await fetch("/api/generate-translation-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ prompt }),
       });
       if (!res.ok) {

@@ -1,30 +1,37 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireStaff } from "@/lib/auth-guards";
 
 const PROJECT_REF = "zgwhpgalzgdrnwzoykng";
 const PUBLIC_BASE = `https://${PROJECT_REF}.supabase.co/storage/v1/object/public/avatars/`;
+// One path segment of safe characters, but not "." or ".." (path traversal).
+const SAFE_SEGMENT = /^(?!\.+$)[a-zA-Z0-9._-]+$/;
 
-export const listAvatars = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("person_avatars")
-    .select("person_id, storage_path, updated_at");
-  if (error) throw new Error(error.message);
-  // Use signed URLs (bucket is private)
-  const map: Record<string, string> = {};
-  for (const row of data ?? []) {
-    const { data: signed } = await supabaseAdmin.storage
-      .from("avatars")
-      .createSignedUrl(row.storage_path, 60 * 60 * 6);
-    if (signed?.signedUrl) map[row.person_id] = signed.signedUrl;
-  }
-  return { avatars: map };
-});
+// Staff photos are only shown in the staff console (/staff/admin), so reads are staff-only too.
+export const listAvatars = createServerFn({ method: "GET" })
+  .middleware([requireStaff])
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("person_avatars")
+      .select("person_id, storage_path, updated_at");
+    if (error) throw new Error(error.message);
+    // Use signed URLs (bucket is private)
+    const map: Record<string, string> = {};
+    for (const row of data ?? []) {
+      const { data: signed } = await supabaseAdmin.storage
+        .from("avatars")
+        .createSignedUrl(row.storage_path, 60 * 60 * 6);
+      if (signed?.signedUrl) map[row.person_id] = signed.signedUrl;
+    }
+    return { avatars: map };
+  });
 
 export const createAvatarUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { personId: string; filename: string }) =>
     z.object({
-      personId: z.string().min(1).max(100).regex(/^[a-zA-Z0-9._-]+$/),
+      personId: z.string().min(1).max(100).regex(SAFE_SEGMENT),
       filename: z.string().min(1).max(200),
     }).parse(i))
   .handler(async ({ data }) => {
@@ -38,6 +45,7 @@ export const createAvatarUploadUrl = createServerFn({ method: "POST" })
   });
 
 export const setAvatar = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: unknown) => z.object({
     person_id: z.string().min(1).max(100),
     storage_path: z.string().min(1),
@@ -45,6 +53,14 @@ export const setAvatar = createServerFn({ method: "POST" })
     size_bytes: z.number().nullable().optional(),
   }).parse(i))
   .handler(async ({ data }) => {
+    // Only accept files uploaded through createAvatarUploadUrl for this person.
+    // ".." is checked per segment: a filename like "me..jpg" is legitimate.
+    if (
+      !data.storage_path.startsWith(`${data.person_id}/`) ||
+      data.storage_path.split("/").includes("..")
+    ) {
+      throw new Error("Invalid storage path");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Remove previous file if any
     const { data: prev } = await supabaseAdmin
@@ -68,6 +84,7 @@ export const setAvatar = createServerFn({ method: "POST" })
   });
 
 export const deleteAvatar = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { personId: string }) =>
     z.object({ personId: z.string().min(1).max(100) }).parse(i))
   .handler(async ({ data }) => {

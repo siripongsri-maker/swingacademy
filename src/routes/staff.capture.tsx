@@ -163,7 +163,7 @@ function CapturePage() {
         setElapsed((Date.now() - startedAtRef.current) / 1000);
       }, 250);
     } catch (e) {
-      toast.error("ไม่สามารถเข้าถึงไมโครโฟน — กรุณาอนุญาตในเบราว์เซอร์");
+      toast.error("ไม่สามารถเข้าถึงไมโครโฟน กรุณาอนุญาตในเบราว์เซอร์");
     }
   }
 
@@ -351,7 +351,7 @@ function CapturePage() {
         } catch (err) {
           console.error("Audio transcode failed", err);
           setStage("error");
-          toast.error("ไม่สามารถแปลงไฟล์เสียง — ลองอัปโหลดเป็น mp3/wav แทน");
+          toast.error("ไม่สามารถแปลงไฟล์เสียง ลองอัปโหลดเป็น mp3/wav แทน");
           setProcessing(false);
           return;
         }
@@ -360,7 +360,7 @@ function CapturePage() {
       }
       if (uploadBlob.size > 25 * 1024 * 1024) {
         setStage("error");
-        toast.error("ไฟล์เสียงหลังแปลงใหญ่เกิน 25MB — ลองอัดให้สั้นลง");
+        toast.error("ไฟล์เสียงหลังแปลงใหญ่เกิน 25MB ลองอัดให้สั้นลง");
         setProcessing(false);
         return;
       }
@@ -403,23 +403,16 @@ function CapturePage() {
     r.sections.forEach((s) => {
       parts.push(`### ${s.title}\n${s.content || "_(no content)_"}`);
     });
-    if (r.transcript) parts.push(`## Full transcript\n${r.transcript}`);
+    // The raw transcript is shown on this screen only. knowledge_products also
+    // feeds the public /knowledge pages, so it must not be saved here.
     return parts.join("\n\n");
   }
 
   function saveAsKnowledge() {
     if (!result) return;
-    const titleEn = sessionTitle || `Field note — ${new Date().toLocaleDateString()}`;
-    const attachments = audioUrl
-      ? [
-          {
-            id: `att_${Date.now()}`,
-            kind: "audio" as const,
-            title: audioName ?? "Recording",
-            externalUrl: audioUrl,
-          },
-        ]
-      : [];
+    const titleEn = sessionTitle || `Field note: ${new Date().toLocaleDateString()}`;
+    // No audio attachment: the local blob: URL dies on reload. Raw audio and
+    // transcripts will go to the research capture tables instead.
     const asset = pk.createAsset({
       titleTh: titleEn,
       titleEn,
@@ -436,7 +429,7 @@ function CapturePage() {
       language: language === "auto" ? "th" : language,
       status: "draft",
       visibility: "staff",
-      attachments,
+      attachments: [],
       ownerId: "current-user",
     });
     toast.success("Saved to Knowledge Product");
@@ -732,7 +725,7 @@ function CapturePage() {
                 <div key={i}>
                   <h4 className="text-sm font-semibold text-foreground">{s.title}</h4>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/80">
-                    {s.content || <span className="text-muted-foreground">— ไม่มีเนื้อหา</span>}
+                    {s.content || <span className="text-muted-foreground">ไม่มีเนื้อหา</span>}
                   </p>
                 </div>
               ))}
@@ -796,9 +789,7 @@ function ProcessingOverlay({
               {current ? current.th : "กำลังเตรียม"} ·{" "}
               <span className="text-muted-foreground">{current?.en ?? "Preparing"}</span>
             </h3>
-            <p className="text-xs text-muted-foreground">
-              กรุณารอสักครู่ — อย่าปิดหน้าต่างนี้
-            </p>
+            <p className="text-xs text-muted-foreground">กรุณารอสักครู่ อย่าปิดหน้าต่างนี้</p>
           </div>
         </div>
         <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-warm-100">

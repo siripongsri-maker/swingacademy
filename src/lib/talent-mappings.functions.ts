@@ -1,10 +1,12 @@
 // Server functions for knowledge ↔ person mappings.
-// Reads are public so the Talent Map can render anywhere.
-// Writes require staff/admin (RLS enforces this too).
+// Staff-only: person_id is a staff name slug and evidence is free text, and the
+// Talent Map is only rendered in the staff console (/staff/talent).
+// requireStaff gates every call; writes then run on the service-role client
+// because the table's RLS only knows staff/admin, not trainer/superadmin.
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStaff } from "@/lib/auth-guards";
 
 const ROLES = ["contributor", "reviewer", "trainer", "practitioner", "expert"] as const;
 type Role = (typeof ROLES)[number];
@@ -31,16 +33,18 @@ function fromDb(row: Record<string, any>): StoreTalentMapping {
   };
 }
 
-// Public read — anyone can list mappings (no PII; only person_id refs).
-export const listTalentMappings = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("knowledge_talent_mappings")
-    .select("id, person_id, asset_id, role, evidence, created_at, updated_at")
-    .order("updated_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return { items: (data ?? []).map((r) => fromDb(r as Record<string, any>)) };
-});
+// Staff read. The root ProductKnowledgeProvider also calls this for signed-in
+// learners; it catches the Forbidden error and falls back to an empty list.
+export const listTalentMappings = createServerFn({ method: "GET" })
+  .middleware([requireStaff])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("knowledge_talent_mappings")
+      .select("id, person_id, asset_id, role, evidence, created_at, updated_at")
+      .order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return { items: (data ?? []).map((r) => fromDb(r as Record<string, any>)) };
+  });
 
 const UpsertSchema = z.object({
   personId: z.string().min(1).max(128),
@@ -49,21 +53,11 @@ const UpsertSchema = z.object({
 });
 
 export const upsertTalentMapping = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireStaff])
   .inputValidator((i: unknown) => UpsertSchema.parse(i))
-  .handler(async ({ data, context }) => {
-    // Authorize: must be staff or admin
-    const { data: isStaff } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "staff",
-    });
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isStaff && !isAdmin) throw new Error("Forbidden");
-
-    const { data: row, error } = await context.supabase
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
       .from("knowledge_talent_mappings")
       .upsert(
         { person_id: data.personId, asset_id: data.assetId, role: data.role } as never,
@@ -76,10 +70,11 @@ export const upsertTalentMapping = createServerFn({ method: "POST" })
   });
 
 export const removeTalentMapping = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireStaff])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("knowledge_talent_mappings")
       .delete()
       .eq("id", data.id);
@@ -97,10 +92,11 @@ const EvidenceSchema = z.object({
 });
 
 export const addTalentEvidence = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireStaff])
   .inputValidator((i: unknown) => EvidenceSchema.parse(i))
-  .handler(async ({ data, context }) => {
-    const { data: existing, error: readErr } = await context.supabase
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: readErr } = await supabaseAdmin
       .from("knowledge_talent_mappings")
       .select("evidence")
       .eq("id", data.mappingId)
@@ -114,7 +110,7 @@ export const addTalentEvidence = createServerFn({ method: "POST" })
       },
       ...list,
     ];
-    const { error } = await context.supabase
+    const { error } = await supabaseAdmin
       .from("knowledge_talent_mappings")
       .update({ evidence: next } as never)
       .eq("id", data.mappingId);
@@ -123,12 +119,13 @@ export const addTalentEvidence = createServerFn({ method: "POST" })
   });
 
 export const removeTalentEvidence = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireStaff])
   .inputValidator((i: unknown) =>
     z.object({ mappingId: z.string().uuid(), evidenceId: z.string().min(1).max(128) }).parse(i),
   )
-  .handler(async ({ data, context }) => {
-    const { data: existing, error: readErr } = await context.supabase
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: readErr } = await supabaseAdmin
       .from("knowledge_talent_mappings")
       .select("evidence")
       .eq("id", data.mappingId)
@@ -136,7 +133,7 @@ export const removeTalentEvidence = createServerFn({ method: "POST" })
     if (readErr) throw new Error(readErr.message);
     const list = Array.isArray((existing as any)?.evidence) ? ((existing as any).evidence as any[]) : [];
     const next = list.filter((ev) => ev.id !== data.evidenceId);
-    const { error } = await context.supabase
+    const { error } = await supabaseAdmin
       .from("knowledge_talent_mappings")
       .update({ evidence: next } as never)
       .eq("id", data.mappingId);

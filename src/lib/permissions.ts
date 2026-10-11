@@ -85,10 +85,27 @@ const ROLE_CAPS: Record<ConsoleRole, Capability[]> = {
   ],
 };
 
-export function highestRole(roles: readonly string[]): ConsoleRole {
+/**
+ * Account roles (user_roles.role) that may open the staff console.
+ * Mirrors STAFF_ROLES in src/lib/auth-guards.ts, which is server-only and
+ * cannot be imported into client code.
+ */
+export const STAFF_ACCOUNT_ROLES = ["staff", "trainer", "admin", "superadmin"] as const;
+
+/** True when the account holds at least one staff-side role. */
+export function isStaffRole(roles: readonly string[]): boolean {
+  return roles.some((r) => (STAFF_ACCOUNT_ROLES as readonly string[]).includes(r));
+}
+
+/**
+ * Map account roles to a console role. Returns null for accounts without a
+ * staff-side role (e.g. learners), so they never get staff capabilities.
+ */
+export function highestRole(roles: readonly string[]): ConsoleRole | null {
   if (roles.includes("superadmin") || roles.includes("admin")) return "admin";
   if (roles.includes("trainer")) return "trainer";
-  return "staff";
+  if (roles.includes("staff")) return "staff";
+  return null;
 }
 
 export function can(role: ConsoleRole, cap: Capability): boolean {

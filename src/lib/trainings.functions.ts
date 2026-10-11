@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireStaff } from "@/lib/auth-guards";
+
+// Staff back office only. Every function runs on the service-role client, so
+// requireStaff is the gate; nothing here is called from public or learner pages.
 
 const TrainingInput = z.object({
   id: z.string().uuid().optional(),
@@ -22,6 +26,7 @@ const TrainingInput = z.object({
 });
 
 export const listTrainings = createServerFn({ method: "GET" })
+  .middleware([requireStaff])
   .inputValidator((input: { publishedOnly?: boolean; limit?: number } | undefined) => input ?? {})
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -37,6 +42,7 @@ export const listTrainings = createServerFn({ method: "GET" })
   });
 
 export const getTraining = createServerFn({ method: "GET" })
+  .middleware([requireStaff])
   .inputValidator((i: { id: string }) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -50,6 +56,7 @@ export const getTraining = createServerFn({ method: "GET" })
   });
 
 export const upsertTraining = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: unknown) => TrainingInput.parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -67,6 +74,7 @@ export const upsertTraining = createServerFn({ method: "POST" })
   });
 
 export const deleteTraining = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { id: string }) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -76,6 +84,7 @@ export const deleteTraining = createServerFn({ method: "POST" })
   });
 
 export const createUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { trainingId: string; filename: string }) =>
     z.object({ trainingId: z.string().uuid(), filename: z.string().min(1).max(200) }).parse(i))
   .handler(async ({ data }) => {
@@ -90,6 +99,7 @@ export const createUploadUrl = createServerFn({ method: "POST" })
   });
 
 export const recordAttachment = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: unknown) => z.object({
     training_id: z.string().uuid(),
     storage_path: z.string(),
@@ -100,6 +110,14 @@ export const recordAttachment = createServerFn({ method: "POST" })
     is_public: z.boolean().default(false),
   }).parse(i))
   .handler(async ({ data }) => {
+    // Only record files uploaded through createUploadUrl for this training.
+    // ".." is checked per segment: a filename like "report..v2.pdf" is legitimate.
+    if (
+      !data.storage_path.startsWith(`${data.training_id}/`) ||
+      data.storage_path.split("/").includes("..")
+    ) {
+      throw new Error("Invalid storage path");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("training_attachments").insert(data).select().single();
@@ -108,6 +126,7 @@ export const recordAttachment = createServerFn({ method: "POST" })
   });
 
 export const setAttachmentPublic = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { id: string; is_public: boolean }) =>
     z.object({ id: z.string().uuid(), is_public: z.boolean() }).parse(i))
   .handler(async ({ data }) => {
@@ -119,6 +138,7 @@ export const setAttachmentPublic = createServerFn({ method: "POST" })
   });
 
 export const deleteAttachment = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { id: string }) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -133,10 +153,20 @@ export const deleteAttachment = createServerFn({ method: "POST" })
   });
 
 export const signAttachmentUrl = createServerFn({ method: "POST" })
+  .middleware([requireStaff])
   .inputValidator((i: { path: string }) =>
     z.object({ path: z.string().min(1) }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // The bucket also holds voice/ and lessons/ files; only sign training attachment rows.
+    const { data: att, error: e1 } = await supabaseAdmin
+      .from("training_attachments")
+      .select("id")
+      .eq("storage_path", data.path)
+      .limit(1)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!att) throw new Error("Attachment not found");
     const { data: signed, error } = await supabaseAdmin.storage
       .from("training-attachments").createSignedUrl(data.path, 60 * 60);
     if (error) throw new Error(error.message);

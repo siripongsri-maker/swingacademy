@@ -18,6 +18,7 @@ import {
   Highlighter,
 } from "lucide-react";
 import { toast } from "sonner";
+import { authHeaders } from "@/lib/auth-headers";
 
 type Props = {
   value: string;
@@ -105,7 +106,7 @@ export function MarkdownEditor({ value, onChange, rows = 14, placeholder }: Prop
     try {
       const res = await fetch("/api/generate-translation-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ prompt: promptText }),
       });
       if (!res.ok) throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
