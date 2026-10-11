@@ -9,75 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CoursesRouteImport } from './routes/courses'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as PathsRouteImport } from './routes/paths'
-import { Route as ResourcesRouteImport } from './routes/resources'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as StaffRouteImport } from './routes/staff'
 import { Route as VerifyRouteImport } from './routes/verify'
-import { Route as ApiGenerateTranslationImageRouteImport } from './routes/api/generate-translation-image'
-import { Route as ClassroomIndexRouteImport } from './routes/classroom.index'
-import { Route as ClassroomClassroomIdRouteImport } from './routes/classroom.$classroomId'
-import { Route as CoursesIdRouteImport } from './routes/courses.$id'
-import { Route as KSlugRouteImport } from './routes/k.$slug'
-import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
-import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
-import { Route as MyNotesRouteImport } from './routes/my.notes'
-import { Route as MyVoiceRouteImport } from './routes/my.voice'
+import { Route as StaffRouteImport } from './routes/staff'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as PathsRouteImport } from './routes/paths'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
-import { Route as StaffAdminRouteImport } from './routes/staff.admin'
-import { Route as StaffCaptureRouteImport } from './routes/staff.capture'
-import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
-import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
-import { Route as StaffKnowledgeHubRouteImport } from './routes/staff.knowledge-hub'
-import { Route as StaffKnowledgeLibraryRouteImport } from './routes/staff.knowledge-library'
-import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
-import { Route as StaffNotesRouteImport } from './routes/staff.notes'
-import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
-import { Route as StaffStorageRouteImport } from './routes/staff.storage'
-import { Route as StaffTalentRouteImport } from './routes/staff.talent'
-import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
-import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
-import { Route as StaffUsersRouteImport } from './routes/staff.users'
+import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
+import { Route as ClassroomIndexRouteImport } from './routes/classroom.index'
 import { Route as StaffVoiceRouteImport } from './routes/staff.voice'
+import { Route as StaffUsersRouteImport } from './routes/staff.users'
+import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
+import { Route as StaffTrainingsRouteImport } from './routes/staff.trainings'
+import { Route as StaffTalentRouteImport } from './routes/staff.talent'
+import { Route as StaffStorageRouteImport } from './routes/staff.storage'
+import { Route as StaffProductKnowledgeRouteImport } from './routes/staff.product-knowledge'
+import { Route as StaffNotesRouteImport } from './routes/staff.notes'
+import { Route as StaffKnowledgeTranslationRouteImport } from './routes/staff.knowledge-translation'
+import { Route as StaffKnowledgeLibraryRouteImport } from './routes/staff.knowledge-library'
+import { Route as StaffKnowledgeHubRouteImport } from './routes/staff.knowledge-hub'
+import { Route as StaffKnowledgeRouteImport } from './routes/staff.knowledge'
+import { Route as StaffDashboardRouteImport } from './routes/staff.dashboard'
+import { Route as StaffCaptureRouteImport } from './routes/staff.capture'
+import { Route as StaffAdminRouteImport } from './routes/staff.admin'
+import { Route as MyVoiceRouteImport } from './routes/my.voice'
+import { Route as MyNotesRouteImport } from './routes/my.notes'
+import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
+import { Route as KSlugRouteImport } from './routes/k.$slug'
+import { Route as CoursesIdRouteImport } from './routes/courses.$id'
+import { Route as ClassroomClassroomIdRouteImport } from './routes/classroom.$classroomId'
+import { Route as ApiGenerateTranslationImageRouteImport } from './routes/api/generate-translation-image'
 import { Route as ClassroomClassroomIdLessonLessonIdRouteImport } from './routes/classroom.$classroomId.lesson.$lessonId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CoursesRoute = CoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PathsRoute = PathsRouteImport.update({
-  id: '/paths',
-  path: '/paths',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResourcesRoute = ResourcesRouteImport.update({
-  id: '/resources',
-  path: '/resources',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -85,55 +55,39 @@ const StaffRoute = StaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VerifyRoute = VerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiGenerateTranslationImageRoute =
-  ApiGenerateTranslationImageRouteImport.update({
-    id: '/api/generate-translation-image',
-    path: '/api/generate-translation-image',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ClassroomIndexRoute = ClassroomIndexRouteImport.update({
-  id: '/classroom/',
-  path: '/classroom/',
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ClassroomClassroomIdRoute = ClassroomClassroomIdRouteImport.update({
-  id: '/classroom/$classroomId',
-  path: '/classroom/$classroomId',
+const PathsRoute = PathsRouteImport.update({
+  id: '/paths',
+  path: '/paths',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CoursesIdRoute = CoursesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => CoursesRoute,
-} as any)
-const KSlugRoute = KSlugRouteImport.update({
-  id: '/k/$slug',
-  path: '/k/$slug',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KnowledgeIndexRoute = KnowledgeIndexRouteImport.update({
-  id: '/knowledge/',
-  path: '/knowledge/',
+const CoursesRoute = CoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
-  id: '/knowledge/$slug',
-  path: '/knowledge/$slug',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MyNotesRoute = MyNotesRouteImport.update({
-  id: '/my/notes',
-  path: '/my/notes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MyVoiceRoute = MyVoiceRouteImport.update({
-  id: '/my/voice',
-  path: '/my/voice',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffIndexRoute = StaffIndexRouteImport.update({
@@ -141,34 +95,54 @@ const StaffIndexRoute = StaffIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffAdminRoute = StaffAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const KnowledgeIndexRoute = KnowledgeIndexRouteImport.update({
+  id: '/knowledge/',
+  path: '/knowledge/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClassroomIndexRoute = ClassroomIndexRouteImport.update({
+  id: '/classroom/',
+  path: '/classroom/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffVoiceRoute = StaffVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffCaptureRoute = StaffCaptureRouteImport.update({
-  id: '/capture',
-  path: '/capture',
+const StaffUsersRoute = StaffUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffDashboardRoute = StaffDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const StaffTransferRoute = StaffTransferRouteImport.update({
+  id: '/transfer',
+  path: '/transfer',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffKnowledgeRoute = StaffKnowledgeRouteImport.update({
-  id: '/knowledge',
-  path: '/knowledge',
+const StaffTrainingsRoute = StaffTrainingsRouteImport.update({
+  id: '/trainings',
+  path: '/trainings',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffKnowledgeHubRoute = StaffKnowledgeHubRouteImport.update({
-  id: '/knowledge-hub',
-  path: '/knowledge-hub',
+const StaffTalentRoute = StaffTalentRouteImport.update({
+  id: '/talent',
+  path: '/talent',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffKnowledgeLibraryRoute = StaffKnowledgeLibraryRouteImport.update({
-  id: '/knowledge-library',
-  path: '/knowledge-library',
+const StaffStorageRoute = StaffStorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffProductKnowledgeRoute = StaffProductKnowledgeRouteImport.update({
+  id: '/product-knowledge',
+  path: '/product-knowledge',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffNotesRoute = StaffNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
   getParentRoute: () => StaffRoute,
 } as any)
 const StaffKnowledgeTranslationRoute =
@@ -177,46 +151,72 @@ const StaffKnowledgeTranslationRoute =
     path: '/knowledge-translation',
     getParentRoute: () => StaffRoute,
   } as any)
-const StaffNotesRoute = StaffNotesRouteImport.update({
-  id: '/notes',
-  path: '/notes',
+const StaffKnowledgeLibraryRoute = StaffKnowledgeLibraryRouteImport.update({
+  id: '/knowledge-library',
+  path: '/knowledge-library',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffProductKnowledgeRoute = StaffProductKnowledgeRouteImport.update({
-  id: '/product-knowledge',
-  path: '/product-knowledge',
+const StaffKnowledgeHubRoute = StaffKnowledgeHubRouteImport.update({
+  id: '/knowledge-hub',
+  path: '/knowledge-hub',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffStorageRoute = StaffStorageRouteImport.update({
-  id: '/storage',
-  path: '/storage',
+const StaffKnowledgeRoute = StaffKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffTalentRoute = StaffTalentRouteImport.update({
-  id: '/talent',
-  path: '/talent',
+const StaffDashboardRoute = StaffDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffTrainingsRoute = StaffTrainingsRouteImport.update({
-  id: '/trainings',
-  path: '/trainings',
+const StaffCaptureRoute = StaffCaptureRouteImport.update({
+  id: '/capture',
+  path: '/capture',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffTransferRoute = StaffTransferRouteImport.update({
-  id: '/transfer',
-  path: '/transfer',
+const StaffAdminRoute = StaffAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => StaffRoute,
 } as any)
-const StaffUsersRoute = StaffUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => StaffRoute,
+const MyVoiceRoute = MyVoiceRouteImport.update({
+  id: '/my/voice',
+  path: '/my/voice',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const StaffVoiceRoute = StaffVoiceRouteImport.update({
-  id: '/voice',
-  path: '/voice',
-  getParentRoute: () => StaffRoute,
+const MyNotesRoute = MyNotesRouteImport.update({
+  id: '/my/notes',
+  path: '/my/notes',
+  getParentRoute: () => rootRouteImport,
 } as any)
+const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
+  id: '/knowledge/$slug',
+  path: '/knowledge/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KSlugRoute = KSlugRouteImport.update({
+  id: '/k/$slug',
+  path: '/k/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesIdRoute = CoursesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CoursesRoute,
+} as any)
+const ClassroomClassroomIdRoute = ClassroomClassroomIdRouteImport.update({
+  id: '/classroom/$classroomId',
+  path: '/classroom/$classroomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateTranslationImageRoute =
+  ApiGenerateTranslationImageRouteImport.update({
+    id: '/api/generate-translation-image',
+    path: '/api/generate-translation-image',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ClassroomClassroomIdLessonLessonIdRoute =
   ClassroomClassroomIdLessonLessonIdRouteImport.update({
     id: '/lesson/$lessonId',
@@ -470,53 +470,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses': {
-      id: '/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof CoursesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paths': {
-      id: '/paths'
-      path: '/paths'
-      fullPath: '/paths'
-      preLoaderRoute: typeof PathsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/resources': {
-      id: '/resources'
-      path: '/resources'
-      fullPath: '/resources'
-      preLoaderRoute: typeof ResourcesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -526,74 +484,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/verify': {
-      id: '/verify'
-      path: '/verify'
-      fullPath: '/verify'
-      preLoaderRoute: typeof VerifyRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/generate-translation-image': {
-      id: '/api/generate-translation-image'
-      path: '/api/generate-translation-image'
-      fullPath: '/api/generate-translation-image'
-      preLoaderRoute: typeof ApiGenerateTranslationImageRouteImport
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/classroom/': {
-      id: '/classroom/'
-      path: '/classroom'
-      fullPath: '/classroom/'
-      preLoaderRoute: typeof ClassroomIndexRouteImport
+    '/paths': {
+      id: '/paths'
+      path: '/paths'
+      fullPath: '/paths'
+      preLoaderRoute: typeof PathsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/classroom/$classroomId': {
-      id: '/classroom/$classroomId'
-      path: '/classroom/$classroomId'
-      fullPath: '/classroom/$classroomId'
-      preLoaderRoute: typeof ClassroomClassroomIdRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/courses/$id': {
-      id: '/courses/$id'
-      path: '/$id'
-      fullPath: '/courses/$id'
-      preLoaderRoute: typeof CoursesIdRouteImport
-      parentRoute: typeof CoursesRoute
-    }
-    '/k/$slug': {
-      id: '/k/$slug'
-      path: '/k/$slug'
-      fullPath: '/k/$slug'
-      preLoaderRoute: typeof KSlugRouteImport
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/knowledge/': {
-      id: '/knowledge/'
-      path: '/knowledge'
-      fullPath: '/knowledge/'
-      preLoaderRoute: typeof KnowledgeIndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/knowledge/$slug': {
-      id: '/knowledge/$slug'
-      path: '/knowledge/$slug'
-      fullPath: '/knowledge/$slug'
-      preLoaderRoute: typeof KnowledgeSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my/notes': {
-      id: '/my/notes'
-      path: '/my/notes'
-      fullPath: '/my/notes'
-      preLoaderRoute: typeof MyNotesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my/voice': {
-      id: '/my/voice'
-      path: '/my/voice'
-      fullPath: '/my/voice'
-      preLoaderRoute: typeof MyVoiceRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/': {
@@ -603,95 +540,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffIndexRouteImport
       parentRoute: typeof StaffRoute
     }
-    '/staff/admin': {
-      id: '/staff/admin'
-      path: '/admin'
-      fullPath: '/staff/admin'
-      preLoaderRoute: typeof StaffAdminRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/capture': {
-      id: '/staff/capture'
-      path: '/capture'
-      fullPath: '/staff/capture'
-      preLoaderRoute: typeof StaffCaptureRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/dashboard': {
-      id: '/staff/dashboard'
-      path: '/dashboard'
-      fullPath: '/staff/dashboard'
-      preLoaderRoute: typeof StaffDashboardRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/knowledge': {
-      id: '/staff/knowledge'
+    '/knowledge/': {
+      id: '/knowledge/'
       path: '/knowledge'
-      fullPath: '/staff/knowledge'
-      preLoaderRoute: typeof StaffKnowledgeRouteImport
-      parentRoute: typeof StaffRoute
+      fullPath: '/knowledge/'
+      preLoaderRoute: typeof KnowledgeIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/staff/knowledge-hub': {
-      id: '/staff/knowledge-hub'
-      path: '/knowledge-hub'
-      fullPath: '/staff/knowledge-hub'
-      preLoaderRoute: typeof StaffKnowledgeHubRouteImport
-      parentRoute: typeof StaffRoute
+    '/classroom/': {
+      id: '/classroom/'
+      path: '/classroom'
+      fullPath: '/classroom/'
+      preLoaderRoute: typeof ClassroomIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/staff/knowledge-library': {
-      id: '/staff/knowledge-library'
-      path: '/knowledge-library'
-      fullPath: '/staff/knowledge-library'
-      preLoaderRoute: typeof StaffKnowledgeLibraryRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/knowledge-translation': {
-      id: '/staff/knowledge-translation'
-      path: '/knowledge-translation'
-      fullPath: '/staff/knowledge-translation'
-      preLoaderRoute: typeof StaffKnowledgeTranslationRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/notes': {
-      id: '/staff/notes'
-      path: '/notes'
-      fullPath: '/staff/notes'
-      preLoaderRoute: typeof StaffNotesRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/product-knowledge': {
-      id: '/staff/product-knowledge'
-      path: '/product-knowledge'
-      fullPath: '/staff/product-knowledge'
-      preLoaderRoute: typeof StaffProductKnowledgeRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/storage': {
-      id: '/staff/storage'
-      path: '/storage'
-      fullPath: '/staff/storage'
-      preLoaderRoute: typeof StaffStorageRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/talent': {
-      id: '/staff/talent'
-      path: '/talent'
-      fullPath: '/staff/talent'
-      preLoaderRoute: typeof StaffTalentRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/trainings': {
-      id: '/staff/trainings'
-      path: '/trainings'
-      fullPath: '/staff/trainings'
-      preLoaderRoute: typeof StaffTrainingsRouteImport
-      parentRoute: typeof StaffRoute
-    }
-    '/staff/transfer': {
-      id: '/staff/transfer'
-      path: '/transfer'
-      fullPath: '/staff/transfer'
-      preLoaderRoute: typeof StaffTransferRouteImport
+    '/staff/voice': {
+      id: '/staff/voice'
+      path: '/voice'
+      fullPath: '/staff/voice'
+      preLoaderRoute: typeof StaffVoiceRouteImport
       parentRoute: typeof StaffRoute
     }
     '/staff/users': {
@@ -701,12 +568,145 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffUsersRouteImport
       parentRoute: typeof StaffRoute
     }
-    '/staff/voice': {
-      id: '/staff/voice'
-      path: '/voice'
-      fullPath: '/staff/voice'
-      preLoaderRoute: typeof StaffVoiceRouteImport
+    '/staff/transfer': {
+      id: '/staff/transfer'
+      path: '/transfer'
+      fullPath: '/staff/transfer'
+      preLoaderRoute: typeof StaffTransferRouteImport
       parentRoute: typeof StaffRoute
+    }
+    '/staff/trainings': {
+      id: '/staff/trainings'
+      path: '/trainings'
+      fullPath: '/staff/trainings'
+      preLoaderRoute: typeof StaffTrainingsRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/talent': {
+      id: '/staff/talent'
+      path: '/talent'
+      fullPath: '/staff/talent'
+      preLoaderRoute: typeof StaffTalentRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/storage': {
+      id: '/staff/storage'
+      path: '/storage'
+      fullPath: '/staff/storage'
+      preLoaderRoute: typeof StaffStorageRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/product-knowledge': {
+      id: '/staff/product-knowledge'
+      path: '/product-knowledge'
+      fullPath: '/staff/product-knowledge'
+      preLoaderRoute: typeof StaffProductKnowledgeRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/notes': {
+      id: '/staff/notes'
+      path: '/notes'
+      fullPath: '/staff/notes'
+      preLoaderRoute: typeof StaffNotesRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/knowledge-translation': {
+      id: '/staff/knowledge-translation'
+      path: '/knowledge-translation'
+      fullPath: '/staff/knowledge-translation'
+      preLoaderRoute: typeof StaffKnowledgeTranslationRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/knowledge-library': {
+      id: '/staff/knowledge-library'
+      path: '/knowledge-library'
+      fullPath: '/staff/knowledge-library'
+      preLoaderRoute: typeof StaffKnowledgeLibraryRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/knowledge-hub': {
+      id: '/staff/knowledge-hub'
+      path: '/knowledge-hub'
+      fullPath: '/staff/knowledge-hub'
+      preLoaderRoute: typeof StaffKnowledgeHubRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/knowledge': {
+      id: '/staff/knowledge'
+      path: '/knowledge'
+      fullPath: '/staff/knowledge'
+      preLoaderRoute: typeof StaffKnowledgeRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/dashboard': {
+      id: '/staff/dashboard'
+      path: '/dashboard'
+      fullPath: '/staff/dashboard'
+      preLoaderRoute: typeof StaffDashboardRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/capture': {
+      id: '/staff/capture'
+      path: '/capture'
+      fullPath: '/staff/capture'
+      preLoaderRoute: typeof StaffCaptureRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/admin': {
+      id: '/staff/admin'
+      path: '/admin'
+      fullPath: '/staff/admin'
+      preLoaderRoute: typeof StaffAdminRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/my/voice': {
+      id: '/my/voice'
+      path: '/my/voice'
+      fullPath: '/my/voice'
+      preLoaderRoute: typeof MyVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my/notes': {
+      id: '/my/notes'
+      path: '/my/notes'
+      fullPath: '/my/notes'
+      preLoaderRoute: typeof MyNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/knowledge/$slug': {
+      id: '/knowledge/$slug'
+      path: '/knowledge/$slug'
+      fullPath: '/knowledge/$slug'
+      preLoaderRoute: typeof KnowledgeSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/k/$slug': {
+      id: '/k/$slug'
+      path: '/k/$slug'
+      fullPath: '/k/$slug'
+      preLoaderRoute: typeof KSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/$id': {
+      id: '/courses/$id'
+      path: '/$id'
+      fullPath: '/courses/$id'
+      preLoaderRoute: typeof CoursesIdRouteImport
+      parentRoute: typeof CoursesRoute
+    }
+    '/classroom/$classroomId': {
+      id: '/classroom/$classroomId'
+      path: '/classroom/$classroomId'
+      fullPath: '/classroom/$classroomId'
+      preLoaderRoute: typeof ClassroomClassroomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-translation-image': {
+      id: '/api/generate-translation-image'
+      path: '/api/generate-translation-image'
+      fullPath: '/api/generate-translation-image'
+      preLoaderRoute: typeof ApiGenerateTranslationImageRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/classroom/$classroomId/lesson/$lessonId': {
       id: '/classroom/$classroomId/lesson/$lessonId'
