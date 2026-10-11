@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error: string | null
+          id: string
+          input_chars: number | null
+          input_hash: string | null
+          latency_ms: number | null
+          model: string | null
+          object_id: string | null
+          object_type: string | null
+          output_json: Json | null
+          output_text: string | null
+          params: Json | null
+          prompt_version: string | null
+          provider_host: string | null
+          purpose: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          input_chars?: number | null
+          input_hash?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          object_id?: string | null
+          object_type?: string | null
+          output_json?: Json | null
+          output_text?: string | null
+          params?: Json | null
+          prompt_version?: string | null
+          provider_host?: string | null
+          purpose: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          input_chars?: number | null
+          input_hash?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          object_id?: string | null
+          object_type?: string | null
+          output_json?: Json | null
+          output_text?: string | null
+          params?: Json | null
+          prompt_version?: string | null
+          provider_host?: string | null
+          purpose?: string
+          status?: string
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
           created_at: string
@@ -54,6 +114,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          object_id: string | null
+          object_type: string | null
+          purpose: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          object_id?: string | null
+          object_type?: string | null
+          purpose?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          object_id?: string | null
+          object_type?: string | null
+          purpose?: string | null
+        }
+        Relationships: []
       }
       classrooms: {
         Row: {
@@ -695,6 +788,39 @@ export type Database = {
         }
         Relationships: []
       }
+      research_members: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          id: string
+          note: string | null
+          role: Database["public"]["Enums"]["research_role"]
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          note?: string | null
+          role: Database["public"]["Enums"]["research_role"]
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          note?: string | null
+          role?: Database["public"]["Enums"]["research_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       site_visits: {
         Row: {
           created_at: string
@@ -909,6 +1035,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_research_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["research_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -924,11 +1057,19 @@ export type Database = {
         Args: { _classroom: string; _user: string }
         Returns: boolean
       }
+      is_staff_member: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "learner" | "staff" | "admin" | "trainer" | "superadmin"
       class_role: "learner" | "trainer"
       note_visibility: "private" | "class"
+      research_role:
+        | "researcher"
+        | "consent_officer"
+        | "dept_coordinator"
+        | "expert"
+        | "dignity_panel"
+        | "data_steward"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1059,6 +1200,14 @@ export const Constants = {
       app_role: ["learner", "staff", "admin", "trainer", "superadmin"],
       class_role: ["learner", "trainer"],
       note_visibility: ["private", "class"],
+      research_role: [
+        "researcher",
+        "consent_officer",
+        "dept_coordinator",
+        "expert",
+        "dignity_panel",
+        "data_steward",
+      ],
     },
   },
 } as const
