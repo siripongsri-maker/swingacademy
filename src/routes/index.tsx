@@ -12,22 +12,12 @@ import {
   WifiOff,
   Smartphone,
   Award,
-  MapPin,
   BookOpen,
   Languages,
   Library,
   MessageCircle,
   Route as RouteIcon,
-  Mic,
-  Settings2,
-  Network,
-  KeyRound,
-  DoorOpen,
-  RefreshCw,
   Search,
-  CircleCheck,
-  Hand,
-  Quote,
 } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
 import { useLanguage, type Localized } from "@/lib/language-context";
@@ -51,9 +41,9 @@ const LINE_URL = "https://line.me/R/ti/p/@swingthailand";
 export const Route = createFileRoute("/")({
   head: () =>
     pageHead({
-      title: "SWING Academy · Community knowledge you can find and trust",
+      title: "SWING Academy · Free community learning on sexual health & rights",
       description:
-        "Free Thai and English lessons from frontline community workers on sexual health, rights and work skills. A two-check review (accurate and dignified) is in development.",
+        "Free Thai and English lessons from frontline community workers on sexual health, rights and work skills, from the SWING Foundation.",
       path: "/",
     }),
   // The library list is a bonus on the homepage: if it fails, render the page without it.
@@ -100,51 +90,6 @@ const EXAMPLE_QUERIES: { label: Localized; q: Localized }[] = [
   {
     label: { th: "เริ่มยาต้านในวันเดียว (SDART)", en: "Same-day ART (SDART)" },
     q: { th: "SDART", en: "SDART" },
-  },
-];
-
-// CVSK: Community Voice to Structured Knowledge, four layers.
-const JOURNEY: {
-  icon: typeof Mic;
-  tone: string;
-  title: Localized;
-  body: Localized;
-}[] = [
-  {
-    icon: Mic,
-    tone: "bg-dignity-soft text-dignity-ink",
-    title: { th: "เล่าจากหน้างาน", en: "Told from the frontline" },
-    body: {
-      th: "คนทำงานเล่าวิธีที่ใช้ได้จริง ด้วยเสียงหรือข้อความ โดยเจ้าของเรื่องยินยอมก่อนทุกครั้ง",
-      en: "People doing the work share what works, by voice or text, always with their consent first.",
-    },
-  },
-  {
-    icon: Settings2,
-    tone: "bg-warm-100 text-warm-700",
-    title: { th: "ถอดเสียง ปกปิดตัวตน", en: "Transcribed and de-identified" },
-    body: {
-      th: "ถอดเสียงเป็นข้อความ ลบชื่อและรายละเอียดที่ชี้ตัวคนเล่าได้ แล้วแยกเป็นหน่วยความรู้ทีละเรื่อง",
-      en: "Speech becomes text, names and identifying details are removed, and it is split into knowledge units.",
-    },
-  },
-  {
-    icon: Network,
-    tone: "bg-accuracy-soft text-accuracy-ink",
-    title: { th: "จัดให้ค้นเจอ", en: "Organised to be found" },
-    body: {
-      th: "จัดหมวด ผูกกับทักษะการทำงาน และย้อนกลับไปดูแหล่งที่มาได้",
-      en: "Tagged, linked to work skills, and always traceable to its source.",
-    },
-  },
-  {
-    icon: ShieldCheck,
-    tone: "bg-navy-100 text-navy-500",
-    title: { th: "ตรวจสองด้าน", en: "Checked two ways" },
-    body: {
-      th: "ผู้เชี่ยวชาญดูว่าถูกต้องไหม ชุมชนร่วมประเมินว่าให้เกียรติคนหรือเปล่า ผ่านครบสองด้านถึงจะเผยแพร่",
-      en: "Experts check it is accurate, and the community co-assesses whether it treats people with dignity. Only then is it published.",
-    },
   },
 ];
 
@@ -310,166 +255,96 @@ function HeroSearch() {
   );
 }
 
-/** Illustrates one knowledge unit passing both keys. Fictional example, labelled as such. */
-function SampleUnitCard() {
+type CardItem = {
+  id: string;
+  slug: string;
+  coverUrl: string | null;
+  titleTh: string;
+  titleEn: string | null;
+  summary: string | null;
+};
+
+/** Hero card: the newest items in the library, from real data. */
+function NewInLibraryCard({ total, items }: { total: number; items: CardItem[] }) {
   const { t, lang } = useLanguage();
   return (
-    <figure
-      className="relative"
-      aria-label={t({
-        th: "ตัวอย่างสมมติของหน่วยความรู้ที่ผ่านกุญแจสองดอก ระบบนี้กำลังพัฒนา",
-        en: "Fictional example of a knowledge unit passing both keys. This process is in development.",
-      })}
-    >
+    <div className="relative">
       <div
         aria-hidden
         className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-accuracy-soft via-white to-dignity-soft opacity-80 blur-xl"
       />
       <div className="relative overflow-hidden rounded-lg border border-warm-200 bg-white shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-warm-200 px-6 py-3">
-          <span className="text-xs font-semibold whitespace-nowrap uppercase tracking-[0.12em] text-warm-600">
-            {t({ th: "หน่วยความรู้", en: "Knowledge unit" })}
+        <div className="flex items-center gap-3 px-6 pt-6">
+          <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-pill bg-accuracy-soft text-accuracy-ink">
+            <Library className="h-6 w-6" aria-hidden />
           </span>
-          <span className="rounded-pill border border-warm-400 bg-white px-2.5 py-0.5 text-xs whitespace-nowrap font-semibold text-warm-700">
-            {t({ th: "ตัวอย่างสมมติ · ระบบกำลังพัฒนา", en: "Fictional · in development" })}
-          </span>
-        </div>
-
-        <div className="px-6 pt-5 pb-6">
-          <Quote className="h-6 w-6 text-dignity" aria-hidden />
-          <p lang={lang} className="mt-2 text-lg font-semibold leading-snug text-navy-500">
-            {t({
-              th: "เปิดบทสนทนาเรื่องการตรวจเอชไอวีอย่างไร กับคนที่เคยเจอบริการที่ไม่เป็นมิตร",
-              en: "How to start a conversation about HIV testing with someone who has met unfriendly services",
-            })}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-warm-600">
-            <span className="inline-flex items-center gap-1.5">
-              <Mic className="h-3.5 w-3.5" aria-hidden />
-              {t({
-                th: "เล่าจากประสบการณ์ผู้ให้ความรู้ในกลุ่มเพื่อน",
-                en: "From a peer educator's experience",
-              })}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Lock className="h-3.5 w-3.5" aria-hidden />
-              {t({ th: "ลบข้อมูลระบุตัวตนแล้ว", en: "De-identified" })}
-            </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-accuracy-ink">
+              {t({ th: "เพิ่งขึ้นคลัง", en: "New in the library" })}
+            </p>
+            <p lang={lang} className="text-base font-semibold text-navy-500">
+              {total > 0
+                ? t({
+                    th: `มีทั้งหมด ${total} เรื่อง อ่านฟรีทุกเรื่อง`,
+                    en: `${total} items, all free to read`,
+                  })
+                : t({
+                    th: "งานวิจัยและบทเรียนจากชุมชน",
+                    en: "Research and lessons from the community",
+                  })}
+            </p>
           </div>
-
-          <ul className="mt-5 space-y-2.5">
-            <li className="flex items-center gap-3 rounded-md bg-accuracy-soft/70 px-3.5 py-3">
-              <KeyRound className="h-5 w-5 shrink-0 text-accuracy" aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-accuracy-ink">
-                  {t({ th: "ถูกต้อง · ตรงกับที่มา", en: "Accurate · true to source" })}
-                </span>
-                <span className="block text-xs text-accuracy-ink">
-                  {t({ th: "ผู้เชี่ยวชาญตรวจแล้ว", en: "Checked by experts" })}
-                </span>
-              </span>
-              <CircleCheck className="h-5 w-5 shrink-0 text-accuracy" aria-hidden />
-            </li>
-            <li className="flex items-center gap-3 rounded-md bg-dignity-soft/80 px-3.5 py-3">
-              <KeyRound className="h-5 w-5 shrink-0 text-dignity-ink" aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-dignity-ink">
-                  {t({ th: "ให้เกียรติ · ไม่ตีตรา", en: "Dignified · non-stigmatising" })}
-                </span>
-                <span className="block text-xs text-dignity-ink">
-                  {t({ th: "ชุมชนร่วมประเมินแล้ว", en: "Co-assessed by the community" })}
-                </span>
-              </span>
-              <CircleCheck className="h-5 w-5 shrink-0 text-dignity-ink" aria-hidden />
-            </li>
-          </ul>
         </div>
 
-        <div className="flex items-center gap-2.5 bg-navy-500 px-6 py-3.5 text-sm font-semibold text-white">
-          <DoorOpen className="h-4 w-4 text-dignity" aria-hidden />
-          {t({
-            th: "เมื่อผ่านทั้งสองด้าน จึงจะเผยแพร่ในคลัง",
-            en: "When both keys pass, it can go in the library",
-          })}
-        </div>
-      </div>
-    </figure>
-  );
-}
+        <ul className="mt-5 space-y-2 px-6">
+          {items.length > 0
+            ? items.map((k) => (
+                <li key={k.id}>
+                  <Link
+                    to="/knowledge/$slug"
+                    params={{ slug: k.slug }}
+                    className="group flex min-h-14 items-center gap-3 rounded-md border border-warm-200 bg-cream px-3.5 py-3 transition-colors hover:border-accuracy/40 hover:bg-white"
+                  >
+                    <BookOpen className="h-4 w-4 shrink-0 text-accuracy" aria-hidden />
+                    <span
+                      lang={lang === "en" && k.titleEn ? "en" : "th"}
+                      className="line-clamp-2 min-w-0 flex-1 text-sm font-medium text-navy-500 group-hover:text-accuracy-ink"
+                    >
+                      {t({ th: k.titleTh, en: k.titleEn || k.titleTh })}
+                    </span>
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-warm-400 transition-transform group-hover:translate-x-0.5 group-hover:text-accuracy"
+                      aria-hidden
+                    />
+                  </Link>
+                </li>
+              ))
+            : [
+                { th: "งานวิจัยจากชุมชน", en: "Community-led research" },
+                { th: "บทเรียนจากประสบการณ์จริง", en: "Lessons from real experience" },
+                { th: "ความรู้เพื่อการทำงาน", en: "Knowledge for the work" },
+              ].map((l) => (
+                <li
+                  key={l.en}
+                  className="flex min-h-14 items-center gap-3 rounded-md border border-warm-200 bg-cream px-3.5 py-3"
+                >
+                  <BookOpen className="h-4 w-4 shrink-0 text-accuracy" aria-hidden />
+                  <span lang={lang} className="text-sm font-medium text-navy-500">
+                    {t(l)}
+                  </span>
+                </li>
+              ))}
+        </ul>
 
-function TwoKeyMatrix() {
-  const { t } = useLanguage();
-  const cell = "flex flex-col justify-between gap-2 rounded-md p-3.5 sm:p-4";
-  return (
-    <figure
-      className="relative pl-7 pb-7"
-      aria-label={t({
-        th: "ตารางสองด้าน ถูกต้องกับให้เกียรติ ต้องผ่านทั้งคู่ถึงจะเผยแพร่ได้",
-        en: "Two-by-two grid: content must be both accurate and dignified to be published.",
-      })}
-    >
-      <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-2.5">
-        <div className={`${cell} bg-accuracy-soft text-accuracy-ink`}>
-          <span className="text-xs font-semibold sm:text-sm">
-            {t({ th: "ให้เกียรติ แต่ไม่ถูกต้อง", en: "Dignified, but inaccurate" })}
-          </span>
-          <span className="text-xs">
-            {t({ th: "แก้ก่อนเผยแพร่", en: "Fix before publishing" })}
-          </span>
-        </div>
-        <div className={`${cell} bg-navy-500 text-white shadow-lg ring-4 ring-dignity/40`}>
-          <DoorOpen className="h-6 w-6 text-dignity" aria-hidden />
-          <span>
-            <span className="block text-base font-semibold sm:text-lg">
-              {t({ th: "เผยแพร่ได้", en: "Ready to publish" })}
-            </span>
-            <span className="block text-xs text-lavender-300">
-              {t({ th: "ได้กุญแจครบสองดอก", en: "Both keys pass" })}
-            </span>
-          </span>
-        </div>
-        <div className={`${cell} bg-warm-100 text-warm-700`}>
-          <Lock className="h-5 w-5" aria-hidden />
-          <span>
-            <span className="block text-xs font-semibold sm:text-sm">
-              {t({ th: "พักไว้ก่อน", en: "On hold" })}
-            </span>
-            <span className="block text-xs">
-              {t({ th: "ยังไม่ผ่านทั้งสองด้าน", en: "Neither key passes yet" })}
-            </span>
-          </span>
-        </div>
-        <div className={`${cell} bg-dignity-soft text-dignity-ink`}>
-          <span className="text-xs font-semibold sm:text-sm">
-            {t({ th: "ถูกต้อง แต่ตีตรา", en: "Accurate, but stigmatising" })}
-          </span>
-          <span className="text-xs">
-            {t({ th: "แก้ก่อนเผยแพร่", en: "Fix before publishing" })}
-          </span>
-        </div>
+        <Link
+          to="/knowledge"
+          className="mt-5 flex items-center justify-between gap-2 bg-navy-500 px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-navy-700 focus-visible:outline-white"
+        >
+          {t({ th: "เปิดคลังความรู้", en: "Open the library" })}
+          <ArrowRight className="h-4 w-4 text-dignity" aria-hidden />
+        </Link>
       </div>
-
-      {/* Axes */}
-      <div
-        aria-hidden
-        className="absolute top-0 bottom-7 left-0 flex w-5 items-center justify-center"
-      >
-        <span className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-dignity" />
-        <span className="relative -rotate-90 whitespace-nowrap bg-cream px-2 text-xs font-semibold text-dignity-ink">
-          {/* The label is rotated -90deg, so a right arrow points up the axis */}
-          {t({ th: "ให้เกียรติ →", en: "Dignified →" })}
-        </span>
-      </div>
-      <div
-        aria-hidden
-        className="absolute right-0 bottom-0 left-7 flex h-5 items-center justify-center"
-      >
-        <span className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-accuracy" />
-        <span className="relative bg-cream px-2 text-xs font-semibold text-accuracy-ink">
-          {t({ th: "ถูกต้อง →", en: "Accurate →" })}
-        </span>
-      </div>
-    </figure>
+    </div>
   );
 }
 
@@ -480,7 +355,7 @@ function HomePage() {
 
   return (
     <PublicLayout flushFooter>
-      {/* 1. HERO: search the library, and see what a checked knowledge unit looks like */}
+      {/* 1. HERO: search the library, and see what is new in it */}
       <section className="relative overflow-hidden">
         <div
           aria-hidden
@@ -493,7 +368,12 @@ function HomePage() {
 
         <div className="relative mx-auto grid max-w-6xl gap-14 px-6 pt-14 pb-20 md:pt-20 md:pb-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <p className={eyebrow}>SWING Academy · Community Voice to Structured Knowledge</p>
+            <p className={eyebrow}>
+              {t({
+                th: "SWING Academy · เรียนฟรี สองภาษา",
+                en: "SWING Academy · Free, in Thai & English",
+              })}
+            </p>
             <h1
               lang={lang}
               className="text-balance text-4xl leading-[1.38] font-semibold text-navy-500 md:text-5xl md:leading-[1.38] lg:text-[3.4rem] lg:leading-[1.38]"
@@ -538,167 +418,12 @@ function HomePage() {
           </div>
 
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <SampleUnitCard />
+            <NewInLibraryCard total={knowledgeTotal} items={knowledgeItems.slice(0, 3)} />
           </div>
         </div>
       </section>
 
-      {/* 2. THE JOURNEY: CVSK's four layers */}
-      <section className="border-y border-warm-200 bg-white py-20 md:py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <SectionHeading
-            center
-            kicker={t({
-              th: "เส้นทางของความรู้ · กำลังพัฒนา",
-              en: "How knowledge gets here · in development",
-            })}
-            title={t({
-              th: "จากเสียงหน้างาน |สู่ความรู้ที่ใครก็ค้นเจอ",
-              en: "From frontline voices to knowledge you can find",
-            })}
-            intro={t({
-              th: "แนวทางที่ SWING Academy กำลังพัฒนา: AI ช่วยทำงานด่านแรก และคนตรวจก่อนเผยแพร่ทุกครั้ง เพื่อให้ความรู้ยังอยู่ แม้คนทำงานจะย้ายไป",
-              en: "The approach SWING Academy is building: AI does the first pass, and people review before anything is published, so know-how stays when people move on.",
-            })}
-          />
-
-          <ol className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {JOURNEY.map((step, i) => {
-              const Icon = step.icon;
-              const isReview = i === JOURNEY.length - 1;
-              return (
-                <li
-                  key={step.title.en}
-                  className="relative flex flex-col rounded-lg border border-warm-200 bg-cream/50 p-6"
-                >
-                  {isReview ? (
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-0 top-0 flex h-1.5 overflow-hidden rounded-t-[23px]"
-                    >
-                      <span className="flex-1 bg-accuracy" />
-                      <span className="flex-1 bg-dignity" />
-                    </span>
-                  ) : null}
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`inline-flex h-12 w-12 items-center justify-center rounded-md ${step.tone}`}
-                    >
-                      <Icon className="h-6 w-6" aria-hidden />
-                    </span>
-                    <span className="text-3xl font-semibold text-warm-500" aria-hidden>
-                      {i + 1}
-                    </span>
-                  </div>
-                  <h3 lang={lang} className="mt-5 text-lg font-semibold text-navy-500">
-                    <span className="sr-only">{i + 1}. </span>
-                    {t(step.title)}
-                  </h3>
-                  <p lang={lang} className="mt-2 text-sm text-warm-600">
-                    {t(step.body)}
-                  </p>
-                  {i < JOURNEY.length - 1 && (
-                    <ArrowRight
-                      aria-hidden
-                      className="absolute top-1/2 -right-4 z-10 hidden h-5 w-5 -translate-y-1/2 rounded-full bg-white text-warm-400 lg:block"
-                    />
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
-            <p className="flex items-center gap-3 rounded-md border border-dashed border-dignity/60 bg-dignity-soft/40 px-4 py-3 text-sm text-dignity-ink">
-              <RefreshCw className="h-5 w-5 shrink-0" aria-hidden />
-              <span lang={lang}>
-                {t({
-                  th: "ผู้ตรวจแก้ตรงไหน ระบบจะเอาไปปรับในรอบถัดไป",
-                  en: "Wherever reviewers correct something, the system uses it to improve the next round.",
-                })}
-              </span>
-            </p>
-            <p className="flex items-center gap-3 rounded-md border border-dashed border-accuracy/50 bg-accuracy-soft/40 px-4 py-3 text-sm text-accuracy-ink">
-              <MapPin className="h-5 w-5 shrink-0" aria-hidden />
-              <span lang={lang}>
-                {t({
-                  th: "ออกแบบให้ใช้โมเดลภาษาไทยแบบ open-weight และประมวลผลในประเทศ",
-                  en: "Designed around open-weight Thai language models, processed in-country.",
-                })}
-              </span>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. TWO KEYS: accurate AND dignified, neither can make up for the other */}
-      <section className="mx-auto max-w-6xl px-6 py-20 md:py-24">
-        <div className="grid items-center gap-14 lg:grid-cols-[1fr_0.85fr]">
-          <div>
-            <SectionHeading
-              kicker={t({
-                th: "ประตูหนึ่งบาน กุญแจสองดอก · กำลังพัฒนา",
-                en: "One door, two keys · in development",
-              })}
-              title={t({
-                th: "ความรู้จะขึ้นคลังได้ |ก็ต่อเมื่อผ่านครบสองด้าน",
-                en: "Knowledge goes live only when it passes both checks",
-              })}
-            />
-
-            <div className="mt-8 space-y-4">
-              <div className="flex gap-4 rounded-lg border border-accuracy/25 bg-white p-5 shadow-sm">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-accuracy text-white">
-                  <KeyRound className="h-5 w-5" aria-hidden />
-                </span>
-                <div>
-                  <h3 lang={lang} className="font-semibold text-accuracy-ink">
-                    {t({ th: "ถูกต้อง · ตรงกับที่มา", en: "Accurate · true to source" })}
-                  </h3>
-                  <p lang={lang} className="mt-1 text-sm text-warm-600">
-                    {t({
-                      th: "ผู้เชี่ยวชาญตรวจว่าเนื้อหาถูกต้อง และย้อนกลับไปดูที่มาได้",
-                      en: "Experts check the content is correct and can be traced back to its source.",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4 rounded-lg border border-dignity/40 bg-white p-5 shadow-sm">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-dignity text-navy-900">
-                  <KeyRound className="h-5 w-5" aria-hidden />
-                </span>
-                <div>
-                  <h3 lang={lang} className="font-semibold text-dignity-ink">
-                    {t({ th: "ให้เกียรติ · ไม่ตีตรา", en: "Dignified · non-stigmatising" })}
-                  </h3>
-                  <p lang={lang} className="mt-1 text-sm text-warm-600">
-                    {t({
-                      th: "ผู้ให้ความรู้ในกลุ่มเพื่อนเป็นผู้ประเมินหลัก ร่วมกับนักสิทธิมนุษยชน พยาบาล และแพทย์ประจำคลินิก ทุกคนทำงานกับชุมชนอยู่แล้ว",
-                      en: "Peer educators lead this check, with human rights advocates, nurses and a clinic doctor. Everyone on the panel works with the community.",
-                    })}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <p className="mt-6 flex items-start gap-3 text-sm text-navy-500">
-              <Hand className="mt-0.5 h-5 w-5 shrink-0 text-dignity-ink" aria-hidden />
-              <span lang={lang}>
-                {t({
-                  th: "ด้านหนึ่งชดเชยอีกด้านไม่ได้ เนื้อหาถูกต้องครบ แต่ใช้ภาษาตีตรา ก็ยังเผยแพร่ไม่ได้",
-                  en: "One cannot make up for the other. Fully accurate content written in stigmatising language still cannot be published.",
-                })}
-              </span>
-            </p>
-          </div>
-
-          <div className="mx-auto w-full max-w-md">
-            <TwoKeyMatrix />
-          </div>
-        </div>
-      </section>
-
-      {/* 4. LATEST KNOWLEDGE (from backend) */}
+      {/* 2. LATEST KNOWLEDGE (from backend) */}
       {knowledgeItems.length > 0 && (
         <section className="border-y border-warm-200 bg-white py-20">
           <div className="mx-auto max-w-6xl px-6">
@@ -708,10 +433,6 @@ function HomePage() {
                 title={t({
                   th: "งานวิจัย บทเรียน |และความรู้จากชุมชน",
                   en: "Research, lessons & community knowledge",
-                })}
-                intro={t({
-                  th: "เรื่องในคลังตอนนี้ SWING และภาคีเผยแพร่ก่อนจะมีการตรวจสองด้าน ซึ่งยังอยู่ระหว่างพัฒนา",
-                  en: "These items from SWING and partners were published before the two-key review, which is still in development.",
                 })}
               />
               <Link
@@ -783,7 +504,7 @@ function HomePage() {
         </section>
       )}
 
-      {/* 5. CATEGORIES */}
+      {/* 3. CATEGORIES */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mb-10">
           <SectionHeading
@@ -840,7 +561,7 @@ function HomePage() {
         </ul>
       </section>
 
-      {/* 6. PARTNERS */}
+      {/* 4. PARTNERS */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
         <div className="mb-8">
           <SectionHeading
@@ -869,7 +590,7 @@ function HomePage() {
         </ul>
       </section>
 
-      {/* 7. HELP CALLOUT + FINAL CTA */}
+      {/* 5. HELP CALLOUT + FINAL CTA */}
       <section className="relative overflow-hidden bg-navy-500 text-white">
         <div
           aria-hidden
