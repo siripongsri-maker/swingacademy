@@ -43,6 +43,14 @@
 
   --color-cream: #FAF8F3;
 
+  /* CVSK "two keys": both must pass before knowledge is published */
+  --color-accuracy: #0F766E;      /* expert key: accurate, true to source */
+  --color-accuracy-ink: #115E59;
+  --color-accuracy-soft: #D9EFEC;
+  --color-dignity: #C9A227;       /* community key: dignified, non-stigmatising */
+  --color-dignity-ink: #7A5E0E;
+  --color-dignity-soft: #F5EBCB;
+
   /* Warm neutrals */
   --color-warm-50: #FAFAF9;
   --color-warm-100: #F4F2F0;
