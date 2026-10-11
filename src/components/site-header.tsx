@@ -105,7 +105,10 @@ export function SiteHeader() {
             aria-label="SWING Academy หน้าแรก"
             onClick={() => setOpen(false)}
           >
-            <BrandLogo imgClassName="h-8 w-8 md:h-10 md:w-10" />
+            <BrandLogo
+              imgClassName="h-8 w-8 md:h-10 md:w-10"
+              wordmarkClassName="max-[359px]:hidden"
+            />
           </Link>
 
           <nav aria-label="เมนูหลัก" className="hidden items-center gap-1 xl:flex">

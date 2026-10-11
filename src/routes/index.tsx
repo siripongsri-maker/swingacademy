@@ -167,7 +167,7 @@ const CATEGORIES = [
     tone: "bg-dignity-soft text-dignity-ink",
     name: { th: "บทเรียนภาคสนาม", en: "Field lessons" },
     blurb: {
-      th: "ถอดบทเรียนจากงานจริงขององค์กรชุมชน (CBO) และพี่เลี้ยงชุมชน",
+      th: "ถอดบทเรียนจากงานจริงขององค์กรชุมชน (CBO) และผู้ให้ความรู้ในกลุ่มเพื่อน",
       en: "Lessons from the real work of community-based organisations (CBOs) and peer educators",
     },
     to: "/knowledge" as const,
@@ -347,7 +347,7 @@ function SampleUnitCard() {
             <span className="inline-flex items-center gap-1.5">
               <Mic className="h-3.5 w-3.5" aria-hidden />
               {t({
-                th: "เล่าจากประสบการณ์พี่เลี้ยงชุมชน",
+                th: "เล่าจากประสบการณ์ผู้ให้ความรู้ในกลุ่มเพื่อน",
                 en: "From a peer educator's experience",
               })}
             </span>
@@ -673,7 +673,7 @@ function HomePage() {
                   </h3>
                   <p lang={lang} className="mt-1 text-sm text-warm-600">
                     {t({
-                      th: "พี่เลี้ยงชุมชนเป็นผู้ประเมินหลัก ร่วมกับนักสิทธิมนุษยชน พยาบาล และแพทย์ประจำคลินิก ทุกคนทำงานกับชุมชนอยู่แล้ว",
+                      th: "ผู้ให้ความรู้ในกลุ่มเพื่อนเป็นผู้ประเมินหลัก ร่วมกับนักสิทธิมนุษยชน พยาบาล และแพทย์ประจำคลินิก ทุกคนทำงานกับชุมชนอยู่แล้ว",
                       en: "Peer educators lead this check, with human rights advocates, nurses and a clinic doctor. Everyone on the panel works with the community.",
                     })}
                   </p>
