@@ -153,6 +153,8 @@ export type Database = {
           artifacts: string | null
           audience: string | null
           confidence: string | null
+          content_chars: number | null
+          content_md: string | null
           created_at: string
           created_by: string | null
           date_end: string | null
@@ -161,13 +163,21 @@ export type Database = {
           evidence: string | null
           external_id: string
           format: string | null
+          has_action_items: boolean | null
           id: string
           import_batch: string | null
+          item_type: string | null
           knowledge_level: string
+          language: string | null
+          linked_item: string | null
           notes: string | null
           organiser: string | null
+          sample_set: string | null
+          sensitivity: string | null
+          sensitivity_note: string | null
           source: string
           source_group: string | null
+          source_url: string | null
           status: string | null
           swing_role: string | null
           title: string
@@ -179,6 +189,8 @@ export type Database = {
           artifacts?: string | null
           audience?: string | null
           confidence?: string | null
+          content_chars?: number | null
+          content_md?: string | null
           created_at?: string
           created_by?: string | null
           date_end?: string | null
@@ -187,13 +199,21 @@ export type Database = {
           evidence?: string | null
           external_id: string
           format?: string | null
+          has_action_items?: boolean | null
           id?: string
           import_batch?: string | null
+          item_type?: string | null
           knowledge_level?: string
+          language?: string | null
+          linked_item?: string | null
           notes?: string | null
           organiser?: string | null
+          sample_set?: string | null
+          sensitivity?: string | null
+          sensitivity_note?: string | null
           source: string
           source_group?: string | null
+          source_url?: string | null
           status?: string | null
           swing_role?: string | null
           title: string
@@ -205,6 +225,8 @@ export type Database = {
           artifacts?: string | null
           audience?: string | null
           confidence?: string | null
+          content_chars?: number | null
+          content_md?: string | null
           created_at?: string
           created_by?: string | null
           date_end?: string | null
@@ -213,13 +235,21 @@ export type Database = {
           evidence?: string | null
           external_id?: string
           format?: string | null
+          has_action_items?: boolean | null
           id?: string
           import_batch?: string | null
+          item_type?: string | null
           knowledge_level?: string
+          language?: string | null
+          linked_item?: string | null
           notes?: string | null
           organiser?: string | null
+          sample_set?: string | null
+          sensitivity?: string | null
+          sensitivity_note?: string | null
           source?: string
           source_group?: string | null
+          source_url?: string | null
           status?: string | null
           swing_role?: string | null
           title?: string
