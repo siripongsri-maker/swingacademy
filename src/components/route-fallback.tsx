@@ -4,7 +4,7 @@ import { PublicLayout } from "@/components/public-layout";
 import { useLanguage } from "@/lib/language-context";
 
 /** Friendly, bilingual error state for public routes. The technical message goes to the console only. */
-export function RouteError({ error }: { error: Error }) {
+export function RouteError({ error }: { error: unknown }) {
   const { t, lang } = useLanguage();
   useEffect(() => {
     console.error(error);

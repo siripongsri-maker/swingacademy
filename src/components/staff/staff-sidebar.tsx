@@ -21,6 +21,7 @@ import {
   GraduationCap,
   StickyNote,
   Volume2,
+  FlaskConical,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import { useConsoleRole } from "@/lib/console-role-context";
@@ -44,6 +45,11 @@ const knowledgeFlow: NavItem[] = [
   { to: "/staff/knowledge-library", label: { th: "คลังความรู้ (DB)", en: "Knowledge Library" }, sub: { th: "เผยแพร่/ซ่อน · แก้ไขในฐานข้อมูล", en: "Publish/hide · edit in DB" }, icon: Library, requires: "km.categorize" },
   { to: "/staff/talent", label: { th: "เชื่อมความรู้กับคน", en: "Talent Mapping" }, sub: { th: "ผู้เชี่ยวชาญในองค์กร", en: "Experts directory" }, icon: Users, requires: "talent.viewAll" },
   { to: "/staff/knowledge-translation", label: { th: "แปลงเป็นสื่อ", en: "Knowledge Translation" }, sub: { th: "แปลงเป็นเนื้อหา/สื่อ", en: "Turn into content" }, icon: GitBranch, requires: "translation.fromOwn" },
+];
+
+// Research instrument (CVSK). Admin-only in the menu; RLS also admits research roles.
+const researchNav: NavItem[] = [
+  { to: "/staff/research/baseline", label: { th: "Baseline (รอบ 0)", en: "Baseline (Round 0)" }, sub: { th: "ความรู้ที่มีอยู่แล้ว", en: "What already exists" }, icon: FlaskConical, requires: "roles.manage" },
 ];
 
 const consoleNav: NavItem[] = [
@@ -162,15 +168,24 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3" aria-label="Primary">
-          <div className={`px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
+          <div className={`px-4 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-white/60 ${collapsed ? "lg:hidden" : ""}`}>
             {t({ th: "กระบวนการความรู้", en: "Knowledge Workflow" })}
           </div>
           <ul className="space-y-0.5 px-2">{visible(knowledgeFlow).map(renderItem)}</ul>
 
-          <div className={`mt-4 px-4 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-white/40 ${collapsed ? "lg:hidden" : ""}`}>
+          <div className={`mt-4 px-4 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-white/60 ${collapsed ? "lg:hidden" : ""}`}>
             {t({ th: "คอนโซล", en: "Console" })}
           </div>
           <ul className="space-y-0.5 px-2">{visible(consoleNav).map(renderItem)}</ul>
+
+          {visible(researchNav).length > 0 && (
+            <>
+              <div className={`mt-4 px-4 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-white/60 ${collapsed ? "lg:hidden" : ""}`}>
+                {t({ th: "งานวิจัย", en: "Research" })}
+              </div>
+              <ul className="space-y-0.5 px-2">{visible(researchNav).map(renderItem)}</ul>
+            </>
+          )}
         </nav>
 
         <div className={`border-t border-white/10 p-3 ${collapsed ? "lg:hidden" : ""}`}>

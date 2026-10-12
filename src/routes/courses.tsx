@@ -34,7 +34,7 @@ export const Route = createFileRoute("/courses")({
   component: CoursesPage,
   errorComponent: ({ error }) => (
     <PublicLayout>
-      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">{error.message}</div>
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">{error instanceof Error ? error.message : String(error)}</div>
     </PublicLayout>
   ),
   notFoundComponent: () => (

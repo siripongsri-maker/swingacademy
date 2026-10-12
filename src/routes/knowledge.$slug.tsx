@@ -57,7 +57,7 @@ export const Route = createFileRoute("/knowledge/$slug")({
   errorComponent: ({ error }) => (
     <PublicLayout>
       <div className="mx-auto max-w-3xl px-6 py-16 text-center text-warm-500">
-        โหลดเนื้อหาไม่สำเร็จ: {error.message}
+        โหลดเนื้อหาไม่สำเร็จ: {error instanceof Error ? error.message : String(error)}
       </div>
     </PublicLayout>
   ),
