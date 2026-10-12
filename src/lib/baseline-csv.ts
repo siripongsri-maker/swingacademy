@@ -1,6 +1,25 @@
 // Parse a baseline inventory CSV (e.g. Baseline_training_inventory_LINE.csv) into import rows.
 // Runs in the browser; the server re-validates everything with zod.
-import type { BaselineImportRow, KnowledgeLevel } from "@/lib/baseline.functions";
+import type { BaselineImportRow, KnowledgeLevel, Sensitivity } from "@/lib/baseline.functions";
+
+const LEVEL_IDS: KnowledgeLevel[] = [
+  "content_file",
+  "written_summary",
+  "recording",
+  "admin_only",
+  "photos_or_links",
+  "deleted",
+  "none",
+  "unknown",
+];
+const SENSITIVITY_IDS: Sensitivity[] = [
+  "none",
+  "staff_names",
+  "community_identifiable",
+  "health_info_about_individuals",
+];
+const bool = (v: string | undefined) =>
+  v == null || v.trim() === "" ? null : /^(true|yes|1|y)$/i.test(v.trim());
 
 /** RFC 4180 CSV: quoted fields, doubled quotes, CRLF or LF, optional UTF-8 BOM. */
 export function parseCsv(text: string): string[][] {
@@ -141,6 +160,10 @@ export function mapInventory(table: string[][]): ParsedInventory {
         .filter(Boolean)
         .join(" · ") || null;
     const artifacts = clean(get(r, "artifacts"));
+    // An explicit knowledge_level column (e.g. from an export) wins over the artifact codes.
+    const explicitLevel = clean(get(r, "knowledge_level")) as KnowledgeLevel | null;
+    const sensitivity = clean(get(r, "sensitivity")) as Sensitivity | null;
+    const chars = clean(get(r, "content_chars"));
     rows.push({
       externalId,
       sourceGroup: clean(get(r, "groups")),
@@ -155,11 +178,24 @@ export function mapInventory(table: string[][]): ParsedInventory {
       format: clean(get(r, "format")),
       status: clean(get(r, "status")),
       artifacts,
-      knowledgeLevel: knowledgeLevelFromArtifacts(artifacts ?? ""),
+      knowledgeLevel:
+        explicitLevel && LEVEL_IDS.includes(explicitLevel)
+          ? explicitLevel
+          : knowledgeLevelFromArtifacts(artifacts ?? ""),
       confidence: clean(get(r, "confidence")),
       verified: /^(true|yes|1|y)$/i.test((get(r, "verified") ?? "").trim()),
       evidence: clean(get(r, "evidence")),
-      notes: null,
+      notes: clean(get(r, "notes")),
+      itemType: clean(get(r, "item_type")),
+      contentMd: clean(get(r, "content_md")),
+      contentChars: chars && /^\d+$/.test(chars) ? Number(chars) : null,
+      hasActionItems: bool(get(r, "has_action_items")),
+      language: clean(get(r, "language")),
+      sensitivity: sensitivity && SENSITIVITY_IDS.includes(sensitivity) ? sensitivity : null,
+      sensitivityNote: clean(get(r, "sensitivity_note")),
+      sourceUrl: clean(get(r, "source_url")),
+      linkedItem: clean(get(r, "linked_item")),
+      sampleSet: clean(get(r, "sample_set")),
     });
   });
   return { rows, skipped, missingColumns };

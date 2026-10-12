@@ -96,6 +96,7 @@ const ROLE_LABEL: Record<string, Localized> = {
   speaker_at_external: { th: "เป็นวิทยากรในงานภายนอก", en: "Speaker at external event" },
   internal_staff_training: { th: "อบรมภายใน", en: "Internal staff training" },
   attended_external: { th: "ไปร่วมงานภายนอก", en: "Attended external" },
+  internal_meeting: { th: "ประชุมภายใน", en: "Internal meeting" },
   unclear: { th: "ไม่ชัดเจน", en: "Unclear" },
   [NONE]: { th: "ไม่ระบุ", en: "Not set" },
 };
@@ -105,6 +106,32 @@ const STATUS_LABEL: Record<string, Localized> = {
   planned_unconfirmed: { th: "นัดไว้ ไม่พบหลักฐานว่าจัด", en: "Planned, unconfirmed" },
   planned_future: { th: "นัดไว้ในอนาคต", en: "Planned (future)" },
   cancelled: { th: "ยกเลิก", en: "Cancelled" },
+};
+
+const TYPE_LABEL: Record<string, Localized> = {
+  training: { th: "อบรม", en: "Training" },
+  workshop: { th: "เวิร์กช็อป", en: "Workshop" },
+  conference_session: { th: "เวทีวิชาการ / ประชุมวิชาการ", en: "Conference session" },
+  webinar: { th: "เว็บบินาร์", en: "Webinar" },
+  lesson_learning: { th: "ถอดบทเรียน", en: "Lesson learning" },
+  coaching: { th: "โค้ช / หนุนเสริม", en: "Coaching" },
+  internal_meeting: { th: "ประชุมภายใน", en: "Internal meeting" },
+  partner_meeting: { th: "ประชุมกับภาคี", en: "Partner meeting" },
+  government_meeting: { th: "ประชุมกับหน่วยงานรัฐ", en: "Government meeting" },
+  planning: { th: "ประชุมวางแผน", en: "Planning" },
+  interview: { th: "สัมภาษณ์", en: "Interview" },
+  other: { th: "อื่นๆ", en: "Other" },
+  [NONE]: { th: "ไม่ระบุ", en: "Not set" },
+};
+
+const SENSITIVITY_LABEL: Record<string, Localized> = {
+  none: { th: "ไม่พบข้อมูลอ่อนไหว", en: "No sensitive data found" },
+  staff_names: { th: "มีชื่อทีมงาน", en: "Staff names" },
+  community_identifiable: { th: "อาจระบุตัวคนในชุมชนได้", en: "Community member identifiable" },
+  health_info_about_individuals: {
+    th: "มีข้อมูลสุขภาพของบุคคล",
+    en: "Individual health information",
+  },
 };
 
 const CONFIDENCE_LABEL: Record<string, Localized> = {
@@ -168,6 +195,19 @@ function toCsv(items: BaselineItem[]) {
     ["evidence", (i) => i.evidence],
     ["knowledge_level", (i) => i.knowledgeLevel],
     ["source", (i) => i.source],
+    ["item_type", (i) => i.itemType],
+    ["language", (i) => i.language],
+    [
+      "has_action_items",
+      (i) => (i.hasActionItems == null ? "" : i.hasActionItems ? "true" : "false"),
+    ],
+    ["sensitivity", (i) => i.sensitivity],
+    ["sensitivity_note", (i) => i.sensitivityNote],
+    ["linked_item", (i) => i.linkedItem],
+    ["sample_set", (i) => i.sampleSet],
+    ["source_url", (i) => i.sourceUrl],
+    ["content_chars", (i) => i.contentChars],
+    ["content_md", (i) => i.contentMd],
   ];
   const lines = [
     cols.map(([c]) => c).join(","),
@@ -249,7 +289,11 @@ export function BaselineView({
   const query = useDeferredValue(q);
   const [level, setLevel] = useState<KnowledgeLevel | "">("");
   const [role, setRole] = useState("");
-  const [source, setSource] = useState<Source | "">("");
+  const [type, setType] = useState("");
+  // Sources count different units (events vs documents), so the page looks at one at a time.
+  const [source, setSource] = useState<Source | "">("line_chat");
+  const sourceCounts = useMemo(() => new Map(countBy(items, (i) => i.source)), [items]);
+  const activeSource = source && sourceCounts.has(source) ? source : "";
   const [open, setOpen] = useState<string | null>(null);
   const [shown, setShown] = useState(PAGE_ROWS);
   const [importOpen, setImportOpen] = useState(false);
@@ -260,20 +304,26 @@ export function BaselineView({
   const scoped = useMemo(
     () =>
       items.filter((i) => {
+        if (activeSource && i.source !== activeSource) return false;
         if (happenedOnly && i.status !== "happened") return false;
         if (!ranged) return true;
         if (!i.dateStart) return includeUndated;
         const end = i.dateEnd ?? i.dateStart;
         return (!lo || end >= lo) && (!hi || i.dateStart <= hi);
       }),
-    [items, happenedOnly, ranged, lo, hi, includeUndated],
+    [items, activeSource, happenedOnly, ranged, lo, hi, includeUndated],
   );
   const undatedOut = useMemo(
     () =>
       ranged && !includeUndated
-        ? items.filter((i) => !i.dateStart && (!happenedOnly || i.status === "happened")).length
+        ? items.filter(
+            (i) =>
+              (!activeSource || i.source === activeSource) &&
+              !i.dateStart &&
+              (!happenedOnly || i.status === "happened"),
+          ).length
         : 0,
-    [items, ranged, includeUndated, happenedOnly],
+    [items, activeSource, ranged, includeUndated, happenedOnly],
   );
 
   const haystacks = useMemo(
@@ -292,10 +342,10 @@ export function BaselineView({
       (i) =>
         (!level || i.knowledgeLevel === level) &&
         (!role || (role === NONE ? !i.swingRole : i.swingRole === role)) &&
-        (!source || i.source === source) &&
+        (!type || (type === NONE ? !i.itemType : i.itemType === type)) &&
         (!needle || haystacks.get(i.id)!.includes(needle)),
     );
-  }, [scoped, query, level, role, source, haystacks]);
+  }, [scoped, query, level, role, type, haystacks]);
 
   const total = scoped.length;
   const levelCounts = useMemo(() => new Map(countBy(scoped, (i) => i.knowledgeLevel)), [scoped]);
@@ -310,6 +360,8 @@ export function BaselineView({
     (levelCounts.get("deleted") ?? 0);
   const byRole = useMemo(() => countBy(scoped, (i) => i.swingRole), [scoped]);
   const byTopic = useMemo(() => countBy(scoped, (i) => i.topicArea).slice(0, 10), [scoped]);
+  const byType = useMemo(() => countBy(scoped, (i) => i.itemType), [scoped]);
+  const showType = scoped.some((i) => i.itemType);
   const byMonth = useMemo(
     () =>
       fillMonths(
@@ -324,7 +376,7 @@ export function BaselineView({
 
   const kind = errorKind(error);
   const canWrite = !!access?.canWrite;
-  const filtersActive = !!(q || level || role || source);
+  const filtersActive = !!(q || level || role || type);
 
   const exportCsv = () => {
     const blob = new Blob([toCsv(filtered)], { type: "text/csv;charset=utf-8" });
@@ -339,7 +391,7 @@ export function BaselineView({
     setQ("");
     setLevel("");
     setRole("");
-    setSource("");
+    setType("");
   };
 
   return (
@@ -439,6 +491,41 @@ export function BaselineView({
 
       {items.length > 0 && (
         <>
+          <div
+            role="group"
+            aria-label={t({ th: "แหล่งข้อมูล", en: "Source" })}
+            className="flex flex-wrap gap-2"
+          >
+            {[...BASELINE_SOURCES.filter((s) => sourceCounts.has(s)), "" as const].map((s) => (
+              <button
+                key={s || "all"}
+                onClick={() => {
+                  setSource(s);
+                  setShown(PAGE_ROWS);
+                  setType("");
+                }}
+                aria-pressed={activeSource === s}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-pill border px-4 text-sm font-medium transition-colors ${
+                  activeSource === s
+                    ? "border-navy-500 bg-navy-500 text-white"
+                    : "border-warm-300 bg-white text-navy-500 hover:bg-warm-50"
+                }`}
+              >
+                {s ? t(SOURCE_LABEL[s]) : t({ th: "ทุกแหล่งรวมกัน", en: "All sources" })}
+                <span className={activeSource === s ? "text-white/80" : "text-warm-600"}>
+                  {s ? sourceCounts.get(s) : items.length}
+                </span>
+              </button>
+            ))}
+          </div>
+          {!activeSource && sourceCounts.size > 1 && (
+            <p lang={lang} className="text-xs text-warm-600">
+              {t({
+                th: "หมายเหตุ: แต่ละแหล่งนับคนละหน่วย (กิจกรรมจาก LINE กับเอกสารสรุปจาก AI) และบางเรื่องอยู่ทั้งสองแหล่ง ผลรวมจึงนับซ้ำได้",
+                en: "Note: sources count different units (LINE events vs AI summary documents) and some events appear in both, so totals can double count.",
+              })}
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-warm-200 bg-white px-4 py-3 text-sm text-navy-500">
             <label className="inline-flex cursor-pointer items-center gap-2">
               <input
@@ -581,13 +668,23 @@ export function BaselineView({
 
           {/* Breakdowns */}
           <div className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
-            <Breakdown
-              title={t({ th: "บทบาทของ SWING", en: "SWING's role" })}
-              rows={byRole.map(([k, n]) => [k, ROLE_LABEL[k] ? t(ROLE_LABEL[k]) : k, n])}
-              total={total}
-              active={role}
-              onPick={(k) => setRole(role === k ? "" : k)}
-            />
+            {showType ? (
+              <Breakdown
+                title={t({ th: "ประเภท", en: "Type" })}
+                rows={byType.map(([k, n]) => [k, TYPE_LABEL[k] ? t(TYPE_LABEL[k]) : k, n])}
+                total={total}
+                active={type}
+                onPick={(k) => setType(type === k ? "" : k)}
+              />
+            ) : (
+              <Breakdown
+                title={t({ th: "บทบาทของ SWING", en: "SWING's role" })}
+                rows={byRole.map(([k, n]) => [k, ROLE_LABEL[k] ? t(ROLE_LABEL[k]) : k, n])}
+                total={total}
+                active={role}
+                onPick={(k) => setRole(role === k ? "" : k)}
+              />
+            )}
             <Breakdown
               title={t({ th: "หัวข้อ (10 อันดับแรก)", en: "Topics (top 10)" })}
               rows={byTopic.map(([k, n]) => [k, k === NONE ? t(ROLE_LABEL[NONE]) : k, n])}
@@ -663,12 +760,14 @@ export function BaselineView({
                 onChange={setRole}
                 options={Object.entries(ROLE_LABEL).map(([k, v]) => [k, t(v)])}
               />
-              <Select
-                label={t({ th: "แหล่งที่มา", en: "Source" })}
-                value={source}
-                onChange={(v) => setSource(v as Source | "")}
-                options={BASELINE_SOURCES.map((s) => [s, t(SOURCE_LABEL[s])])}
-              />
+              {showType && (
+                <Select
+                  label={t({ th: "ประเภท", en: "Type" })}
+                  value={type}
+                  onChange={setType}
+                  options={byType.map(([k]) => [k, TYPE_LABEL[k] ? t(TYPE_LABEL[k]) : k])}
+                />
+              )}
               <span className="ml-auto text-sm text-warm-600" role="status">
                 {t({ th: `${filtered.length} รายการ`, en: `${filtered.length} items` })}
               </span>
@@ -900,8 +999,30 @@ function ItemRow({
             {i.title}
           </span>
           <span className="mt-0.5 block text-xs text-warm-600">
-            {[i.externalId, i.topicArea, i.organiser].filter(Boolean).join(" · ")}
+            {[
+              i.externalId,
+              i.itemType && TYPE_LABEL[i.itemType] ? t(TYPE_LABEL[i.itemType]) : null,
+              i.topicArea,
+              i.organiser,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </span>
+          {(i.sampleSet ||
+            (i.sensitivity && i.sensitivity !== "none" && i.sensitivity !== "staff_names")) && (
+            <span className="mt-1 flex flex-wrap gap-1.5">
+              {i.sampleSet && (
+                <span className="rounded-pill bg-accuracy-soft px-2 py-0.5 text-xs font-medium text-accuracy-ink">
+                  {t({ th: "อยู่ในตัวอย่าง 30 ชิ้น", en: "In the sample of 30" })}
+                </span>
+              )}
+              {i.sensitivity && i.sensitivity !== "none" && i.sensitivity !== "staff_names" && (
+                <span className="rounded-pill bg-dignity-soft px-2 py-0.5 text-xs font-medium text-dignity-ink">
+                  {t(SENSITIVITY_LABEL[i.sensitivity])}
+                </span>
+              )}
+            </span>
+          )}
         </td>
         <td className="px-3 py-2 text-warm-600">{role ? t(role) : i.swingRole}</td>
         <td className="px-3 py-2">
@@ -938,6 +1059,56 @@ function ItemRow({
               <dd>{i.artifacts ?? "-"}</dd>
               <dt className="font-semibold">{t({ th: "หลักฐาน", en: "Evidence" })}</dt>
               <dd className="break-all">{i.evidence ?? "-"}</dd>
+              {i.itemType && (
+                <>
+                  <dt className="font-semibold">{t({ th: "ประเภท", en: "Type" })}</dt>
+                  <dd>{TYPE_LABEL[i.itemType] ? t(TYPE_LABEL[i.itemType]) : i.itemType}</dd>
+                </>
+              )}
+              {i.linkedItem && (
+                <>
+                  <dt className="font-semibold">
+                    {t({ th: "เรื่องเดียวกับ", en: "Same event as" })}
+                  </dt>
+                  <dd>{i.linkedItem}</dd>
+                </>
+              )}
+              {i.sensitivity && (
+                <>
+                  <dt className="font-semibold">{t({ th: "ข้อมูลอ่อนไหว", en: "Sensitivity" })}</dt>
+                  <dd>
+                    {SENSITIVITY_LABEL[i.sensitivity]
+                      ? t(SENSITIVITY_LABEL[i.sensitivity])
+                      : i.sensitivity}
+                    {i.sensitivityNote ? ` · ${i.sensitivityNote}` : ""}
+                  </dd>
+                </>
+              )}
+              {i.hasActionItems != null && (
+                <>
+                  <dt className="font-semibold">
+                    {t({ th: "มีสิ่งที่ต้องทำต่อ", en: "Action items" })}
+                  </dt>
+                  <dd>
+                    {i.hasActionItems ? t({ th: "มี", en: "Yes" }) : t({ th: "ไม่มี", en: "No" })}
+                  </dd>
+                </>
+              )}
+              {i.sourceUrl && (
+                <>
+                  <dt className="font-semibold">{t({ th: "ต้นฉบับ", en: "Original" })}</dt>
+                  <dd>
+                    <a
+                      href={i.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-accuracy-ink underline underline-offset-2"
+                    >
+                      {t({ th: "เปิดใน Notion", en: "Open in Notion" })}
+                    </a>
+                  </dd>
+                </>
+              )}
               <dt className="font-semibold">{t({ th: "ความเชื่อมั่น", en: "Confidence" })}</dt>
               <dd>
                 {confidence ? t(confidence) : (i.confidence ?? "-")}
@@ -946,6 +1117,22 @@ function ItemRow({
                   : ""}
               </dd>
             </dl>
+            {i.contentMd && (
+              <div className="mt-3">
+                <p className="font-semibold">
+                  {t({ th: "เนื้อหาสรุป", en: "Summary content" })}
+                  {i.contentChars
+                    ? ` · ${i.contentChars.toLocaleString()} ${t({ th: "ตัวอักษร", en: "characters" })}`
+                    : ""}
+                </p>
+                <div
+                  lang={hasThai(i.contentMd) ? "th" : "en"}
+                  className="mt-1 max-h-96 overflow-auto rounded-md border border-warm-200 bg-white p-3 text-sm leading-relaxed whitespace-pre-wrap text-navy-500"
+                >
+                  {i.contentMd}
+                </div>
+              </div>
+            )}
           </td>
         </tr>
       )}

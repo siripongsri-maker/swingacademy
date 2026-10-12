@@ -48,10 +48,29 @@ export type BaselineItem = {
   verified: boolean;
   evidence: string | null;
   notes: string | null;
+  // AI summaries and other content-bearing sources
+  itemType: string | null;
+  contentMd: string | null;
+  contentChars: number | null;
+  hasActionItems: boolean | null;
+  language: string | null;
+  sensitivity: Sensitivity | null;
+  sensitivityNote: string | null;
+  sourceUrl: string | null;
+  linkedItem: string | null;
+  sampleSet: string | null;
   updatedAt: string;
 };
 
 export type BaselineAccess = { canWrite: boolean; canDelete: boolean };
+
+export const SENSITIVITY = [
+  "none",
+  "staff_names",
+  "community_identifiable",
+  "health_info_about_individuals",
+] as const;
+export type Sensitivity = (typeof SENSITIVITY)[number];
 
 // The table is not in the generated types until Lovable applies the migration.
 type Row = Record<string, unknown>;
@@ -108,7 +127,7 @@ const requireBaselineAccess = createMiddleware({ type: "function" })
   });
 
 const COLS =
-  "id, source, external_id, source_group, title, topic_area, date_start, date_end, date_note, swing_role, organiser, audience, format, status, artifacts, knowledge_level, confidence, verified, evidence, notes, updated_at";
+  "id, source, external_id, source_group, title, topic_area, date_start, date_end, date_note, swing_role, organiser, audience, format, status, artifacts, knowledge_level, confidence, verified, evidence, notes, item_type, content_md, content_chars, has_action_items, language, sensitivity, sensitivity_note, source_url, linked_item, sample_set, updated_at";
 
 function fromDb(r: Row): BaselineItem {
   const s = (k: string) => (r[k] as string | null) ?? null;
@@ -133,6 +152,16 @@ function fromDb(r: Row): BaselineItem {
     verified: Boolean(r.verified),
     evidence: s("evidence"),
     notes: s("notes"),
+    itemType: s("item_type"),
+    contentMd: s("content_md"),
+    contentChars: (r.content_chars as number | null) ?? null,
+    hasActionItems: (r.has_action_items as boolean | null) ?? null,
+    language: s("language"),
+    sensitivity: (r.sensitivity as Sensitivity | null) ?? null,
+    sensitivityNote: s("sensitivity_note"),
+    sourceUrl: s("source_url"),
+    linkedItem: s("linked_item"),
+    sampleSet: s("sample_set"),
     updatedAt: r.updated_at as string,
   };
 }
@@ -198,9 +227,28 @@ export const ImportRow = z.object({
   verified: z.boolean(),
   evidence: short(2000),
   notes: short(1000),
+  // Optional: AI summaries and other content-bearing sources
+  itemType: short(40).optional().default(null),
+  contentMd: z.string().max(60000).nullable().optional().default(null),
+  contentChars: z.number().int().min(0).nullable().optional().default(null),
+  hasActionItems: z.boolean().nullable().optional().default(null),
+  language: short(10).optional().default(null),
+  sensitivity: z.enum(SENSITIVITY).nullable().optional().default(null),
+  sensitivityNote: short(500).optional().default(null),
+  sourceUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .regex(/^https:\/\//)
+    .nullable()
+    .optional()
+    .default(null),
+  linkedItem: short(64).optional().default(null),
+  sampleSet: short(40).optional().default(null),
 });
 
-export type BaselineImportRow = z.infer<typeof ImportRow>;
+// Input shape: the content columns are optional in a CSV.
+export type BaselineImportRow = z.input<typeof ImportRow>;
 
 const ImportInput = z.object({
   source: z.enum(BASELINE_SOURCES),
@@ -260,6 +308,16 @@ export const importBaselineItems = createServerFn({ method: "POST" })
       verified: r.verified,
       evidence: r.evidence,
       notes: r.notes,
+      item_type: r.itemType,
+      content_md: r.contentMd,
+      content_chars: r.contentChars,
+      has_action_items: r.hasActionItems,
+      language: r.language,
+      sensitivity: r.sensitivity,
+      sensitivity_note: r.sensitivityNote,
+      source_url: r.sourceUrl,
+      linked_item: r.linkedItem,
+      sample_set: r.sampleSet,
       import_batch: batch,
     }));
     const { data: saved, error } = await db
