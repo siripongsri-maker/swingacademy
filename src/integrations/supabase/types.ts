@@ -1308,6 +1308,7 @@ export type Database = {
           departments: string[]
           ethics_approved_at: string | null
           ethics_ref: string | null
+          foundation_permission_at: string | null
           id: number
           mou_signed_at: string | null
           retention_years: number
@@ -1322,6 +1323,7 @@ export type Database = {
           departments?: string[]
           ethics_approved_at?: string | null
           ethics_ref?: string | null
+          foundation_permission_at?: string | null
           id?: number
           mou_signed_at?: string | null
           retention_years?: number
@@ -1336,6 +1338,7 @@ export type Database = {
           departments?: string[]
           ethics_approved_at?: string | null
           ethics_ref?: string | null
+          foundation_permission_at?: string | null
           id?: number
           mou_signed_at?: string | null
           retention_years?: number
@@ -1575,6 +1578,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      active_participant_codes: {
+        Args: never
+        Returns: {
+          department: string
+          id: string
+          pseudo_code: string
+          site: string
+        }[]
+      }
       apply_withdrawal: {
         Args: { _note: string; _participant: string; _scope: string }
         Returns: number
@@ -1603,6 +1615,7 @@ export type Database = {
         Returns: boolean
       }
       is_consent_keeper: { Args: { _user_id: string }; Returns: boolean }
+      is_deid_assistant: { Args: { _user_id: string }; Returns: boolean }
       is_enrolled: {
         Args: { _classroom: string; _user: string }
         Returns: boolean
@@ -1610,6 +1623,13 @@ export type Database = {
       is_research_member: { Args: { _user_id: string }; Returns: boolean }
       is_session_worker: { Args: { _user_id: string }; Returns: boolean }
       is_staff_member: { Args: { _user_id: string }; Returns: boolean }
+      participant_active_flags: {
+        Args: never
+        Returns: {
+          active: boolean
+          participant_id: string
+        }[]
+      }
       participant_cleared: {
         Args: { _gate: string; _participant: string }
         Returns: boolean
@@ -1627,6 +1647,7 @@ export type Database = {
         | "expert"
         | "dignity_panel"
         | "data_steward"
+        | "deid_assistant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1764,6 +1785,7 @@ export const Constants = {
         "expert",
         "dignity_panel",
         "data_steward",
+        "deid_assistant",
       ],
     },
   },
