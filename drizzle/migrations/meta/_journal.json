@@ -15,6 +15,13 @@
       "when": 1791769597023,
       "tag": "0001_baseline_items",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791772379226,
+      "tag": "0002_baseline_content",
+      "breakpoints": true
     }
   ]
 }
