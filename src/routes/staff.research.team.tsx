@@ -29,7 +29,7 @@ import {
 import { getMyResearchAccess, RESEARCH_ROLES, type ResearchRole } from "@/lib/research-access";
 import {
   conflictingRoles,
-  isConsentKeeperRole,
+  selfGrantBlock,
   getStudySettings,
   grantResearchRole,
   listResearchMembers,
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/staff/research/team")({
   component: ResearchTeamPage,
 });
 
-type SettingsData = { settings: StudySettings | null; canEdit: boolean };
+type SettingsData = { settings: StudySettings | null; canEdit: boolean; canUnlock: boolean };
 type MembersData = {
   members: ResearchMember[];
   accounts: TeamAccount[];
@@ -75,12 +75,13 @@ const ROLE_LABEL: Record<ResearchRole, Localized> = {
     en: "Dignity review panel",
   },
   data_steward: { th: "ผู้ดูแลข้อมูล", en: "Data steward" },
+  deid_assistant: { th: "ผู้ช่วยลบตัวระบุตัวตน", en: "De-identification assistant" },
 };
 
 const ROLE_HINT: Record<ResearchRole, Localized> = {
   researcher: {
-    th: "ทำงานกับเซสชันและข้อมูลที่ไม่ระบุตัวตน ไม่เห็นว่าใครยินยอม ไม่ยินยอม หรือถอนตัว",
-    en: "Works with sessions and de-identified data. Cannot see who agreed, declined or withdrew.",
+    th: "ทำงานกับเซสชันและข้อมูลที่ไม่ระบุตัวตน ไม่เห็นว่าใครยินยอม ไม่ยินยอม หรือถอนตัว และไม่ได้ฟังเสียงดิบ",
+    en: "Works with sessions and de-identified data. Cannot see who agreed, declined or withdrew, and does not hear raw audio.",
   },
   consent_officer: {
     th: "ทำงานแยกจากผู้วิจัย ขอและบันทึกความยินยอมของผู้เข้าร่วมแต่ละคน",
@@ -99,23 +100,27 @@ const ROLE_HINT: Record<ResearchRole, Localized> = {
     en: "Joins in reviewing that content is respectful and free of stigma.",
   },
   data_steward: {
-    th: "ดูแลการเข้าถึงข้อมูลและการตั้งค่าการศึกษา และเห็นบันทึกความยินยอมได้",
-    en: "Looks after data access and study settings, and can see consent records.",
+    th: "ดูแลการเข้าถึงข้อมูลและการตั้งค่าการศึกษา เห็นบันทึกความยินยอม เปิดฟังเสียงดิบได้ และเป็นผู้เปิดหรือล็อกการเก็บข้อมูล",
+    en: "Looks after data access and study settings, can see consent records and play raw audio, and opens or locks collection.",
+  },
+  deid_assistant: {
+    th: "ฟังเสียงดิบเพื่อถอดเสียงและลบข้อมูลที่ระบุตัวตนได้ ก่อนส่งข้อความต่อให้ผู้วิจัย เห็นเฉพาะเซสชันที่บันทึกเสียงแล้ว และไม่เห็นบันทึกความยินยอม",
+    en: "Listens to raw audio to transcribe it and remove identifying details before the text reaches the researcher. Sees recorded sessions only, never consent records.",
   },
 };
 
 const MSG = {
   missing: {
-    th: "ยังไม่มีตารางของงานวิจัยในฐานข้อมูล ให้สั่ง Lovable รัน migration 20261012150000_consent_and_capture.sql ก่อน",
-    en: "The research tables do not exist yet. Ask Lovable to run migration 20261012150000_consent_and_capture.sql.",
+    th: "ฐานข้อมูลยังไม่มีตารางหรือคอลัมน์ของงานวิจัยที่หน้านี้ใช้ ให้สั่ง Lovable รัน migration ที่ยังค้างอยู่ (ล่าสุดคือ 20261012180000_research_gate_and_access.sql)",
+    en: "Some research tables or columns this page needs do not exist yet. Ask Lovable to run the pending migration (latest: 20261012180000_research_gate_and_access.sql).",
   },
   forbiddenAction: {
     th: "บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้",
     en: "This account cannot do this.",
   },
   conflict: {
-    th: "บัญชีเดียวกันเป็นผู้วิจัยพร้อมกับเป็นผู้ขอความยินยอมหรือผู้ดูแลข้อมูลไม่ได้ เพื่อให้ผู้วิจัยไม่เห็นผลการให้ความยินยอมรายบุคคล",
-    en: "One account cannot be the researcher and also a consent officer or data steward, so the researcher never sees individual consent decisions.",
+    th: "บัญชีเดียวกันเป็นผู้วิจัยพร้อมกับเป็นผู้ขอความยินยอม ผู้ดูแลข้อมูล หรือผู้ช่วยลบตัวระบุตัวตนไม่ได้ เพื่อให้ผู้วิจัยไม่เห็นผลการให้ความยินยอมรายบุคคลและไม่ได้ฟังเสียงดิบ",
+    en: "One account cannot be the researcher and also a consent officer, data steward or de-identification assistant, so the researcher never sees individual consent decisions or hears raw audio.",
   },
   loadFailed: {
     th: "โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง",
@@ -129,14 +134,25 @@ const MSG = {
     th: "ให้บทบาทที่เห็นบันทึกความยินยอมกับบัญชีของตัวเองไม่ได้ ขอให้ผู้ดูแลระบบอีกคนเป็นผู้ให้ เพื่อให้การเข้าถึงบันทึกความยินยอมผ่านการดูของอีกคนเสมอ",
     en: "You cannot give your own account a role that can see consent records. Please ask another admin, so access to consent records always goes through a second person.",
   },
+  selfRawAudio: {
+    th: "ให้บทบาทผู้ช่วยลบตัวระบุตัวตนกับบัญชีของตัวเองไม่ได้ ขอให้ผู้ดูแลระบบอีกคนเป็นผู้ให้ เพื่อให้การเข้าถึงเสียงดิบผ่านการดูของอีกคนเสมอ",
+    en: "You cannot give your own account the de-identification assistant role. Please ask another admin, so access to raw audio always goes through a second person.",
+  },
 } satisfies Record<string, Localized>;
 
 const ERROR_MESSAGES: [string, Localized][] = [
   [
     "STUDY_UNLOCK_NEEDS_APPROVALS",
     {
-      th: "เปิดการเก็บข้อมูลได้เมื่อมีทั้งวันที่อนุมัติจริยธรรมและวันที่ลงนาม MoU ถ้าต้องการลบวันที่ ให้ล็อกการเก็บข้อมูลก่อน",
-      en: "Collection can be open only when both the ethics approval date and the MoU date are on file. To clear a date, lock collection first.",
+      th: "เปิดการเก็บข้อมูลได้เมื่อมีเลขที่อ้างอิงจริยธรรม วันที่อนุมัติจริยธรรม วันที่ลงนาม MoU และวันที่มูลนิธิอนุญาตครบ ถ้าต้องการลบข้อมูลเหล่านี้ ให้ล็อกการเก็บข้อมูลก่อน",
+      en: "Collection can be open only when the ethics reference, the ethics approval date, the MoU date and the foundation permission date are all on file. To clear one, lock collection first.",
+    },
+  ],
+  [
+    "STUDY_STEWARD_ONLY",
+    {
+      th: "เฉพาะผู้ดูแลข้อมูลเปิดหรือล็อกการเก็บข้อมูลได้ และระหว่างที่เปิดอยู่ เฉพาะผู้ดูแลข้อมูลแก้ข้อมูลการอนุมัติได้",
+      en: "Only a data steward can open or lock collection, and change the approvals while it is open.",
     },
   ],
   [
@@ -149,6 +165,7 @@ const ERROR_MESSAGES: [string, Localized][] = [
   ["STUDY_SETTINGS_MISSING", MSG.settingsRowMissing],
   ["TEAM_ROLE_CONFLICT", MSG.conflict],
   ["TEAM_SELF_KEEPER", MSG.selfKeeper],
+  ["TEAM_SELF_RAW_AUDIO", MSG.selfRawAudio],
   [
     "TEAM_DEPARTMENT_REQUIRED",
     {
@@ -328,7 +345,11 @@ function ResearchTeamPage() {
             <Alert>{t(MSG.settingsRowMissing)}</Alert>
           ) : settings ? (
             <>
-              <StudyStatusCard settings={settings} canEdit={!!settingsQ.data?.canEdit} />
+              <StudyStatusCard
+                settings={settings}
+                canEdit={!!settingsQ.data?.canEdit}
+                canUnlock={!!settingsQ.data?.canUnlock}
+              />
               <SettingsCard
                 settings={settings}
                 canEdit={!!settingsQ.data?.canEdit}
@@ -406,20 +427,39 @@ function useSaveSettings() {
 // 1) Study status: approvals and the collection lock
 // ---------------------------------------------------------------------------
 
-function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEdit: boolean }) {
+function StudyStatusCard({
+  settings,
+  canEdit,
+  canUnlock,
+}: {
+  settings: StudySettings;
+  canEdit: boolean;
+  /** Data stewards only: open or lock collection, and change approvals while it is open. */
+  canUnlock: boolean;
+}) {
   const { t, lang } = useLanguage();
   const save = useSaveSettings();
   const [result, setResult] = useState<Result | null>(null);
   const [confirming, setConfirming] = useState<"unlock" | "lock" | null>(null);
+  const hasRef = !!settings.ethicsRef?.trim();
   const hasEthics = !!settings.ethicsApprovedAt;
   const hasMou = !!settings.mouSignedAt;
-  const ready = hasEthics && hasMou;
+  const hasFoundation = !!settings.foundationPermissionAt;
+  const ready = hasRef && hasEthics && hasMou && hasFoundation;
   const isOpen = settings.collectionUnlocked;
-  const [editing, setEditing] = useState(canEdit && !ready);
-  const canToggle = canEdit && (isOpen || ready);
+  // While collection is open, the approvals it rests on are changed by a data steward only.
+  const canEditApprovals = canEdit && (!isOpen || canUnlock);
+  const [editing, setEditing] = useState(canEditApprovals && !ready);
+  const canToggle = canUnlock && (isOpen || ready);
   const ids = useId();
 
   const reasons: Localized[] = [];
+  if (!hasRef) {
+    reasons.push({
+      th: "ยังไม่ได้บันทึกเลขที่อ้างอิงจริยธรรม",
+      en: "The ethics reference is not on file yet",
+    });
+  }
   if (!hasEthics) {
     reasons.push({
       th: "ยังไม่ได้บันทึกวันที่คณะกรรมการจริยธรรมการวิจัยอนุมัติ",
@@ -432,10 +472,16 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
       en: "The MoU signing date is not on file yet",
     });
   }
+  if (!hasFoundation) {
+    reasons.push({
+      th: "ยังไม่ได้บันทึกวันที่มูลนิธิอนุญาตให้ใช้ข้อมูล",
+      en: "The date the foundation gave permission is not on file yet",
+    });
+  }
   if (ready && !isOpen) {
     reasons.push({
-      th: "การอนุมัติครบแล้ว รอเปิดการเก็บข้อมูล",
-      en: "Approvals are complete. Collection is waiting to be opened.",
+      th: "การอนุมัติครบแล้ว รอผู้ดูแลข้อมูลเปิดการเก็บข้อมูล",
+      en: "Approvals are complete. Waiting for a data steward to open collection.",
     });
   }
 
@@ -526,7 +572,7 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
         </div>
       </div>
 
-      <dl className="grid gap-3 text-sm sm:grid-cols-3">
+      <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div className="min-w-0 rounded-md bg-warm-50 p-3">
           <dt className="text-xs text-warm-600">
             {t({ th: "การอนุมัติจริยธรรม", en: "Ethics approval" })}
@@ -546,6 +592,14 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
           </dd>
         </div>
         <div className="min-w-0 rounded-md bg-warm-50 p-3">
+          <dt className="text-xs text-warm-600">
+            {t({ th: "มูลนิธิอนุญาตเมื่อ", en: "Foundation permission" })}
+          </dt>
+          <dd className="mt-0.5 font-medium text-navy-900">
+            {formatDate(settings.foundationPermissionAt, lang) ?? notOnFile}
+          </dd>
+        </div>
+        <div className="min-w-0 rounded-md bg-warm-50 p-3">
           <dt className="text-xs text-warm-600">{t({ th: "ปรับล่าสุด", en: "Last updated" })}</dt>
           <dd className="mt-0.5 font-medium text-navy-900">
             {formatDate(settings.updatedAt, lang) ?? "-"}
@@ -559,15 +613,15 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
             {t({ th: "เปิดการเก็บข้อมูลเพื่อการวิจัย", en: "Open collection for research" })}
           </p>
           <p id={`${ids}-toggle-hint`} lang={lang} className="text-xs text-warm-600">
-            {!canEdit
+            {!canUnlock
               ? t({
-                  th: "เฉพาะผู้ดูแลระบบและผู้ดูแลข้อมูลเปลี่ยนได้",
-                  en: "Only admins and data stewards can change this.",
+                  th: "เฉพาะผู้ดูแลข้อมูลเปิดหรือล็อกการเก็บข้อมูลได้",
+                  en: "Only a data steward can open or lock collection.",
                 })
               : !ready && !isOpen
                 ? t({
-                    th: "เปิดได้เมื่อบันทึกวันที่อนุมัติจริยธรรมและวันที่ลงนาม MoU แล้ว",
-                    en: "Available once the ethics approval date and the MoU date are saved.",
+                    th: "เปิดได้เมื่อบันทึกเลขที่อ้างอิงจริยธรรม วันที่อนุมัติจริยธรรม วันที่ลงนาม MoU และวันที่มูลนิธิอนุญาตครบแล้ว",
+                    en: "Available once the ethics reference, the ethics approval date, the MoU date and the foundation permission date are saved.",
                   })
                 : t({
                     th: "ระบบจะถามยืนยันก่อนเปลี่ยน",
@@ -601,7 +655,16 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
         </button>
       </div>
 
-      {canEdit && (
+      {canEdit && !canEditApprovals && (
+        <p lang={lang} className="border-t border-warm-200 pt-4 text-xs text-warm-600">
+          {t({
+            th: "ระหว่างที่เปิดการเก็บข้อมูลอยู่ เฉพาะผู้ดูแลข้อมูลแก้ข้อมูลการอนุมัติได้",
+            en: "While collection is open, only a data steward can change the approvals.",
+          })}
+        </p>
+      )}
+
+      {canEditApprovals && (
         <div className="border-t border-warm-200 pt-4">
           <button
             type="button"
@@ -620,7 +683,7 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
           {editing && (
             <div id={`${ids}-approvals`} className="mt-3">
               <ApprovalsForm
-                key={`${settings.ethicsRef}|${settings.ethicsApprovedAt}|${settings.mouSignedAt}`}
+                key={`${settings.ethicsRef}|${settings.ethicsApprovedAt}|${settings.mouSignedAt}|${settings.foundationPermissionAt}`}
                 settings={settings}
                 saving={save.isPending}
                 onSave={saveApprovals}
@@ -668,6 +731,10 @@ function StudyStatusCard({ settings, canEdit }: { settings: StudySettings; canEd
                 {formatDate(settings.ethicsApprovedAt, lang)}
               </li>
               <li>MoU: {formatDate(settings.mouSignedAt, lang)}</li>
+              <li>
+                {t({ th: "มูลนิธิอนุญาต", en: "Foundation permission" })}:{" "}
+                {formatDate(settings.foundationPermissionAt, lang)}
+              </li>
             </ul>
           )}
           <DialogFooter className="gap-2 sm:space-x-0">
@@ -717,11 +784,14 @@ function ApprovalsForm({
   const [ref, setRef] = useState(settings.ethicsRef ?? "");
   const [ethicsDate, setEthicsDate] = useState(settings.ethicsApprovedAt ?? "");
   const [mouDate, setMouDate] = useState(settings.mouSignedAt ?? "");
+  const [foundationDate, setFoundationDate] = useState(settings.foundationPermissionAt ?? "");
   const dirty =
     ref.trim() !== (settings.ethicsRef ?? "") ||
     ethicsDate !== (settings.ethicsApprovedAt ?? "") ||
-    mouDate !== (settings.mouSignedAt ?? "");
-  const clearsWhileOpen = settings.collectionUnlocked && (!ethicsDate || !mouDate);
+    mouDate !== (settings.mouSignedAt ?? "") ||
+    foundationDate !== (settings.foundationPermissionAt ?? "");
+  const clearsWhileOpen =
+    settings.collectionUnlocked && (!ref.trim() || !ethicsDate || !mouDate || !foundationDate);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -731,12 +801,13 @@ function ApprovalsForm({
       ethicsRef: ref,
       ethicsApprovedAt: ethicsDate || null,
       mouSignedAt: mouDate || null,
+      foundationPermissionAt: foundationDate || null,
     });
   };
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label htmlFor={`${ids}-ref`} className="mb-1 block text-sm font-medium text-navy-900">
             {t({ th: "เลขที่อ้างอิงจริยธรรม", en: "Ethics reference" })}
@@ -774,12 +845,27 @@ function ApprovalsForm({
             className={INPUT}
           />
         </div>
+        <div>
+          <label
+            htmlFor={`${ids}-foundation`}
+            className="mb-1 block text-sm font-medium text-navy-900"
+          >
+            {t({ th: "วันที่มูลนิธิอนุญาตให้ใช้ข้อมูล", en: "Foundation permission date" })}
+          </label>
+          <input
+            id={`${ids}-foundation`}
+            type="date"
+            value={foundationDate}
+            onChange={(e) => setFoundationDate(e.target.value)}
+            className={INPUT}
+          />
+        </div>
       </div>
       {clearsWhileOpen && (
         <p lang={lang} className="text-sm text-dignity-ink">
           {t({
-            th: "ตอนนี้เปิดการเก็บข้อมูลอยู่ ถ้าต้องการลบวันที่อนุมัติ ให้ล็อกการเก็บข้อมูลก่อน",
-            en: "Collection is open. To clear an approval date, lock collection first.",
+            th: "ตอนนี้เปิดการเก็บข้อมูลอยู่ ถ้าต้องการลบเลขที่อ้างอิงหรือวันที่อนุมัติ ให้ล็อกการเก็บข้อมูลก่อน",
+            en: "Collection is open. To clear the ethics reference or an approval date, lock collection first.",
           })}
         </p>
       )}
@@ -1363,7 +1449,7 @@ function TeamSection({ data, departments }: { data: MembersData; departments: st
                     </td>
                     {canGrant && (
                       <td className="px-3 py-1 text-right">
-                        {!m.active && m.userId === viewerId && isConsentKeeperRole(m.role) ? (
+                        {!m.active && m.userId === viewerId && selfGrantBlock(m.role) ? (
                           <span
                             lang={lang}
                             className="inline-block max-w-40 py-2 text-left text-xs text-warm-600"
@@ -1520,8 +1606,10 @@ function AddMemberDialog({
   const conflict = held.find((m) => m.active && blocked.includes(m.role));
   const same = held.find((m) => m.role === role);
   const needsDept = role === "dept_coordinator";
-  // The server refuses this too: another admin must give a consent-keeper role to you.
-  const selfKeeper = userId === viewerId && isConsentKeeperRole(role);
+  // The server refuses this too: another admin must give you a consent-keeper or
+  // de-identification role.
+  const selfBlock = userId === viewerId ? selfGrantBlock(role) : null;
+  const selfKeeper = selfBlock !== null;
 
   const grant = useMutation({
     mutationFn: () =>
@@ -1791,7 +1879,7 @@ function AddMemberDialog({
             )}
             {!conflict && selfKeeper && (
               <p className="rounded-md border border-dignity/50 bg-dignity-soft/60 p-3 text-dignity-ink">
-                {t(MSG.selfKeeper)}
+                {t(selfBlock === "TEAM_SELF_RAW_AUDIO" ? MSG.selfRawAudio : MSG.selfKeeper)}
               </p>
             )}
             {!conflict && !selfKeeper && same?.active && (
@@ -1863,14 +1951,26 @@ function PrivacyNote() {
         </p>
         <p>
           {t({
-            th: "บัญชีเดียวกันจึงเป็นผู้วิจัยพร้อมกับเป็นผู้ขอความยินยอมหรือผู้ดูแลข้อมูลไม่ได้",
-            en: "That is why one account cannot be the researcher and also a consent officer or data steward.",
+            th: "เสียงดิบเปิดฟังได้เฉพาะผู้ดูแลข้อมูลและผู้ช่วยลบตัวระบุตัวตน ผู้วิจัยทำงานกับข้อความที่ลบตัวระบุตัวตนแล้วเท่านั้น และทุกครั้งที่เปิดฟังต้องระบุเหตุผลและถูกบันทึกไว้",
+            en: "Raw audio plays only for data stewards and the de-identification assistant. The researcher works with de-identified text only, and every listen needs a reason and is logged.",
           })}
         </p>
         <p>
           {t({
-            th: "ผู้ดูแลระบบให้บทบาทผู้ขอความยินยอมหรือผู้ดูแลข้อมูลกับบัญชีของตัวเองไม่ได้ ต้องให้ผู้ดูแลระบบอีกคนเป็นผู้ให้ และทุกการเปลี่ยนบทบาทถูกบันทึกไว้ในประวัติการใช้งาน",
-            en: "An admin cannot give their own account the consent officer or data steward role: another admin has to. Every role change is recorded in the audit trail.",
+            th: "บัญชีเดียวกันจึงเป็นผู้วิจัยพร้อมกับเป็นผู้ขอความยินยอม ผู้ดูแลข้อมูล หรือผู้ช่วยลบตัวระบุตัวตนไม่ได้",
+            en: "That is why one account cannot be the researcher and also a consent officer, data steward or de-identification assistant.",
+          })}
+        </p>
+        <p>
+          {t({
+            th: "ผู้ดูแลระบบให้บทบาทผู้ขอความยินยอม ผู้ดูแลข้อมูล หรือผู้ช่วยลบตัวระบุตัวตนกับบัญชีของตัวเองไม่ได้ ต้องให้ผู้ดูแลระบบอีกคนเป็นผู้ให้ และทุกการเปลี่ยนบทบาทถูกบันทึกไว้ในประวัติการใช้งาน",
+            en: "An admin cannot give their own account the consent officer, data steward or de-identification assistant role: another admin has to. Every role change is recorded in the audit trail.",
+          })}
+        </p>
+        <p>
+          {t({
+            th: "การเปิดหรือล็อกการเก็บข้อมูลทำได้เฉพาะผู้ดูแลข้อมูล และฐานข้อมูลบันทึกทุกครั้งที่เปิดหรือล็อกไว้เอง",
+            en: "Only a data steward opens or locks collection, and the database itself records every time it is opened or locked.",
           })}
         </p>
       </div>

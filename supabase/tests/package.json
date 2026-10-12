@@ -1,0 +1,12 @@
+{
+  "name": "swingacademy-db-tests",
+  "private": true,
+  "type": "module",
+  "description": "Database rules test for the CVSK research tables (PGlite, in memory). Not part of the app build.",
+  "scripts": {
+    "test": "node research-rules.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.2.17"
+  }
+}

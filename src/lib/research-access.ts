@@ -1,5 +1,5 @@
 // Who can do what in the CVSK research tools. Server-side checks live here; RLS enforces the
-// same rules in the database (see migrations 20261011120000 and 20261012150000).
+// same rules in the database (see migrations 20261011120000, 20261012150000 and 20261012180000).
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ADMIN_ROLES } from "@/lib/auth-guards";
@@ -11,6 +11,7 @@ export const RESEARCH_ROLES = [
   "expert",
   "dignity_panel",
   "data_steward",
+  "deid_assistant",
 ] as const;
 export type ResearchRole = (typeof RESEARCH_ROLES)[number];
 
@@ -23,6 +24,11 @@ export type ResearchAccess = {
   isConsentKeeper: boolean;
   /** May work with capture sessions (no consent decisions involved). */
   isSessionWorker: boolean;
+  /**
+   * May hear raw audio: the data steward and the de-identification assistant only
+   * (Appendix จ). Never the researcher, and admin alone is not enough.
+   */
+  canPlayRawAudio: boolean;
 };
 
 type Db = {
@@ -71,7 +77,8 @@ export async function loadResearchAccess(
     roles.includes("researcher") ||
     roles.includes("data_steward") ||
     roles.includes("dept_coordinator");
-  return { isAdmin, roles, departments, isConsentKeeper, isSessionWorker };
+  const canPlayRawAudio = roles.includes("data_steward") || roles.includes("deid_assistant");
+  return { isAdmin, roles, departments, isConsentKeeper, isSessionWorker, canPlayRawAudio };
 }
 
 export type AccessRule = "admin" | "consent_keeper" | "session_worker" | ResearchRole;

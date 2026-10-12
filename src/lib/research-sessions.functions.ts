@@ -3,11 +3,16 @@
 //
 // Access: session workers (admin, researcher, data steward, and dept coordinators for their
 // own departments). RLS on capture_sessions and session_participants enforces the same rule,
-// so every table query runs on the caller's user-scoped client.
+// so every table query runs on the caller's user-scoped client. The de-identification
+// assistant only reads recorded sessions (RLS shows it nothing else) to play their audio.
 //
-// Privacy: this file never reads consents, participant_identity or withdrawal_events.
-// Workers only see the per-session flags from session_clearance(), which never says
-// which person is not cleared.
+// Raw audio plays for the data steward and the de-identification assistant only (Appendix จ):
+// never the researcher, and being an app admin is not enough.
+//
+// Privacy: this file never reads consents, participant_identity, withdrawal_events or
+// participants.active. Workers only see the per-session flags from session_clearance(),
+// which never says which person is not cleared, and pick speakers from
+// active_participant_codes(), which never returns the active flag.
 //
 // The service-role client is used for storage only (sign an upload, verify the uploaded
 // object, remove unlinked copies in that session's folder, sign a playback link), and always
@@ -67,6 +72,7 @@ export const GATE_REASONS = [
   "collection_locked",
   "no_speakers",
   "processing_not_cleared",
+  "research_not_cleared",
   "guidance_missing",
   "out_of_scope_missing",
   "on_hold",
@@ -125,10 +131,13 @@ export type StudySettingsView = {
 };
 
 export type SessionsAccess = {
+  /** Session workers: plan, edit, link speakers, run the checklist and upload. */
+  canManage: boolean;
   /** Admin, researcher or data steward: every department. */
   allDepartments: boolean;
   /** Departments a dept coordinator may work on. */
   departments: string[];
+  /** Data steward and de-identification assistant only. */
   canPlayback: boolean;
   /** Data stewards only: they review sessions put on hold (e.g. by a withdrawal). */
   canReview: boolean;
@@ -177,6 +186,8 @@ type Db = {
       | "audit_events",
   ): Table;
   rpc(fn: "session_clearance", args: { _session: string }): PromiseLike<Res<unknown>>;
+  /** Active codes only (id, pseudo_code, department, site); never the flag itself. */
+  rpc(fn: "active_participant_codes"): Query<Row[]>;
 };
 
 const asDb = (supabase: unknown) => supabase as Db;
@@ -326,9 +337,10 @@ function sessionsAccess(access: ResearchAccess): SessionsAccess {
   const steward = access.roles.includes("data_steward");
   const researcher = access.roles.includes("researcher");
   return {
+    canManage: access.isSessionWorker,
     allDepartments: access.isAdmin || steward || researcher,
     departments: access.departments,
-    canPlayback: access.isAdmin || steward || researcher,
+    canPlayback: access.canPlayRawAudio,
     // Holds usually follow a withdrawal. Only a data steward (a consent keeper, who can see
     // why) reviews them; admins are not consent keepers.
     canReview: steward,
@@ -363,7 +375,12 @@ function gateReasons(
   const reasons: GateReason[] = [];
   if (!settings.collectionUnlocked) reasons.push("collection_locked");
   if (clearance.speakers === 0) reasons.push("no_speakers");
-  else if (!clearance.processing) reasons.push("processing_not_cleared");
+  else {
+    // Appendix จ: recording and processing, and research use, are agreed to separately.
+    // Research audio needs both from every speaker.
+    if (!clearance.processing) reasons.push("processing_not_cleared");
+    if (!clearance.research) reasons.push("research_not_cleared");
+  }
   if (!session.speaker_guidance_given_at) reasons.push("guidance_missing");
   if (!session.out_of_scope_attested) reasons.push("out_of_scope_missing");
   if (session.status === "on_hold" || session.status === "closed") reasons.push("on_hold");
@@ -444,7 +461,8 @@ const SessionId = z.object({ sessionId: uuid });
 // Reads
 // ---------------------------------------------------------------------------
 export const listSessions = createServerFn({ method: "GET" })
-  .middleware([requireResearch("session_worker")])
+  // The de-identification assistant gets the recorded sessions RLS shows it, read only.
+  .middleware([requireResearch("session_worker", "deid_assistant")])
   .handler(async ({ context }) => {
     const db = asDb(context.supabase);
     const [sessionRows, linkRows, settings] = await Promise.all([
@@ -509,11 +527,11 @@ export const listParticipantCodes = createServerFn({ method: "GET" })
   .middleware([requireResearch("session_worker")])
   .handler(async ({ context }) => {
     const db = asDb(context.supabase);
+    // participants.active is not readable by session workers; this function filters on it.
     const rows = await fetchAll((from, to) =>
       db
-        .from("participants")
+        .rpc("active_participant_codes")
         .select("id, pseudo_code, department, site")
-        .eq("active", true)
         .order("pseudo_code", { ascending: true })
         .range(from, to),
     );
@@ -652,19 +670,17 @@ export const setSessionParticipants = createServerFn({ method: "POST" })
     );
     const next = new Map(data.participants.map((p) => [p.participantId, p.role]));
 
-    // Newly linked codes must exist and be active.
+    // Newly linked codes must exist and be active (same list as the speaker picker).
     const newIds = data.participants
       .filter((p) => !current.has(p.participantId))
       .map((p) => p.participantId);
     if (newIds.length) {
       const { data: found, error } = await db
-        .from("participants")
-        .select("id, active")
+        .rpc("active_participant_codes")
+        .select("id")
         .in("id", newIds);
       if (error) throw friendly(error);
-      if ((found ?? []).length !== newIds.length || (found ?? []).some((p) => p.active === false)) {
-        throw new Error("SESSIONS_BAD_PARTICIPANT");
-      }
+      if ((found ?? []).length !== newIds.length) throw new Error("SESSIONS_BAD_PARTICIPANT");
     }
 
     // No UPDATE grant on links: a role change is a remove plus an add.
@@ -924,7 +940,6 @@ export const confirmAudioUpload = createServerFn({ method: "POST" })
       throw new Error("SESSIONS_UPLOAD_TYPE_UNEXPECTED");
     }
 
-
     // Anything that changed since the gate check (a withdrawal, a new speaker, a lock) keeps
     // the audio governed but holds the session for a data steward to review.
     const [settings, clearance] = await Promise.all([
@@ -1004,12 +1019,13 @@ const PlaybackInput = z.object({
 });
 
 /**
- * Short-lived playback link. Not for dept coordinators. Every link is audited with its purpose.
- * Sessions on hold or closed play only for data stewards (the reviewers), and everyone else
- * also needs every speaker to be cleared for processing right now.
+ * Short-lived playback link for the data steward and the de-identification assistant only
+ * (Appendix จ: the researcher works with de-identified text, never raw audio). Every link is
+ * audited with its purpose. Sessions on hold or closed play only for data stewards (the
+ * reviewers); the assistant also needs every speaker cleared for processing AND research now.
  */
 export const getAudioPlaybackUrl = createServerFn({ method: "POST" })
-  .middleware([requireResearch("admin", "researcher", "data_steward")])
+  .middleware([requireResearch("data_steward", "deid_assistant")])
   .inputValidator((i: unknown) => PlaybackInput.parse(i))
   .handler(async ({ data, context }) => {
     const db = asDb(context.supabase);
@@ -1028,7 +1044,7 @@ export const getAudioPlaybackUrl = createServerFn({ method: "POST" })
       }
       // Consent can change after upload without a hold (e.g. a newer approved form).
       const clearance = await clearanceOf(db, data.sessionId);
-      if (!clearance.processing) throw new Error("SESSIONS_NOT_CLEARED");
+      if (!clearance.processing || !clearance.research) throw new Error("SESSIONS_NOT_CLEARED");
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

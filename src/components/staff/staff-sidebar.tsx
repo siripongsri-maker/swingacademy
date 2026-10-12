@@ -56,7 +56,7 @@ const knowledgeFlow: NavItem[] = [
 // may not be an admin, and admins must not see consent decisions.
 const researchNav: (NavItem & { show: (a: ResearchAccess) => boolean })[] = [
   { to: "/staff/research/baseline", label: { th: "Baseline (รอบ 0)", en: "Baseline (Round 0)" }, sub: { th: "ความรู้ที่มีอยู่แล้ว", en: "What already exists" }, icon: FlaskConical, show: (a) => a.isAdmin || a.roles.includes("researcher") || a.roles.includes("data_steward") },
-  { to: "/staff/research/sessions", label: { th: "Session เก็บข้อมูล", en: "Capture sessions" }, sub: { th: "อบรม วงถอดความรู้ สัมภาษณ์", en: "Trainings, circles, interviews" }, icon: AudioLines, show: (a) => a.isSessionWorker },
+  { to: "/staff/research/sessions", label: { th: "Session เก็บข้อมูล", en: "Capture sessions" }, sub: { th: "อบรม วงถอดความรู้ สัมภาษณ์", en: "Trainings, circles, interviews" }, icon: AudioLines, show: (a) => a.isSessionWorker || a.roles.includes("deid_assistant") },
   { to: "/staff/research/consent", label: { th: "ความยินยอม", en: "Consent" }, sub: { th: "เฉพาะผู้ขอความยินยอม", en: "Consent officers only" }, icon: ClipboardCheck, show: (a) => a.isConsentKeeper },
   { to: "/staff/research/team", label: { th: "ทีมวิจัยและการตั้งค่า", en: "Research team & settings" }, sub: { th: "บทบาท การอนุมัติ", en: "Roles, approvals" }, icon: UsersRound, show: (a) => a.isAdmin || a.roles.includes("data_steward") },
 ];

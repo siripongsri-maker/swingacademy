@@ -1,6 +1,6 @@
 // CVSK research team and study settings (/staff/research/team).
 // Every table query runs on the caller's user-scoped client, so RLS applies (migrations
-// 20261011120000 and 20261012150000). The service-role client is used for one thing only:
+// 20261011120000, 20261012150000 and 20261012180000). The service-role client is used for one thing only:
 // looking up account email and name through auth.admin, after requireResearch has passed.
 // Privacy: nothing here reads consents, participant_identity or withdrawal_events.
 import { createServerFn } from "@tanstack/react-start";
@@ -11,6 +11,8 @@ export type StudySettings = {
   ethicsRef: string | null;
   ethicsApprovedAt: string | null;
   mouSignedAt: string | null;
+  /** When the foundation (SWING) gave permission to use its data for the study. */
+  foundationPermissionAt: string | null;
   collectionUnlocked: boolean;
   departments: string[];
   sites: string[];
@@ -43,17 +45,32 @@ export const RETENTION_MAX = 20;
 
 /**
  * Separation of duties: the researcher must never also hold a role that can see individual
- * consent decisions (consent_officer, data_steward), and the other way round.
+ * consent decisions (consent_officer, data_steward) or hear raw audio (deid_assistant), and
+ * the other way round.
  */
 export function conflictingRoles(role: ResearchRole): ResearchRole[] {
-  if (role === "researcher") return ["consent_officer", "data_steward"];
-  if (role === "consent_officer" || role === "data_steward") return ["researcher"];
+  if (role === "researcher") return ["consent_officer", "data_steward", "deid_assistant"];
+  if (role === "consent_officer" || role === "data_steward" || role === "deid_assistant") {
+    return ["researcher"];
+  }
   return [];
 }
 
 /** Roles that can read individual consent decisions and identities. */
 export function isConsentKeeperRole(role: ResearchRole): boolean {
   return role === "consent_officer" || role === "data_steward";
+}
+
+/**
+ * Roles nobody may give to their own account (another admin must): the consent keepers, and
+ * the de-identification assistant, who hears raw audio. Returns the error code, or null.
+ */
+export function selfGrantBlock(
+  role: ResearchRole,
+): "TEAM_SELF_KEEPER" | "TEAM_SELF_RAW_AUDIO" | null {
+  if (isConsentKeeperRole(role)) return "TEAM_SELF_KEEPER";
+  if (role === "deid_assistant") return "TEAM_SELF_RAW_AUDIO";
+  return null;
 }
 
 // The tables are not in the generated Supabase types yet, so they are reached through a
@@ -77,7 +94,7 @@ type Table = {
 type Db = { from(table: "study_settings" | "research_members" | "audit_events"): Table };
 
 const SETTINGS_COLS =
-  "id, ethics_ref, ethics_approved_at, mou_signed_at, collection_unlocked, departments, sites, speaker_guidance_version, retention_years, study_end, updated_at";
+  "id, ethics_ref, ethics_approved_at, mou_signed_at, foundation_permission_at, collection_unlocked, departments, sites, speaker_guidance_version, retention_years, study_end, updated_at";
 const MEMBER_COLS = "id, user_id, role, department, active, note, created_at";
 
 const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
@@ -90,6 +107,7 @@ function toSettings(r: Row): StudySettings {
     ethicsRef: str(r.ethics_ref),
     ethicsApprovedAt: str(r.ethics_approved_at),
     mouSignedAt: str(r.mou_signed_at),
+    foundationPermissionAt: str(r.foundation_permission_at),
     collectionUnlocked: r.collection_unlocked === true,
     departments: strList(r.departments),
     sites: strList(r.sites),
@@ -115,8 +133,11 @@ function toMember(r: Row, account: TeamAccount | undefined): ResearchMember {
 }
 
 function friendly(error: DbError): Error {
-  // PGRST205 (PostgREST 12+) / 42P01: the migration has not been applied yet.
-  if (error.code === "PGRST205" || error.code === "42P01") return new Error("TEAM_TABLE_MISSING");
+  // PGRST205 (PostgREST 12+) / 42P01: table missing. 42703: column missing
+  // (foundation_permission_at). Either way a migration has not been applied yet.
+  if (["PGRST205", "42P01", "42703"].includes(error.code ?? "")) {
+    return new Error("TEAM_TABLE_MISSING");
+  }
   if (error.code === "42501") return new Error("TEAM_FORBIDDEN");
   // research_members.user_id references auth.users
   if (error.code === "23503") return new Error("TEAM_ACCOUNT_NOT_FOUND");
@@ -155,6 +176,8 @@ export const getStudySettings = createServerFn({ method: "GET" })
     return {
       settings: data ? toSettings(data) : null,
       canEdit: a.isAdmin || a.roles.includes("data_steward"),
+      /** Opening or locking collection, and changing approvals while it is open. */
+      canUnlock: a.roles.includes("data_steward"),
     };
   });
 
@@ -216,6 +239,7 @@ const SettingsPatch = z
     ethicsRef: optText(120).optional(),
     ethicsApprovedAt: optDate.optional(),
     mouSignedAt: optDate.optional(),
+    foundationPermissionAt: optDate.optional(),
     departments: nameList.optional(),
     sites: nameList.optional(),
     speakerGuidanceVersion: optText(60).optional(),
@@ -230,6 +254,7 @@ const FIELD_COLUMN = {
   ethicsRef: "ethics_ref",
   ethicsApprovedAt: "ethics_approved_at",
   mouSignedAt: "mou_signed_at",
+  foundationPermissionAt: "foundation_permission_at",
   departments: "departments",
   sites: "sites",
   speakerGuidanceVersion: "speaker_guidance_version",
@@ -239,9 +264,18 @@ const FIELD_COLUMN = {
 } as const satisfies Partial<Record<keyof StudySettings, string>>;
 type PatchField = keyof typeof FIELD_COLUMN;
 
+const APPROVAL_FIELDS = [
+  "ethicsRef",
+  "ethicsApprovedAt",
+  "mouSignedAt",
+  "foundationPermissionAt",
+] as const satisfies readonly PatchField[];
+
 /**
- * Partial update: only the fields sent are changed. Unlocking needs both approval dates, and
- * an approval date cannot be cleared while collection is open (the DB CHECK enforces this too).
+ * Partial update: only the fields sent are changed. Only a data steward opens or locks
+ * collection, or changes the approvals while it is open (admins still record them while it is
+ * locked). Opening needs the ethics reference and all three dates: ethics approval, MoU and
+ * foundation permission. study_settings_guard() and the DB CHECK enforce the same rules.
  */
 export const updateStudySettings = createServerFn({ method: "POST" })
   .middleware([requireResearch("admin", "data_steward")])
@@ -273,13 +307,22 @@ export const updateStudySettings = createServerFn({ method: "POST" })
     }
     if (Object.keys(patch).length === 0) return { settings: current, changed: [] as string[] };
 
-    const final = {
-      unlocked: data.collectionUnlocked ?? current.collectionUnlocked,
-      ethics:
-        data.ethicsApprovedAt !== undefined ? data.ethicsApprovedAt : current.ethicsApprovedAt,
-      mou: data.mouSignedAt !== undefined ? data.mouSignedAt : current.mouSignedAt,
-    };
-    if (final.unlocked && (!final.ethics || !final.mou)) {
+    const steward = context.access.roles.includes("data_steward");
+    const touchesLock = "collection_unlocked" in patch;
+    const touchesApprovals = APPROVAL_FIELDS.some((f) => FIELD_COLUMN[f] in patch);
+    if (!steward && (touchesLock || (current.collectionUnlocked && touchesApprovals))) {
+      throw new Error("STUDY_STEWARD_ONLY");
+    }
+
+    const next = <K extends PatchField>(k: K) =>
+      data[k] !== undefined ? data[k] : (current[k] as StudySettings[K]);
+    if (
+      next("collectionUnlocked") &&
+      (!next("ethicsRef")?.trim() ||
+        !next("ethicsApprovedAt") ||
+        !next("mouSignedAt") ||
+        !next("foundationPermissionAt"))
+    ) {
       throw new Error("STUDY_UNLOCK_NEEDS_APPROVALS");
     }
 
@@ -290,6 +333,8 @@ export const updateStudySettings = createServerFn({ method: "POST" })
     const { data: saved, error: saveError } = await update.select(SETTINGS_COLS);
     if (saveError) {
       if (saveError.code === "23514") throw new Error("STUDY_UNLOCK_NEEDS_APPROVALS");
+      // study_settings_guard(): the steward-only rules above, re-checked by the database.
+      if (saveError.code === "42501") throw new Error("STUDY_STEWARD_ONLY");
       throw friendly(saveError);
     }
     // No row back: updated_at moved between our read and write (someone else saved).
@@ -449,17 +494,17 @@ async function revertIfConflict(
 
 /**
  * Admins only (data stewards may not grant). Upserts on (user_id, role) and sets active.
- * An admin cannot give a consent-keeper role to their own account: another admin must do it,
- * so admin access alone never leads to individual consent decisions.
+ * An admin cannot give a consent-keeper or de-identification role to their own account:
+ * another admin must do it, so admin access alone never leads to individual consent decisions
+ * or raw audio.
  */
 export const grantResearchRole = createServerFn({ method: "POST" })
   .middleware([requireResearch("admin")])
   .inputValidator((i: z.input<typeof GrantInput>) => GrantInput.parse(i))
   .handler(async ({ data, context }) => {
     const db = context.supabase as unknown as Db;
-    if (data.userId === context.userId && isConsentKeeperRole(data.role)) {
-      throw new Error("TEAM_SELF_KEEPER");
-    }
+    const selfBlock = data.userId === context.userId ? selfGrantBlock(data.role) : null;
+    if (selfBlock) throw new Error(selfBlock);
     const isCoordinator = data.role === "dept_coordinator";
     const department = isCoordinator ? (data.department ?? null) : null;
     if (isCoordinator) await assertKnownDepartment(db, department);
@@ -514,8 +559,9 @@ const SetActiveInput = z.object({ memberId: z.string().uuid(), active: z.boolean
 
 /**
  * Admins only. Reactivating checks separation of duties again, needs a department that is
- * still in the study list for a coordinator, and is refused for a consent-keeper role on the
- * admin's own account. Turning one's own role off is always allowed.
+ * still in the study list for a coordinator, and is refused for a consent-keeper or
+ * de-identification role on the admin's own account. Turning one's own role off is always
+ * allowed.
  */
 export const setResearchMemberActive = createServerFn({ method: "POST" })
   .middleware([requireResearch("admin")])
@@ -537,9 +583,8 @@ export const setResearchMemberActive = createServerFn({ method: "POST" })
     const userId = row.user_id as string;
     const department = str(row.department);
     if (data.active) {
-      if (userId === context.userId && isConsentKeeperRole(role)) {
-        throw new Error("TEAM_SELF_KEEPER");
-      }
+      const selfBlock = userId === context.userId ? selfGrantBlock(role) : null;
+      if (selfBlock) throw new Error(selfBlock);
       if (role === "dept_coordinator") await assertKnownDepartment(db, department);
       const blocked = conflictingRoles(role);
       if (blocked.length) {

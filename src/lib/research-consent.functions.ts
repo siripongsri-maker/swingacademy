@@ -1,5 +1,6 @@
 // CVSK consent registry: consent form versions, participants and their identity key,
-// consent decisions and withdrawals (migration 20261012150000_consent_and_capture.sql).
+// consent decisions and withdrawals (migrations 20261012150000_consent_and_capture.sql and
+// 20261012180000_research_gate_and_access.sql).
 //
 // Access: consent keepers ONLY (consent_officer, data_steward). Admins and researchers are NOT
 // consent keepers and get RESEARCH_FORBIDDEN here, even though they are staff.
@@ -221,6 +222,8 @@ type ConsentDb = {
     fn: "apply_withdrawal",
     args: { _participant: string; _scope: WithdrawalScope; _note: string | null },
   ): Res<number>;
+  /** participant_id and active for every participant; consent keepers only. */
+  rpc(fn: "participant_active_flags"): Query;
 };
 
 const dbOf = (supabase: unknown) => supabase as ConsentDb;
@@ -547,8 +550,9 @@ export const retireConsentForm = createServerFn({ method: "POST" })
 // Participants
 // ---------------------------------------------------------------------------
 
-const PARTICIPANT_COLS =
-  "id, pseudo_code, department, site, experience_tier, roles, active, created_at";
+// No "active": that column is not readable through the table (session workers must not see
+// it), so keepers get it from participant_active_flags().
+const PARTICIPANT_COLS = "id, pseudo_code, department, site, experience_tier, roles, created_at";
 const CONSENT_COLS =
   "participant_id, form_version_id, item_key, decision, method, given_at, paper_ref, withdrawn_at, created_at";
 
@@ -562,46 +566,63 @@ export const listParticipants = createServerFn({ method: "GET" })
   .middleware([keeperOnly])
   .handler(async ({ context }) => {
     const db = dbOf(context.supabase);
-    const [participantRows, identityRows, consentRows, withdrawalRows, forms, settings] =
-      await Promise.all([
-        selectAll(
-          (a, b) =>
-            db
-              .from("participants")
-              .select(PARTICIPANT_COLS)
-              .order("pseudo_code", { ascending: true })
-              .range(a, b),
-          "participants",
-        ),
-        selectAll(
-          (a, b) =>
-            db
-              .from("participant_identity")
-              .select("participant_id, full_name, contact, note")
-              .order("participant_id", { ascending: true })
-              .range(a, b),
-          "identity",
-        ),
-        selectAll(
-          (a, b) =>
-            db.from("consents").select(CONSENT_COLS).order("id", { ascending: true }).range(a, b),
-          "consents",
-        ),
-        selectAll(
-          (a, b) =>
-            db
-              .from("withdrawal_events")
-              .select("participant_id, recorded_at")
-              .order("id", { ascending: true })
-              .range(a, b),
-          "withdrawal dates",
-        ),
-        loadForms(db),
-        // Department and site suggestions; not essential, so errors are ignored.
-        db.from("study_settings").select("departments, sites").eq("id", 1).maybeSingle(),
-      ]);
+    const [
+      participantRows,
+      activeRows,
+      identityRows,
+      consentRows,
+      withdrawalRows,
+      forms,
+      settings,
+    ] = await Promise.all([
+      selectAll(
+        (a, b) =>
+          db
+            .from("participants")
+            .select(PARTICIPANT_COLS)
+            .order("pseudo_code", { ascending: true })
+            .range(a, b),
+        "participants",
+      ),
+      selectAll(
+        (a, b) =>
+          db
+            .rpc("participant_active_flags")
+            .select("participant_id, active")
+            .order("participant_id", { ascending: true })
+            .range(a, b),
+        "active flags",
+      ),
+      selectAll(
+        (a, b) =>
+          db
+            .from("participant_identity")
+            .select("participant_id, full_name, contact, note")
+            .order("participant_id", { ascending: true })
+            .range(a, b),
+        "identity",
+      ),
+      selectAll(
+        (a, b) =>
+          db.from("consents").select(CONSENT_COLS).order("id", { ascending: true }).range(a, b),
+        "consents",
+      ),
+      selectAll(
+        (a, b) =>
+          db
+            .from("withdrawal_events")
+            .select("participant_id, recorded_at")
+            .order("id", { ascending: true })
+            .range(a, b),
+        "withdrawal dates",
+      ),
+      loadForms(db),
+      // Department and site suggestions; not essential, so errors are ignored.
+      db.from("study_settings").select("departments, sites").eq("id", 1).maybeSingle(),
+    ]);
 
     const formById = new Map(forms.map((f) => [f.id, f]));
+    const activeBy = new Map(activeRows.map((r) => [r.participant_id as string, r.active]));
     const identityBy = new Map(
       identityRows.map((r) => [
         r.participant_id as string,
@@ -685,7 +706,7 @@ export const listParticipants = createServerFn({ method: "GET" })
         site: str(r, "site"),
         experienceTier: isTier(r.experience_tier) ? r.experience_tier : null,
         roles: Array.isArray(r.roles) ? r.roles.filter(isRole) : [],
-        active: r.active !== false,
+        active: activeBy.get(id) !== false,
         createdAt: r.created_at as string,
         identity: identityBy.get(id) ?? null,
         lastWithdrawalAt: lastWithdrawalBy.get(id) ?? null,

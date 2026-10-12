@@ -121,8 +121,8 @@ const ROLE_LABEL: Record<ParticipantRole, Localized> = {
 
 const GATE_LABEL: Record<GateReason, Localized> = {
   collection_locked: {
-    th: "ยังไม่เปิดบันทึกเสียงเพื่องานวิจัย (รออนุมัติจริยธรรมและ MoU)",
-    en: "Recording for research is not open yet (waiting for ethics approval and the MoU)",
+    th: "ยังไม่เปิดบันทึกเสียงเพื่องานวิจัย (รออนุมัติจริยธรรม MoU และการอนุญาตจากมูลนิธิ)",
+    en: "Recording for research is not open yet (waiting for ethics approval, the MoU and the foundation's permission)",
   },
   no_speakers: {
     th: "ยังไม่ได้เพิ่มผู้พูดใน session นี้",
@@ -131,6 +131,10 @@ const GATE_LABEL: Record<GateReason, Localized> = {
   processing_not_cleared: {
     th: "ยังมีผู้พูดที่ยังไม่พร้อม ให้ผู้ขอความยินยอมตรวจสอบ",
     en: "Some speakers are not ready yet. Ask the consent officer to check.",
+  },
+  research_not_cleared: {
+    th: "ยังมีผู้พูดที่ยังไม่พร้อมสำหรับการใช้ในงานวิจัย ให้ผู้ขอความยินยอมตรวจสอบ",
+    en: "Some speakers are not yet ready for research use. Ask the consent officer to check.",
   },
   guidance_missing: {
     th: "ยังไม่ได้บันทึกว่าอ่านคำแนะนำให้ผู้พูดฟังแล้ว (ข้อ 1)",
@@ -395,7 +399,7 @@ function SessionsPage() {
               />
               {t({ th: "รีเฟรช", en: "Refresh" })}
             </button>
-            {settings && access && (
+            {settings && access?.canManage && (
               <button onClick={() => setCreateOpen(true)} className={BTN_PRIMARY}>
                 <Plus className="h-4 w-4" aria-hidden />
                 {t({ th: "วางแผน session ใหม่", en: "Plan a session" })}
@@ -415,8 +419,8 @@ function SessionsPage() {
             {errorCode(query.error) === "Unauthorized"
               ? t(ERRORS.Unauthorized)
               : t({
-                  th: "หน้านี้เปิดได้เฉพาะผู้ดูแลระบบ นักวิจัย data steward และผู้ประสานงานแผนก ถ้าต้องการสิทธิ์ ติดต่อผู้ดูแลระบบ",
-                  en: "Only admins, researchers, data stewards and department coordinators can open this page. Ask an admin for access.",
+                  th: "หน้านี้เปิดได้เฉพาะผู้ดูแลระบบ นักวิจัย data steward ผู้ประสานงานแผนก และผู้ช่วยลบตัวระบุตัวตน ถ้าต้องการสิทธิ์ ติดต่อผู้ดูแลระบบ",
+                  en: "Only admins, researchers, data stewards, department coordinators and the de-identification assistant can open this page. Ask an admin for access.",
                 })}
           </p>
         </div>
@@ -431,8 +435,8 @@ function SessionsPage() {
           <p lang={lang}>
             {kind === "missing"
               ? t({
-                  th: "ยังไม่มีตาราง session เก็บข้อมูลในฐานข้อมูล ให้สั่ง Lovable รัน migration 20261012150000_consent_and_capture.sql ก่อน",
-                  en: "The capture session tables do not exist yet. Ask Lovable to run migration 20261012150000_consent_and_capture.sql.",
+                  th: "ฐานข้อมูลยังไม่มีตารางหรือฟังก์ชันของ session เก็บข้อมูลที่หน้านี้ใช้ ให้สั่ง Lovable รัน migration ที่ยังค้างอยู่ (ล่าสุดคือ 20261012180000_research_gate_and_access.sql)",
+                  en: "Some capture session tables or functions this page needs do not exist yet. Ask Lovable to run the pending migration (latest: 20261012180000_research_gate_and_access.sql).",
                 })
               : t({
                   th: "โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง",
@@ -453,16 +457,27 @@ function SessionsPage() {
       {query.data && sessions.length === 0 && (
         <div className="rounded-lg border border-dashed border-warm-300 bg-white px-6 py-12 text-center">
           <ClipboardCheck className="mx-auto h-8 w-8 text-warm-400" aria-hidden />
-          <p lang={lang} className="mt-3 text-sm text-warm-600">
-            {t({
-              th: "ยังไม่มี session เริ่มวางแผน session แรกได้เลย ระหว่างรออนุมัติก็วางแผนและเพิ่มผู้พูดไว้ก่อนได้",
-              en: "No sessions yet. Plan the first one now: you can plan and add speakers while approval is pending.",
-            })}
-          </p>
-          <button onClick={() => setCreateOpen(true)} className={`${BTN_PRIMARY} mt-4`}>
-            <Plus className="h-4 w-4" aria-hidden />
-            {t({ th: "วางแผน session ใหม่", en: "Plan a session" })}
-          </button>
+          {access?.canManage ? (
+            <>
+              <p lang={lang} className="mt-3 text-sm text-warm-600">
+                {t({
+                  th: "ยังไม่มี session เริ่มวางแผน session แรกได้เลย ระหว่างรออนุมัติก็วางแผนและเพิ่มผู้พูดไว้ก่อนได้",
+                  en: "No sessions yet. Plan the first one now: you can plan and add speakers while approval is pending.",
+                })}
+              </p>
+              <button onClick={() => setCreateOpen(true)} className={`${BTN_PRIMARY} mt-4`}>
+                <Plus className="h-4 w-4" aria-hidden />
+                {t({ th: "วางแผน session ใหม่", en: "Plan a session" })}
+              </button>
+            </>
+          ) : (
+            <p lang={lang} className="mt-3 text-sm text-warm-600">
+              {t({
+                th: "ยังไม่มี session ที่บันทึกเสียงแล้วและพร้อมให้ฟัง",
+                en: "No recorded sessions are ready to listen to yet.",
+              })}
+            </p>
+          )}
         </div>
       )}
 
@@ -526,7 +541,12 @@ function SessionsPage() {
           ) : (
             <ul className="grid gap-3 lg:grid-cols-2">
               {filtered.map((s) => (
-                <SessionCard key={s.id} session={s} onOpen={() => setOpenId(s.id)} />
+                <SessionCard
+                  key={s.id}
+                  session={s}
+                  canManage={!!access?.canManage}
+                  onOpen={() => setOpenId(s.id)}
+                />
               ))}
             </ul>
           )}
@@ -580,8 +600,8 @@ function CollectionBanner({ settings }: { settings: StudySettingsView }) {
           </h2>
           <p lang={lang} className="mt-1">
             {t({
-              th: "การบันทึกเสียงและอัปโหลดเพื่องานวิจัยจะเปิดหลังได้รับอนุมัติจากคณะกรรมการจริยธรรมการวิจัยในมนุษย์และลงนาม MoU แล้ว ทีมวิจัยเปิดได้ที่หน้าทีมวิจัย ระหว่างนี้วางแผน session และเพิ่มผู้พูดไว้ก่อนได้ตามปกติ",
-              en: "Recording and upload for research open once the ethics committee approval and the MoU are on file. The research team opens it on the team page. Meanwhile you can plan sessions and add speakers as usual.",
+              th: "การบันทึกเสียงและอัปโหลดเพื่องานวิจัยจะเปิดหลังได้รับอนุมัติจากคณะกรรมการจริยธรรมการวิจัยในมนุษย์ ลงนาม MoU และมูลนิธิอนุญาตให้ใช้ข้อมูลแล้ว ผู้ดูแลข้อมูลเป็นผู้เปิดที่หน้าทีมวิจัย ระหว่างนี้วางแผน session และเพิ่มผู้พูดไว้ก่อนได้ตามปกติ",
+              en: "Recording and upload for research open once the ethics committee approval, the MoU and the foundation's permission are on file. A data steward opens it on the team page. Meanwhile you can plan sessions and add speakers as usual.",
             })}
           </p>
           <Link
@@ -609,8 +629,8 @@ function CollectionBanner({ settings }: { settings: StudySettingsView }) {
         </h2>
         <p lang={lang} className="mt-1">
           {t({
-            th: "ก่อนอัปโหลด ทุก session ต้องผ่านเช็กลิสต์ 3 ข้อ และผู้พูดทุกคนต้องพร้อมประมวลผล",
-            en: "Before upload, every session needs the 3-step checklist and every speaker ready to process.",
+            th: "ก่อนอัปโหลด ทุก session ต้องผ่านเช็กลิสต์ 3 ข้อ และผู้พูดทุกคนต้องพร้อมทั้งการประมวลผลและการใช้ในงานวิจัย",
+            en: "Before upload, every session needs the 3-step checklist and every speaker ready both to process and for research use.",
           })}
         </p>
       </div>
@@ -694,8 +714,19 @@ function ClearanceBadges({ clearance }: { clearance: SessionClearance | null }) 
   );
 }
 
-function SessionCard({ session: s, onOpen }: { session: CaptureSession; onOpen: () => void }) {
+function SessionCard({
+  session: s,
+  canManage,
+  onOpen,
+}: {
+  session: CaptureSession;
+  canManage: boolean;
+  onOpen: () => void;
+}) {
   const { t, lang } = useLanguage();
+  const openLabel = canManage
+    ? t({ th: "เปิดดูและจัดการ", en: "Open and manage" })
+    : t({ th: "เปิดดู", en: "Open" });
   const speakers = s.clearance?.speakers ?? s.participants.length;
   return (
     <li className="flex min-w-0 flex-col gap-3 rounded-lg border border-warm-200 bg-white p-4">
@@ -737,10 +768,10 @@ function SessionCard({ session: s, onOpen }: { session: CaptureSession; onOpen: 
       <ClearanceBadges clearance={s.clearance} />
       <button
         onClick={onOpen}
-        aria-label={`${t({ th: "เปิดดูและจัดการ", en: "Open and manage" })} ${s.code}`}
+        aria-label={`${openLabel} ${s.code}`}
         className={`${BTN_SECONDARY} mt-auto w-full sm:w-auto sm:self-start`}
       >
-        {t({ th: "เปิดดูและจัดการ", en: "Open and manage" })}
+        {openLabel}
       </button>
     </li>
   );
@@ -1220,13 +1251,18 @@ function SessionDialog({
               settings={settings}
               access={access}
             />
-            <SpeakersSection key={`speakers-${session.id}-${speakersKey}`} session={session} />
-            {/* Keyed so a ticked attestation never carries over to another session. */}
-            <ChecklistSection
-              key={`checklist-${session.id}`}
-              session={session}
-              settings={settings}
-            />
+            {/* The de-identification assistant only listens: no speaker codes, no checklist. */}
+            {access.canManage && (
+              <>
+                <SpeakersSection key={`speakers-${session.id}-${speakersKey}`} session={session} />
+                {/* Keyed so a ticked attestation never carries over to another session. */}
+                <ChecklistSection
+                  key={`checklist-${session.id}`}
+                  session={session}
+                  settings={settings}
+                />
+              </>
+            )}
             <AudioSection
               key={`audio-${session.id}`}
               session={session}
@@ -1263,7 +1299,7 @@ function DetailsSection({
   const qc = useQueryClient();
   const update = useServerFn(updateSession);
   const [form, setForm] = useState<FormState>(() => formOf(session));
-  const editable = session.status === "draft" || session.status === "ready";
+  const editable = access.canManage && (session.status === "draft" || session.status === "ready");
   const dirty = JSON.stringify(payloadOf(form)) !== JSON.stringify(payloadOf(formOf(session)));
 
   const run = useMutation({
@@ -1316,12 +1352,14 @@ function DetailsSection({
             </button>
           </div>
         ) : (
-          <p lang={lang} className="text-xs text-warm-600">
-            {t({
-              th: "แก้ไขรายละเอียดได้เฉพาะตอนที่ยังเป็นร่างหรือพร้อมบันทึก",
-              en: "Details can only be changed while the session is a draft or ready to record.",
-            })}
-          </p>
+          access.canManage && (
+            <p lang={lang} className="text-xs text-warm-600">
+              {t({
+                th: "แก้ไขรายละเอียดได้เฉพาะตอนที่ยังเป็นร่างหรือพร้อมบันทึก",
+                en: "Details can only be changed while the session is a draft or ready to record.",
+              })}
+            </p>
+          )
         )}
       </form>
     </Section>
@@ -1738,7 +1776,7 @@ function ChecklistSection({
 
         <StepShell
           n={3}
-          done={!!session.clearance?.processing}
+          done={!!session.clearance?.processing && !!session.clearance?.research}
           title={t({ th: "ความพร้อมด้านความยินยอม", en: "Consent readiness" })}
         >
           <ClearanceBadges clearance={session.clearance} />
@@ -1809,7 +1847,10 @@ function localReasons(s: CaptureSession, settings: StudySettingsView): GateReaso
   const r: GateReason[] = [];
   if (!settings.collectionUnlocked) r.push("collection_locked");
   if (s.clearance && s.clearance.speakers === 0) r.push("no_speakers");
-  else if (s.clearance && !s.clearance.processing) r.push("processing_not_cleared");
+  else if (s.clearance) {
+    if (!s.clearance.processing) r.push("processing_not_cleared");
+    if (!s.clearance.research) r.push("research_not_cleared");
+  }
   if (!s.guidanceGivenAt) r.push("guidance_missing");
   if (!s.outOfScopeAttested) r.push("out_of_scope_missing");
   if (s.status === "on_hold" || s.status === "closed") r.push("on_hold");
@@ -1878,14 +1919,18 @@ function AudioSection({
           ) : (
             <p lang={lang} className="text-xs text-warm-600">
               {t({
-                th: "การเปิดฟังไฟล์เสียงดิบทำได้เฉพาะนักวิจัย data steward และผู้ดูแลระบบ",
-                en: "Only researchers, data stewards and admins can play raw audio.",
+                th: "การเปิดฟังไฟล์เสียงดิบทำได้เฉพาะ data steward และผู้ช่วยลบตัวระบุตัวตน ผู้วิจัยจะทำงานกับข้อความที่ลบตัวระบุตัวตนแล้ว",
+                en: "Only data stewards and the de-identification assistant can play raw audio. The researcher works with de-identified text.",
               })}
             </p>
           )}
         </>
-      ) : (
+      ) : access.canManage ? (
         <Uploader session={session} settings={settings} onBusy={onBusy} />
+      ) : (
+        <p lang={lang} className="text-xs text-warm-600">
+          {t({ th: "session นี้ยังไม่มีไฟล์เสียง", en: "This session has no audio yet" })}
+        </p>
       )}
     </Section>
   );
@@ -2299,7 +2344,7 @@ function Playback({ sessionId }: { sessionId: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Review (data steward / admin)
+// Review (data steward)
 // ---------------------------------------------------------------------------
 function ReviewSection({ session }: { session: CaptureSession }) {
   const { t, lang } = useLanguage();
