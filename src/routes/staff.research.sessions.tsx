@@ -227,6 +227,10 @@ const ERRORS: Record<string, Localized> = {
     th: "ขนาดไฟล์ที่ระบบได้รับไม่ตรงกับไฟล์ต้นฉบับ ลองอัปโหลดใหม่",
     en: "The stored file size does not match the original. Try uploading again.",
   },
+  SESSIONS_UPLOAD_TYPE_UNEXPECTED: {
+    th: "ชนิดไฟล์เสียงที่ระบบได้รับไม่ใช่อันที่โครงการรองรับ ให้อัปโหลดเป็น mp3, m4a, aac, wav, webm, ogg หรือ flac",
+    en: "The stored file type is not one the study accepts. Upload mp3, m4a, aac, wav, webm, ogg or flac.",
+  },
   SESSIONS_AUDIO_EXISTS: {
     th: "session นี้มีไฟล์เสียงแล้ว",
     en: "This session already has audio",

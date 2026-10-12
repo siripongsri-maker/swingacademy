@@ -33,7 +33,7 @@ export type SessionStatus = (typeof SESSION_STATUSES)[number];
 export const PARTICIPANT_ROLES = ["speaker", "interviewee", "facilitator"] as const;
 export type ParticipantRole = (typeof PARTICIPANT_ROLES)[number];
 
-/** Same list as the research-raw bucket's allowed_mime_types. */
+/** The only audio types the study accepts, enforced on every upload and on the stored object. */
 export const AUDIO_CONTENT_TYPES = [
   "audio/mpeg",
   "audio/mp4",
@@ -917,6 +917,13 @@ export const confirmAudioUpload = createServerFn({ method: "POST" })
       throw new Error("SESSIONS_UPLOAD_SIZE_MISMATCH");
     }
     const mimetype = (object.metadata?.mimetype as string | undefined) ?? null;
+    // The bucket settings cannot carry an allowed-MIME list, so the stored object's own
+    // type is checked here: nothing that is not study audio ever gets linked to a session.
+    if (!mimetype || !(AUDIO_CONTENT_TYPES as readonly string[]).includes(mimetype)) {
+      await removeUnlinked(folder, [name]);
+      throw new Error("SESSIONS_UPLOAD_TYPE_UNEXPECTED");
+    }
+
 
     // Anything that changed since the gate check (a withdrawal, a new speaker, a lock) keeps
     // the audio governed but holds the session for a data steward to review.
