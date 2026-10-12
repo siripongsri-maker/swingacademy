@@ -22,11 +22,16 @@ import {
   StickyNote,
   Volume2,
   FlaskConical,
+  ClipboardCheck,
+  AudioLines,
+  UsersRound,
 } from "lucide-react";
 import { useStaff } from "@/lib/staff-context";
 import { useConsoleRole } from "@/lib/console-role-context";
 import { ROLE_LABEL, type Capability } from "@/lib/permissions";
 import { useLanguage, type Localized } from "@/lib/language-context";
+import { useResearchAccess } from "@/lib/use-research-access";
+import type { ResearchAccess } from "@/lib/research-access";
 import logoAsset from "@/assets/swing-academy-logo.png.asset.json";
 
 type NavItem = {
@@ -47,9 +52,13 @@ const knowledgeFlow: NavItem[] = [
   { to: "/staff/knowledge-translation", label: { th: "แปลงเป็นสื่อ", en: "Knowledge Translation" }, sub: { th: "แปลงเป็นเนื้อหา/สื่อ", en: "Turn into content" }, icon: GitBranch, requires: "translation.fromOwn" },
 ];
 
-// Research instrument (CVSK). Admin-only in the menu; RLS also admits research roles.
-const researchNav: NavItem[] = [
-  { to: "/staff/research/baseline", label: { th: "Baseline (รอบ 0)", en: "Baseline (Round 0)" }, sub: { th: "ความรู้ที่มีอยู่แล้ว", en: "What already exists" }, icon: FlaskConical, requires: "roles.manage" },
+// Research instrument (CVSK). Shown by research role, not console role: a consent officer
+// may not be an admin, and admins must not see consent decisions.
+const researchNav: (NavItem & { show: (a: ResearchAccess) => boolean })[] = [
+  { to: "/staff/research/baseline", label: { th: "Baseline (รอบ 0)", en: "Baseline (Round 0)" }, sub: { th: "ความรู้ที่มีอยู่แล้ว", en: "What already exists" }, icon: FlaskConical, show: (a) => a.isAdmin || a.roles.includes("researcher") || a.roles.includes("data_steward") },
+  { to: "/staff/research/sessions", label: { th: "Session เก็บข้อมูล", en: "Capture sessions" }, sub: { th: "อบรม วงถอดความรู้ สัมภาษณ์", en: "Trainings, circles, interviews" }, icon: AudioLines, show: (a) => a.isSessionWorker },
+  { to: "/staff/research/consent", label: { th: "ความยินยอม", en: "Consent" }, sub: { th: "เฉพาะผู้ขอความยินยอม", en: "Consent officers only" }, icon: ClipboardCheck, show: (a) => a.isConsentKeeper },
+  { to: "/staff/research/team", label: { th: "ทีมวิจัยและการตั้งค่า", en: "Research team & settings" }, sub: { th: "บทบาท การอนุมัติ", en: "Roles, approvals" }, icon: UsersRound, show: (a) => a.isAdmin || a.roles.includes("data_steward") },
 ];
 
 const consoleNav: NavItem[] = [
@@ -77,6 +86,8 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   const visible = (items: NavItem[]) => items.filter((i) => !i.requires || can(i.requires));
+  const researchAccess = useResearchAccess();
+  const researchItems = researchAccess ? researchNav.filter((i) => i.show(researchAccess)) : [];
 
   const renderItem = (item: NavItem) => {
     const Icon = item.icon;
@@ -178,12 +189,12 @@ export function StaffSidebar({ mobileOpen = false, onMobileClose }: Props) {
           </div>
           <ul className="space-y-0.5 px-2">{visible(consoleNav).map(renderItem)}</ul>
 
-          {visible(researchNav).length > 0 && (
+          {researchItems.length > 0 && (
             <>
               <div className={`mt-4 px-4 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-white/60 ${collapsed ? "lg:hidden" : ""}`}>
                 {t({ th: "งานวิจัย", en: "Research" })}
               </div>
-              <ul className="space-y-0.5 px-2">{visible(researchNav).map(renderItem)}</ul>
+              <ul className="space-y-0.5 px-2">{researchItems.map(renderItem)}</ul>
             </>
           )}
         </nav>

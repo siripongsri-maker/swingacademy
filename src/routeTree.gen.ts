@@ -44,6 +44,9 @@ import { Route as StaffTransferRouteImport } from './routes/staff.transfer'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffVoiceRouteImport } from './routes/staff.voice'
 import { Route as StaffResearchBaselineRouteImport } from './routes/staff.research.baseline'
+import { Route as StaffResearchConsentRouteImport } from './routes/staff.research.consent'
+import { Route as StaffResearchSessionsRouteImport } from './routes/staff.research.sessions'
+import { Route as StaffResearchTeamRouteImport } from './routes/staff.research.team'
 import { Route as ClassroomClassroomIdLessonLessonIdRouteImport } from './routes/classroom.$classroomId.lesson.$lessonId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -223,6 +226,21 @@ const StaffResearchBaselineRoute = StaffResearchBaselineRouteImport.update({
   path: '/research/baseline',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffResearchConsentRoute = StaffResearchConsentRouteImport.update({
+  id: '/research/consent',
+  path: '/research/consent',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffResearchSessionsRoute = StaffResearchSessionsRouteImport.update({
+  id: '/research/sessions',
+  path: '/research/sessions',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffResearchTeamRoute = StaffResearchTeamRouteImport.update({
+  id: '/research/team',
+  path: '/research/team',
+  getParentRoute: () => StaffRoute,
+} as any)
 const ClassroomClassroomIdLessonLessonIdRoute =
   ClassroomClassroomIdLessonLessonIdRouteImport.update({
     id: '/lesson/$lessonId',
@@ -266,6 +284,9 @@ export interface FileRoutesByFullPath {
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/research/baseline': typeof StaffResearchBaselineRoute
+  '/staff/research/consent': typeof StaffResearchConsentRoute
+  '/staff/research/sessions': typeof StaffResearchSessionsRoute
+  '/staff/research/team': typeof StaffResearchTeamRoute
   '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -303,6 +324,9 @@ export interface FileRoutesByTo {
   '/knowledge': typeof KnowledgeIndexRoute
   '/staff': typeof StaffIndexRoute
   '/staff/research/baseline': typeof StaffResearchBaselineRoute
+  '/staff/research/consent': typeof StaffResearchConsentRoute
+  '/staff/research/sessions': typeof StaffResearchSessionsRoute
+  '/staff/research/team': typeof StaffResearchTeamRoute
   '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRoutesById {
@@ -342,6 +366,9 @@ export interface FileRoutesById {
   '/knowledge/': typeof KnowledgeIndexRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/research/baseline': typeof StaffResearchBaselineRoute
+  '/staff/research/consent': typeof StaffResearchConsentRoute
+  '/staff/research/sessions': typeof StaffResearchSessionsRoute
+  '/staff/research/team': typeof StaffResearchTeamRoute
   '/classroom/$classroomId/lesson/$lessonId': typeof ClassroomClassroomIdLessonLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -382,6 +409,9 @@ export interface FileRouteTypes {
     | '/knowledge/'
     | '/staff/'
     | '/staff/research/baseline'
+    | '/staff/research/consent'
+    | '/staff/research/sessions'
+    | '/staff/research/team'
     | '/classroom/$classroomId/lesson/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -419,6 +449,9 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/staff'
     | '/staff/research/baseline'
+    | '/staff/research/consent'
+    | '/staff/research/sessions'
+    | '/staff/research/team'
     | '/classroom/$classroomId/lesson/$lessonId'
   id:
     | '__root__'
@@ -457,6 +490,9 @@ export interface FileRouteTypes {
     | '/knowledge/'
     | '/staff/'
     | '/staff/research/baseline'
+    | '/staff/research/consent'
+    | '/staff/research/sessions'
+    | '/staff/research/team'
     | '/classroom/$classroomId/lesson/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -727,6 +763,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffResearchBaselineRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/research/consent': {
+      id: '/staff/research/consent'
+      path: '/research/consent'
+      fullPath: '/staff/research/consent'
+      preLoaderRoute: typeof StaffResearchConsentRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/research/sessions': {
+      id: '/staff/research/sessions'
+      path: '/research/sessions'
+      fullPath: '/staff/research/sessions'
+      preLoaderRoute: typeof StaffResearchSessionsRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/research/team': {
+      id: '/staff/research/team'
+      path: '/research/team'
+      fullPath: '/staff/research/team'
+      preLoaderRoute: typeof StaffResearchTeamRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/classroom/$classroomId/lesson/$lessonId': {
       id: '/classroom/$classroomId/lesson/$lessonId'
       path: '/lesson/$lessonId'
@@ -766,6 +823,9 @@ interface StaffRouteChildren {
   StaffVoiceRoute: typeof StaffVoiceRoute
   StaffIndexRoute: typeof StaffIndexRoute
   StaffResearchBaselineRoute: typeof StaffResearchBaselineRoute
+  StaffResearchConsentRoute: typeof StaffResearchConsentRoute
+  StaffResearchSessionsRoute: typeof StaffResearchSessionsRoute
+  StaffResearchTeamRoute: typeof StaffResearchTeamRoute
 }
 
 const StaffRouteChildren: StaffRouteChildren = {
@@ -786,6 +846,9 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffVoiceRoute: StaffVoiceRoute,
   StaffIndexRoute: StaffIndexRoute,
   StaffResearchBaselineRoute: StaffResearchBaselineRoute,
+  StaffResearchConsentRoute: StaffResearchConsentRoute,
+  StaffResearchSessionsRoute: StaffResearchSessionsRoute,
+  StaffResearchTeamRoute: StaffResearchTeamRoute,
 }
 
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
