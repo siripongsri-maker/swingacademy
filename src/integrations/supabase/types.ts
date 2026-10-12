@@ -148,6 +148,87 @@ export type Database = {
         }
         Relationships: []
       }
+      baseline_items: {
+        Row: {
+          artifacts: string | null
+          audience: string | null
+          confidence: string | null
+          created_at: string
+          created_by: string | null
+          date_end: string | null
+          date_note: string | null
+          date_start: string | null
+          evidence: string | null
+          external_id: string
+          format: string | null
+          id: string
+          import_batch: string | null
+          knowledge_level: string
+          notes: string | null
+          organiser: string | null
+          source: string
+          source_group: string | null
+          status: string | null
+          swing_role: string | null
+          title: string
+          topic_area: string | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          artifacts?: string | null
+          audience?: string | null
+          confidence?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_end?: string | null
+          date_note?: string | null
+          date_start?: string | null
+          evidence?: string | null
+          external_id: string
+          format?: string | null
+          id?: string
+          import_batch?: string | null
+          knowledge_level?: string
+          notes?: string | null
+          organiser?: string | null
+          source: string
+          source_group?: string | null
+          status?: string | null
+          swing_role?: string | null
+          title: string
+          topic_area?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          artifacts?: string | null
+          audience?: string | null
+          confidence?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_end?: string | null
+          date_note?: string | null
+          date_start?: string | null
+          evidence?: string | null
+          external_id?: string
+          format?: string | null
+          id?: string
+          import_batch?: string | null
+          knowledge_level?: string
+          notes?: string | null
+          organiser?: string | null
+          source?: string
+          source_group?: string | null
+          status?: string | null
+          swing_role?: string | null
+          title?: string
+          topic_area?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       classrooms: {
         Row: {
           cover_url: string | null
