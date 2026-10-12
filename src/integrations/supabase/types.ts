@@ -259,6 +259,93 @@ export type Database = {
         }
         Relationships: []
       }
+      capture_sessions: {
+        Row: {
+          audio_bytes: number | null
+          audio_path: string | null
+          audio_sha256: string | null
+          audio_uploaded_at: string | null
+          audio_uploaded_by: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          department: string | null
+          duration_sec: number | null
+          facilitator_id: string | null
+          held_at: string | null
+          id: string
+          notes: string | null
+          out_of_scope_attested: boolean
+          out_of_scope_attested_by: string | null
+          retention_until: string | null
+          session_type: string
+          site: string | null
+          speaker_guidance_given_at: string | null
+          speaker_guidance_given_by: string | null
+          speaker_guidance_version: string | null
+          status: string
+          study_month: number | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_bytes?: number | null
+          audio_path?: string | null
+          audio_sha256?: string | null
+          audio_uploaded_at?: string | null
+          audio_uploaded_by?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          duration_sec?: number | null
+          facilitator_id?: string | null
+          held_at?: string | null
+          id?: string
+          notes?: string | null
+          out_of_scope_attested?: boolean
+          out_of_scope_attested_by?: string | null
+          retention_until?: string | null
+          session_type: string
+          site?: string | null
+          speaker_guidance_given_at?: string | null
+          speaker_guidance_given_by?: string | null
+          speaker_guidance_version?: string | null
+          status?: string
+          study_month?: number | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_bytes?: number | null
+          audio_path?: string | null
+          audio_sha256?: string | null
+          audio_uploaded_at?: string | null
+          audio_uploaded_by?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          duration_sec?: number | null
+          facilitator_id?: string | null
+          held_at?: string | null
+          id?: string
+          notes?: string | null
+          out_of_scope_attested?: boolean
+          out_of_scope_attested_by?: string | null
+          retention_until?: string | null
+          session_type?: string
+          site?: string | null
+          speaker_guidance_given_at?: string | null
+          speaker_guidance_given_by?: string | null
+          speaker_guidance_version?: string | null
+          status?: string
+          study_month?: number | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       classrooms: {
         Row: {
           cover_url: string | null
@@ -288,6 +375,155 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      consent_form_versions: {
+        Row: {
+          approved_at: string | null
+          approved_ref: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          items: Json
+          status: string
+          title: string
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_ref?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json
+          status?: string
+          title: string
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_ref?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json
+          status?: string
+          title?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      consent_revisions: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          consent_id: string
+          form_version_id: string
+          id: string
+          item_key: string
+          old_decision: string
+          old_given_at: string
+          old_method: string
+          old_paper_ref: string | null
+          old_taken_by: string | null
+          participant_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          consent_id: string
+          form_version_id: string
+          id?: string
+          item_key: string
+          old_decision: string
+          old_given_at: string
+          old_method: string
+          old_paper_ref?: string | null
+          old_taken_by?: string | null
+          participant_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          consent_id?: string
+          form_version_id?: string
+          id?: string
+          item_key?: string
+          old_decision?: string
+          old_given_at?: string
+          old_method?: string
+          old_paper_ref?: string | null
+          old_taken_by?: string | null
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_revisions_consent_id_fkey"
+            columns: ["consent_id"]
+            isOneToOne: false
+            referencedRelation: "consents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consents: {
+        Row: {
+          created_at: string
+          decision: string
+          form_version_id: string
+          given_at: string
+          id: string
+          item_key: string
+          method: string
+          paper_ref: string | null
+          participant_id: string
+          taken_by: string
+          withdrawn_at: string | null
+          withdrawn_recorded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          form_version_id: string
+          given_at: string
+          id?: string
+          item_key: string
+          method: string
+          paper_ref?: string | null
+          participant_id: string
+          taken_by?: string
+          withdrawn_at?: string | null
+          withdrawn_recorded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          form_version_id?: string
+          given_at?: string
+          id?: string
+          item_key?: string
+          method?: string
+          paper_ref?: string | null
+          participant_id?: string
+          taken_by?: string
+          withdrawn_at?: string | null
+          withdrawn_recorded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consents_form_version_id_fkey"
+            columns: ["form_version_id"]
+            isOneToOne: false
+            referencedRelation: "consent_form_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consents_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       course_files: {
         Row: {
@@ -872,6 +1108,77 @@ export type Database = {
           },
         ]
       }
+      participant_identity: {
+        Row: {
+          contact: string | null
+          full_name: string
+          note: string | null
+          participant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          contact?: string | null
+          full_name: string
+          note?: string | null
+          participant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          contact?: string | null
+          full_name?: string
+          note?: string | null
+          participant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_identity_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: true
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          department: string | null
+          experience_tier: string | null
+          id: string
+          pseudo_code: string
+          roles: string[]
+          site: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          experience_tier?: string | null
+          id?: string
+          pseudo_code?: string
+          roles?: string[]
+          site?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          experience_tier?: string | null
+          id?: string
+          pseudo_code?: string
+          roles?: string[]
+          site?: string | null
+        }
+        Relationships: []
+      }
       person_avatars: {
         Row: {
           created_at: string
@@ -932,6 +1239,45 @@ export type Database = {
         }
         Relationships: []
       }
+      session_participants: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          participant_id: string
+          role: string
+          session_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          participant_id: string
+          role?: string
+          session_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          participant_id?: string
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_participants_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "capture_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_visits: {
         Row: {
           created_at: string
@@ -953,6 +1299,51 @@ export type Database = {
           path?: string
           user_agent?: string | null
           visitor_hash?: string | null
+        }
+        Relationships: []
+      }
+      study_settings: {
+        Row: {
+          collection_unlocked: boolean
+          departments: string[]
+          ethics_approved_at: string | null
+          ethics_ref: string | null
+          id: number
+          mou_signed_at: string | null
+          retention_years: number
+          sites: string[]
+          speaker_guidance_version: string | null
+          study_end: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          collection_unlocked?: boolean
+          departments?: string[]
+          ethics_approved_at?: string | null
+          ethics_ref?: string | null
+          id?: number
+          mou_signed_at?: string | null
+          retention_years?: number
+          sites?: string[]
+          speaker_guidance_version?: string | null
+          study_end?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          collection_unlocked?: boolean
+          departments?: string[]
+          ethics_approved_at?: string | null
+          ethics_ref?: string | null
+          id?: number
+          mou_signed_at?: string | null
+          retention_years?: number
+          sites?: string[]
+          speaker_guidance_version?: string | null
+          study_end?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -1141,11 +1532,57 @@ export type Database = {
           },
         ]
       }
+      withdrawal_events: {
+        Row: {
+          id: string
+          note: string | null
+          participant_id: string
+          recorded_at: string
+          recorded_by: string
+          scope: string
+          sessions_put_on_hold: number
+        }
+        Insert: {
+          id?: string
+          note?: string | null
+          participant_id: string
+          recorded_at?: string
+          recorded_by?: string
+          scope: string
+          sessions_put_on_hold?: number
+        }
+        Update: {
+          id?: string
+          note?: string | null
+          participant_id?: string
+          recorded_at?: string
+          recorded_by?: string
+          scope?: string
+          sessions_put_on_hold?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_events_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      apply_withdrawal: {
+        Args: { _note: string; _participant: string; _scope: string }
+        Returns: number
+      }
+      can_work_on_department: {
+        Args: { _department: string; _user_id: string }
+        Returns: boolean
+      }
       has_research_role: {
         Args: {
           _role: Database["public"]["Enums"]["research_role"]
@@ -1160,15 +1597,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_class_staff: {
         Args: { _classroom: string; _user: string }
         Returns: boolean
       }
+      is_consent_keeper: { Args: { _user_id: string }; Returns: boolean }
       is_enrolled: {
         Args: { _classroom: string; _user: string }
         Returns: boolean
       }
+      is_research_member: { Args: { _user_id: string }; Returns: boolean }
+      is_session_worker: { Args: { _user_id: string }; Returns: boolean }
       is_staff_member: { Args: { _user_id: string }; Returns: boolean }
+      participant_cleared: {
+        Args: { _gate: string; _participant: string }
+        Returns: boolean
+      }
+      session_clearance: { Args: { _session: string }; Returns: Json }
     }
     Enums: {
       app_role: "learner" | "staff" | "admin" | "trainer" | "superadmin"

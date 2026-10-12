@@ -22,6 +22,13 @@
       "when": 1791772379226,
       "tag": "0002_baseline_content",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791776602223,
+      "tag": "0003_20261012150000_consent_and_capture",
+      "breakpoints": true
     }
   ]
 }
